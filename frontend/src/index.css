@@ -2,25 +2,119 @@ html,
 body,
 #root {
   margin: 0;
-  min-height: 100vh;
-  font-family: sans-serif;
+  min-height: 100%;
+  font-family: 'IBM Plex Sans', 'Segoe UI', Arial, sans-serif;
+}
+
+html {
+  height: 100%;
+  background: #f2f2f2;
+  color: #111;
+  color-scheme: light;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  display: grid;
-  place-items: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0)),
+    #f2f2f2;
+  color: #111;
+  line-height: 1.5;
 }
 
-main {
-  width: 100%;
-  max-width: 320px;
-  padding: 24px;
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 10;
+  padding: 0.75rem 1rem;
+  background: #111;
+  color: #fff;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.page-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
   box-sizing: border-box;
 }
 
-form {
+.auth-panel {
+  width: min(100%, 24rem);
+  padding: 1.25rem;
+  border: 1px solid #cfcfcf;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.panel-header,
+.panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.panel-footer {
+  margin-top: 1rem;
+}
+
+.eyebrow,
+.hint,
+.panel-footer p {
+  color: #555;
+  font-size: 0.875rem;
+}
+
+.eyebrow {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.brand-mark {
+  margin: 0.125rem 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.locale-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.locale-icon {
+  display: inline-flex;
+  width: 1rem;
+  height: 1rem;
+  color: #555;
+}
+
+.locale-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.auth-form {
   display: grid;
-  gap: 12px;
+  gap: 0.875rem;
+  margin-top: 1rem;
+}
+
+.auth-copy {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
 }
 
 h1,
@@ -28,8 +122,142 @@ p {
   margin: 0;
 }
 
+h1 {
+  font-size: clamp(1.65rem, 4vw, 2rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+label,
+small {
+  font-size: 0.9375rem;
+}
+
+label {
+  font-weight: 600;
+}
+
+.field {
+  display: grid;
+  gap: 0.45rem;
+}
+
 input,
+select,
 button {
+  width: 100%;
+  min-height: 2.875rem;
+  box-sizing: border-box;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid #bdbdbd;
+  border-radius: 0.2rem;
+  background: #fff;
+  color: inherit;
   font: inherit;
-  padding: 8px;
+  appearance: none;
+}
+
+input::placeholder {
+  color: #777;
+}
+
+input[aria-invalid='true'] {
+  border-color: #111;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 3px solid #111;
+  outline-offset: 2px;
+}
+
+button {
+  border-color: #111;
+  background: #111;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.secondary {
+  background: #fff;
+  color: #111;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #666;
+}
+
+.divider span {
+  flex: 1;
+  height: 1px;
+  background: #d8d8d8;
+}
+
+.status-banner {
+  padding: 0.8rem 0.9rem;
+  border: 1px solid #d0d0d0;
+  background: #fafafa;
+  font-size: 0.9375rem;
+}
+
+.field-error {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+@media (max-height: 620px) {
+  .page-shell {
+    place-items: start center;
+  }
+}
+
+@media (max-width: 420px) {
+  .panel-header,
+  .panel-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .auth-panel,
+  input,
+  select,
+  button,
+  .status-banner {
+    border-width: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .skip-link,
+  .auth-panel,
+  input,
+  select,
+  button,
+  .status-banner {
+    forced-color-adjust: auto;
+  }
 }
