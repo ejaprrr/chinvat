@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { getCertificateLoginUrl } from "./api/auth";
 import AuthForm from "./components/AuthForm";
 import LanguageSwitcher from "./components/LanguageSwitcher";
 
@@ -18,7 +19,7 @@ function App() {
     ).matches;
 
   const startCertificateLogin = () => {
-    window.location.href = "/cert-login";
+    window.location.href = getCertificateLoginUrl();
   };
 
   return (

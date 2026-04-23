@@ -7,6 +7,10 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Eye, EyeOff, AlertCircle, TriangleAlert } from "lucide-react";
+import {
+  handleCertificateLoginStart,
+  loginWithCredentials,
+} from "../api/auth";
 
 type FieldErrors = {
   username?: string;
@@ -16,9 +20,19 @@ type FieldErrors = {
 type TranslationKey =
   | "auth.fields.username.required"
   | "auth.fields.password.required"
-  | "auth.status.formReady"
   | "auth.status.errorSummaryTitle"
   | "auth.status.certificateOpening";
+
+type StatusMessage =
+  | {
+      tone: "default" | "critical";
+      text: string;
+    }
+  | {
+      tone: "default" | "critical";
+      translationKey: TranslationKey;
+    }
+  | null;
 
 type AuthFormProps = {
   isDesktopPlatform: boolean;
@@ -32,9 +46,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [statusMessageKey, setStatusMessageKey] = useState<TranslationKey | "">(
-    "",
-  );
+  const [statusMessage, setStatusMessage] = useState<StatusMessage>(null);
   const [certificateLaunching, setCertificateLaunching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -52,7 +64,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
     setCapsLockOn(event.getModifierState("CapsLock"));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const nextErrors: FieldErrors = {};
@@ -68,32 +80,58 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
     setFieldErrors(nextErrors);
     const hasErrors = Object.keys(nextErrors).length > 0;
 
-    setStatusMessageKey(
-      hasErrors ? "auth.status.errorSummaryTitle" : "auth.status.formReady",
-    );
-
     if (!hasErrors) {
       setIsSubmitting(true);
-      // Submission logic here; call setIsSubmitting(false) on completion or error
     }
 
     if (nextErrors.username) {
+      setStatusMessage({
+        tone: "critical",
+        translationKey: "auth.status.errorSummaryTitle",
+      });
       usernameInputRef.current?.focus();
       return;
     }
 
     if (nextErrors.password) {
+      setStatusMessage({
+        tone: "critical",
+        translationKey: "auth.status.errorSummaryTitle",
+      });
       passwordInputRef.current?.focus();
+      return;
     }
+
+    const response = await loginWithCredentials({
+      username: username.trim(),
+      password,
+    });
+
+    setStatusMessage({
+      tone: response.ok ? "default" : "critical",
+      text: response.message,
+    });
+    setIsSubmitting(false);
   };
 
   const handleCertificateLogin = () => {
+    const response = handleCertificateLoginStart();
+
     setCertificateLaunching(true);
-    setStatusMessageKey("auth.status.certificateOpening");
+    setStatusMessage({
+      tone: response.ok ? "default" : "critical",
+      translationKey: "auth.status.certificateOpening",
+    });
     onCertificateLogin();
   };
 
-  const isErrorStatus = statusMessageKey === "auth.status.errorSummaryTitle";
+  const isErrorStatus = statusMessage?.tone === "critical";
+
+  const resolvedStatusMessage = statusMessage
+    ? "translationKey" in statusMessage
+      ? t(statusMessage.translationKey)
+      : statusMessage.text
+    : "";
 
   // Build aria-describedby lists per field
   const usernameDescribedBy = [
@@ -131,9 +169,9 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
        */}
       <div
         className="status-slot"
-        aria-hidden={statusMessageKey ? undefined : "true"}
+        aria-hidden={statusMessage ? undefined : "true"}
       >
-        {statusMessageKey ? (
+        {statusMessage ? (
           <p
             className={`status-banner${isErrorStatus ? " status-banner-critical" : ""}`}
             role={isErrorStatus ? "alert" : "status"}
@@ -147,7 +185,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
                 className="status-icon"
               />
             )}
-            {t(statusMessageKey)}
+            {resolvedStatusMessage}
           </p>
         ) : null}
       </div>
@@ -261,8 +299,12 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
               aria-pressed={showPassword}
               aria-label={
                 showPassword
-                  ? t("auth.fields.password.hide")
-                  : t("auth.fields.password.show")
+                  ? t("auth.fields.password.hide", {
+                      defaultValue: "Hide password",
+                    })
+                  : t("auth.fields.password.show", {
+                      defaultValue: "Show password",
+                    })
               }
               aria-controls="password"
             >
@@ -290,7 +332,9 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
               aria-live="polite"
               aria-atomic="true"
             >
-              {t("auth.fields.password.capsLock")}
+              {t("auth.fields.password.capsLock", {
+                defaultValue: "Caps Lock is on.",
+              })}
             </p>
           ) : null}
 
@@ -320,7 +364,9 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
         disabled={isSubmitting}
       >
         {isSubmitting
-          ? t("auth.actions.submitting")
+          ? t("auth.actions.submitting", {
+              defaultValue: "Submitting…",
+            })
           : t("auth.actions.continue")}
       </button>
 
