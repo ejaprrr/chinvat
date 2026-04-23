@@ -1,103 +1,157 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html,
 body,
 #root {
   margin: 0;
   min-height: 100%;
-  font-family: 'IBM Plex Sans', 'Segoe UI', Arial, sans-serif;
+}
+
+:root {
+  --font: "Plus Jakarta Sans", system-ui, sans-serif;
+
+  --bg: #f1f3f5;
+  --surface: #ffffff;
+  --surface-sub: #f8f9fa;
+
+  --text: #111827;
+  --text-sub: #4b5563; /* 7:1+ on white — WCAG AAA */
+
+  --border: #d1d5db; /* Strengthened from e5e7eb for 3:1 non-text contrast */
+  --border-hover: #9ca3af;
+  --border-focus: #1d4ed8;
+
+  --ring-width: 3px;
+  --ring: rgba(29, 78, 216, 0.18);
+
+  --accent: #1d4ed8; /* 5.5:1 on white — WCAG AA */
+  --accent-hover: #1e40af;
+  --accent-fg: #ffffff;
+
+  --danger: #b91c1c; /* 6.1:1 on white — WCAG AA */
+  --danger-bg: #fef2f2;
+  --danger-border: rgba(185, 28, 28, 0.28);
+
+  --warning: #92400e; /* 7:1+ on yellow-50 — WCAG AAA */
+  --warning-bg: #fffbeb;
+  --warning-border: rgba(146, 64, 14, 0.22);
+
+  --radius: 0.5rem;
+  --radius-lg: 0.75rem;
+
+  /* Touch-target minimum: 44×44px (WCAG 2.5.5) */
+  --touch-target: 2.75rem;
 }
 
 html {
   height: 100%;
-  background: #f2f2f2;
-  color: #111;
-  color-scheme: light;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
   -webkit-text-size-adjust: 100%;
+  /* Prevent text inflation on mobile that could clip interactive elements */
+  text-size-adjust: 100%;
 }
 
 body {
   min-height: 100vh;
   min-height: 100dvh;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0)),
-    #f2f2f2;
-  color: #111;
   line-height: 1.5;
 }
 
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+/* ── Skip link ──────────────────────────────────────────────────────────
+ * Allows keyboard and AT users to bypass the header / brand lockup
+ * and jump directly to the form. Visible on focus only.
+ * ────────────────────────────────────────────────────────────────────── */
 .skip-link {
   position: absolute;
   left: 1rem;
-  top: -3rem;
-  z-index: 10;
-  padding: 0.75rem 1rem;
-  background: #111;
+  top: -4rem;
+  z-index: 100;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--radius);
+  background: var(--text);
   color: #fff;
+  font-family: var(--font);
+  font-size: 0.875rem;
+  font-weight: 500;
   text-decoration: none;
+  /* No transition when motion is not reduced — skip links must appear instantly */
 }
 
-.skip-link:focus {
+.skip-link:focus-visible {
   top: 1rem;
+  /* Explicit focus ring so this also passes 2.4.11 */
+  outline: var(--ring-width) solid var(--border-focus);
+  outline-offset: 2px;
 }
 
+/* ── Shell ──────────────────────────────────────────────────────────── */
 .page-shell {
   min-height: 100vh;
   min-height: 100dvh;
   display: grid;
   place-items: center;
-  padding: 1rem;
-  box-sizing: border-box;
+  padding: 1.5rem;
 }
 
+/* ── Panel ──────────────────────────────────────────────────────────── */
 .auth-panel {
-  width: min(100%, 24rem);
-  padding: 1.25rem;
-  border: 1px solid #cfcfcf;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 25rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.panel-header,
-.panel-footer {
+/* ── Panel header ───────────────────────────────────────────────────── */
+.panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
-.panel-footer {
-  margin-top: 1rem;
-}
-
-.eyebrow,
-.hint,
-.panel-footer p {
-  color: #555;
-  font-size: 0.875rem;
-}
-
-.eyebrow {
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.brand-mark {
-  margin: 0.125rem 0 0;
-  font-size: 1rem;
+.wordmark {
+  font-size: 0.8125rem;
   font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text);
+  margin: 0;
 }
 
+/* ── Language switcher ──────────────────────────────────────────────── */
 .locale-switcher {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3125rem;
+  color: var(--text-sub);
+  font-size: 0.8125rem;
+  font-family: var(--font);
 }
 
 .locale-icon {
   display: inline-flex;
-  width: 1rem;
-  height: 1rem;
-  color: #555;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
 }
 
 .locale-icon svg {
@@ -105,159 +159,457 @@ body {
   height: 100%;
 }
 
+.locale-switcher select {
+  all: unset;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  /* Ensure minimum touch target height via line-height padding trick */
+  padding-block: 0.25rem;
+  border-radius: 2px;
+}
+
+.locale-switcher select:focus-visible {
+  outline: var(--ring-width) solid var(--border-focus);
+  outline-offset: 3px;
+}
+
+/* ── Auth form ──────────────────────────────────────────────────────── */
 .auth-form {
-  display: grid;
-  gap: 0.875rem;
-  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.125rem;
 }
 
 .auth-copy {
-  display: grid;
-  gap: 0.35rem;
-  margin-bottom: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-h1,
-p {
-  margin: 0;
-}
-
-h1 {
-  font-size: clamp(1.65rem, 4vw, 2rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-label,
-small {
-  font-size: 0.9375rem;
-}
-
-label {
+.auth-copy h1 {
+  font-size: 1.25rem;
   font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.auth-copy p {
+  font-size: 0.875rem;
+  color: var(--text-sub);
+}
+
+/* ── Status banner ──────────────────────────────────────────────────── */
+/* Hidden via aria-hidden when empty; height is not reserved */
+.status-slot:has(> *) {
+  display: block;
+}
+
+.status-slot:not(:has(> *)) {
+  display: none;
+}
+
+/* Fallback for browsers without :has() support */
+.status-slot {
+  display: block;
+}
+
+.status-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-sub);
+  font-size: 0.8125rem;
+  color: var(--text-sub);
+  line-height: 1.4;
+}
+
+.status-banner-critical {
+  border-color: var(--danger-border);
+  background: var(--danger-bg);
+  /* Color alone is not sufficient (WCAG 1.4.1) — icon supplements */
+  color: var(--danger);
+}
+
+.status-icon {
+  flex-shrink: 0;
+  margin-top: 0.0625rem; /* optical alignment with first line of text */
+}
+
+/* ── Fields ─────────────────────────────────────────────────────────── */
+.field-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
 }
 
 .field {
-  display: grid;
-  gap: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3125rem;
 }
 
-input,
-select,
-button {
+label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.1875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/*
+ * Required mark: visible asterisk, hidden from AT via aria-hidden on the span.
+ * Color alone does not convey "required" — pair with visible text "Required"
+ * or, as done here, a legend at the top of the form group.
+ */
+.required-mark {
+  color: var(--danger);
+  font-size: 0.875rem;
+  line-height: 1;
+  select: none;
+}
+
+/* ── Base inputs ────────────────────────────────────────────────────── */
+input {
   width: 100%;
-  min-height: 2.875rem;
-  box-sizing: border-box;
-  padding: 0.8rem 0.9rem;
-  border: 1px solid #bdbdbd;
-  border-radius: 0.2rem;
-  background: #fff;
-  color: inherit;
+  min-height: var(--touch-target); /* WCAG 2.5.5 — 44px minimum */
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
   font: inherit;
+  font-size: 1rem; /* 1rem avoids iOS auto-zoom on focus (< 16px triggers zoom) */
   appearance: none;
+  transition:
+    border-color 0.1s ease,
+    box-shadow 0.1s ease;
 }
 
 input::placeholder {
-  color: #777;
+  color: #9ca3af;
 }
 
-input[aria-invalid='true'] {
-  border-color: #111;
+input:hover {
+  border-color: var(--border-hover);
 }
 
-input:focus-visible,
-select:focus-visible,
-button:focus-visible {
-  outline: 3px solid #111;
-  outline-offset: 2px;
+/*
+ * Focus indicator: meets WCAG 2.4.11 (focus not obscured) and 2.4.12 (AAA).
+ * Uses both a solid outline and a coloured box-shadow ring for
+ * visibility in forced-color and non-forced-color environments.
+ */
+input:focus-visible {
+  outline: var(--ring-width) solid var(--border-focus);
+  outline-offset: 0;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 var(--ring-width) var(--ring);
 }
 
-button {
-  border-color: #111;
-  background: #111;
-  color: #fff;
-  font-weight: 600;
+/*
+ * Error state: border-color change + red outline on focus.
+ * Color is supplemented by the AlertCircle icon in the error message
+ * (WCAG 1.4.1 — don't use color as the sole indicator).
+ */
+input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+input[aria-invalid="true"]:focus-visible {
+  outline-color: var(--danger);
+  box-shadow: 0 0 0 var(--ring-width) rgba(185, 28, 28, 0.14);
+}
+
+/* Autofill — preserve brand colours, not the browser's yellow */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus-visible {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px #eff6ff inset;
+  transition: background-color 9999s;
+}
+
+/* ── Input wrapper (for password + toggle) ──────────────────────────── */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input {
+  /* Reserve space for the toggle button so text doesn't overlap it */
+  padding-right: 3rem;
+}
+
+/* ── Password reveal toggle ─────────────────────────────────────────── */
+/*
+ * Positioned inside the input area. Uses aria-pressed to communicate
+ * current state. Icon is aria-hidden — the label conveys meaning.
+ * Minimum touch target: 44×44px (WCAG 2.5.5).
+ */
+.password-toggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--touch-target);
+  min-height: var(--touch-target);
+  padding: 0;
+  border: none;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: transparent;
+  color: var(--text-sub);
   cursor: pointer;
+  font: inherit;
+  transition:
+    color 0.1s ease,
+    background 0.1s ease;
 }
 
-button:disabled,
-input:disabled,
-select:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
+.password-toggle:hover {
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.password-toggle:focus-visible {
+  outline: var(--ring-width) solid var(--border-focus);
+  outline-offset: -1px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  color: var(--text);
+}
+
+/* ── Hint, error, caps-lock texts ───────────────────────────────────── */
+.hint {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  line-height: 1.4;
+}
+
+/*
+ * field-error: icon + text in a flex row.
+ * Icon is aria-hidden; text carries the full meaning (WCAG 1.4.1).
+ */
+.field-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--danger);
+  line-height: 1.4;
+}
+
+.field-error svg {
+  flex-shrink: 0;
+  margin-top: 0.0625rem;
+}
+
+/* Caps Lock warning — a polite advisory, styled as a mild warning */
+.caps-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--warning);
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius);
+  background: var(--warning-bg);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--touch-target); /* WCAG 2.5.5 */
+  padding: 0 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  appearance: none;
+  transition:
+    background 0.1s ease,
+    border-color 0.1s ease,
+    box-shadow 0.1s ease;
+}
+
+.primary-action {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+
+.primary-action:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.primary-action:focus-visible {
+  outline: var(--ring-width) solid var(--border-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 var(--ring-width) var(--ring);
 }
 
 .secondary {
-  background: #fff;
-  color: #111;
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.secondary:hover:not(:disabled) {
+  background: var(--surface-sub);
+  border-color: var(--border-hover);
+}
+
+.secondary:focus-visible {
+  outline: var(--ring-width) solid var(--border-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 var(--ring-width) var(--ring);
+}
+
+/*
+ * disabled: opacity only (no pointer-events removal) so AT can still
+ * read the element and aria-busy state.
+ */
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ── Alternate actions ──────────────────────────────────────────────── */
+.alternate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .divider {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  color: #666;
+  gap: 0.625rem;
+  color: var(--text-sub);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
-.divider span {
+.divider::before,
+.divider::after {
+  content: "";
   flex: 1;
   height: 1px;
-  background: #d8d8d8;
+  background: var(--border);
 }
 
-.status-banner {
-  padding: 0.8rem 0.9rem;
-  border: 1px solid #d0d0d0;
-  background: #fafafa;
-  font-size: 0.9375rem;
+.alternate-hint {
+  font-size: 0.8125rem;
+  color: var(--text-sub);
+  text-align: center;
+  line-height: 1.45;
 }
 
-.field-error {
-  font-size: 0.9375rem;
-  font-weight: 600;
+.support-copy {
+  font-size: 0.75rem;
+  color: var(--text-sub);
+  text-align: center;
+  padding-top: 0.25rem;
 }
 
-@media (max-height: 620px) {
+/* ── Mobile ─────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
   .page-shell {
-    place-items: start center;
+    align-items: start;
+    padding: 0;
+  }
+
+  .auth-panel {
+    max-width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    border: none;
+    border-radius: 0;
+    padding: 1.5rem;
+  }
+
+  .panel-header {
+    flex-wrap: wrap;
   }
 }
 
-@media (max-width: 420px) {
-  .panel-header,
-  .panel-footer {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-
+/* ── High-contrast (prefers-contrast: more) ─────────────────────────── */
+/*
+ * Thicken borders, increase ring width, and darken muted colours so the
+ * UI holds up under stricter contrast requirements.
+ */
 @media (prefers-contrast: more) {
-  .auth-panel,
+  :root {
+    --border: #6b7280;
+    --border-hover: #374151;
+    --text-sub: #374151;
+    --ring: rgba(29, 78, 216, 0.35);
+    --ring-width: 4px;
+  }
+
   input,
-  select,
   button,
-  .status-banner {
+  .status-banner,
+  .caps-warning {
     border-width: 2px;
   }
+
+  .password-toggle {
+    border-left: 2px solid var(--border);
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
 }
 
+/* ── Reduced motion ──────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation: none !important;
-    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
 
+/* ── Forced colours (Windows High Contrast Mode) ────────────────────── */
+/*
+ * forced-color-adjust: auto tells the browser it may override our colours.
+ * We then rely on system colour keywords to ensure interactive elements
+ * remain clearly distinct.
+ */
 @media (forced-colors: active) {
-  .skip-link,
-  .auth-panel,
+  .primary-action,
+  .secondary,
   input,
-  select,
-  button,
-  .status-banner {
+  .password-toggle,
+  .status-banner,
+  .caps-warning {
     forced-color-adjust: auto;
+  }
+
+  .skip-link {
+    forced-color-adjust: auto;
+    border: 2px solid ButtonText;
   }
 }

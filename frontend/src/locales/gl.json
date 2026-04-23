@@ -1,31 +1,44 @@
 {
-  "pageTitle": "Acceso seguro",
-  "skipToContent": "Ir ao contido principal",
-  "projectName": "chinvat",
-  "brand": "Acceso seguro",
-  "title": "Iniciar sesión",
-  "intro": "Accede coa túa conta ou con certificado FNMT.",
-  "usernameLabel": "Usuario",
-  "usernameHint": "Introduce o teu nome de usuario.",
-  "usernameRequired": "Introduce o teu nome de usuario.",
-  "passwordLabel": "Contrasinal",
-  "passwordHint": "O contrasinal distingue maiúsculas e minúsculas.",
-  "passwordRequired": "Introduce o teu contrasinal.",
-  "continue": "Continuar",
-  "submitting": "Comprobando…",
-  "divider": "ou",
-  "certificate": "Acceder con certificado FNMT",
-  "certificateHint": "Abrirase a ruta segura de certificado. Se o navegador detecta un certificado FNMT instalado, mostrará o seu selector nativo.",
-  "certificateOpening": "Abrindo a ruta segura de certificado…",
-  "certificateUnavailable": "O acceso con certificado FNMT só está dispoñible en navegador de escritorio.",
-  "errorSummaryTitle": "Revisa os campos marcados",
-  "errorSummaryIntro": "Corrixe a información antes de continuar.",
-  "formReady": "A validación local completouse. Conecta este formulario co teu backend seguro para continuar.",
-  "authErrorGeneric": "Non se puido completar o acceso. Téntao de novo.",
-  "authSignedOut": "A túa sesión rematou. Inicia sesión de novo para continuar.",
-  "certMissing": "Non se seleccionou ningún certificado. Escolle un certificado FNMT para continuar.",
-  "certRejected": "Non se puido validar o certificado seleccionado.",
-  "certTimeout": "A operación co certificado tardou demasiado. Téntao de novo.",
-  "support": "Se precisas axuda, contacta co soporte técnico.",
-  "languageLabel": "Cambiar idioma"
+  "meta": {
+    "pageTitle": "Acceso seguro"
+  },
+  "accessibility": {
+    "skipToContent": "Ir ao contido principal",
+    "languageLabel": "Cambiar idioma"
+  },
+  "brand": {
+    "projectName": "chinvat",
+    "label": "Acceso seguro"
+  },
+  "auth": {
+    "title": "Iniciar sesión",
+    "intro": "Accede coa túa conta ou con certificado FNMT.",
+    "support": "Se precisas axuda, contacta co soporte técnico.",
+    "divider": "ou",
+    "actions": {
+      "continue": "Continuar"
+    },
+    "status": {
+      "formReady": "A validación local completouse. Conecta este formulario co teu backend seguro para continuar.",
+      "errorSummaryTitle": "Revisa os campos marcados",
+      "certificateOpening": "Abrindo a ruta segura de certificado…"
+    },
+    "fields": {
+      "username": {
+        "label": "Usuario",
+        "hint": "Introduce o teu nome de usuario.",
+        "required": "Introduce o teu nome de usuario."
+      },
+      "password": {
+        "label": "Contrasinal",
+        "hint": "O contrasinal distingue maiúsculas e minúsculas.",
+        "required": "Introduce o teu contrasinal."
+      }
+    },
+    "certificate": {
+      "action": "Acceder con certificado FNMT",
+      "hint": "Abrirase a ruta segura de certificado. Se o navegador detecta un certificado FNMT instalado, mostrará o seu selector nativo.",
+      "unavailable": "O acceso con certificado FNMT só está dispoñible en navegador de escritorio."
+    }
+  }
 }

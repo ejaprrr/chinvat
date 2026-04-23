@@ -1,31 +1,44 @@
 {
-  "pageTitle": "Secure sign in",
-  "skipToContent": "Skip to main content",
-  "projectName": "chinvat",
-  "brand": "Secure access",
-  "title": "Sign in",
-  "intro": "Use your account or an FNMT certificate to continue.",
-  "usernameLabel": "Username",
-  "usernameHint": "Enter your username.",
-  "usernameRequired": "Enter your username.",
-  "passwordLabel": "Password",
-  "passwordHint": "Your password is case-sensitive.",
-  "passwordRequired": "Enter your password.",
-  "continue": "Continue",
-  "submitting": "Checking…",
-  "divider": "or",
-  "certificate": "Continue with FNMT certificate",
-  "certificateHint": "The secure certificate route will open. If the browser finds an installed FNMT certificate, it will show its native selector.",
-  "certificateOpening": "Opening the secure certificate route…",
-  "certificateUnavailable": "FNMT certificate access is only available in a desktop browser.",
-  "errorSummaryTitle": "Check the highlighted fields",
-  "errorSummaryIntro": "Review the following information before continuing.",
-  "formReady": "Validation passed. Connect this form to your secure backend to continue.",
-  "authErrorGeneric": "We could not complete the sign-in process. Try again.",
-  "authSignedOut": "Your session has ended. Sign in again to continue.",
-  "certMissing": "No certificate was selected. Choose an FNMT certificate to continue.",
-  "certRejected": "The selected certificate could not be validated.",
-  "certTimeout": "The certificate flow took too long. Start again.",
-  "support": "If you need help, contact technical support.",
-  "languageLabel": "Change language"
+  "meta": {
+    "pageTitle": "Secure sign in"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content",
+    "languageLabel": "Change language"
+  },
+  "brand": {
+    "projectName": "chinvat",
+    "label": "Secure access"
+  },
+  "auth": {
+    "title": "Sign in",
+    "intro": "Use your account or an FNMT certificate to continue.",
+    "support": "If you need help, contact technical support.",
+    "divider": "or",
+    "actions": {
+      "continue": "Continue"
+    },
+    "status": {
+      "formReady": "Validation passed. Connect this form to your secure backend to continue.",
+      "errorSummaryTitle": "Check the highlighted fields",
+      "certificateOpening": "Opening the secure certificate route…"
+    },
+    "fields": {
+      "username": {
+        "label": "Username",
+        "hint": "Enter your username.",
+        "required": "Enter your username."
+      },
+      "password": {
+        "label": "Password",
+        "hint": "Your password is case-sensitive.",
+        "required": "Enter your password."
+      }
+    },
+    "certificate": {
+      "action": "Continue with FNMT certificate",
+      "hint": "The secure certificate route will open. If the browser finds an installed FNMT certificate, it will show its native selector.",
+      "unavailable": "FNMT certificate access is only available in a desktop browser."
+    }
+  }
 }

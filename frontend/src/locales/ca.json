@@ -1,31 +1,44 @@
 {
-  "pageTitle": "Accés segur",
-  "skipToContent": "Salta al contingut principal",
-  "projectName": "chinvat",
-  "brand": "Accés segur",
-  "title": "Inicia la sessió",
-  "intro": "Accedeix amb el teu compte o amb certificat FNMT.",
-  "usernameLabel": "Usuari",
-  "usernameHint": "Introdueix el teu nom d'usuari.",
-  "usernameRequired": "Introdueix el teu nom d'usuari.",
-  "passwordLabel": "Contrasenya",
-  "passwordHint": "La contrasenya distingeix majúscules i minúscules.",
-  "passwordRequired": "Introdueix la teva contrasenya.",
-  "continue": "Continua",
-  "submitting": "Comprovant…",
-  "divider": "o",
-  "certificate": "Accedeix amb certificat FNMT",
-  "certificateHint": "S'obrirà la ruta segura de certificat. Si el navegador detecta un certificat FNMT instal·lat, mostrarà el selector nadiu.",
-  "certificateOpening": "S'està obrint la ruta segura de certificat…",
-  "certificateUnavailable": "L'accés amb certificat FNMT només està disponible en navegador d'escriptori.",
-  "errorSummaryTitle": "Revisa els camps marcats",
-  "errorSummaryIntro": "Corregeix la informació abans de continuar.",
-  "formReady": "La validació local s'ha completat. Connecta aquest formulari amb el teu backend segur per continuar.",
-  "authErrorGeneric": "No s'ha pogut completar l'accés. Torna-ho a provar.",
-  "authSignedOut": "La teva sessió ha finalitzat. Torna a iniciar la sessió per continuar.",
-  "certMissing": "No s'ha seleccionat cap certificat. Tria un certificat FNMT per continuar.",
-  "certRejected": "No s'ha pogut validar el certificat seleccionat.",
-  "certTimeout": "L'operació amb certificat ha trigat massa. Torna-ho a provar.",
-  "support": "Si necessites ajuda, contacta amb suport tècnic.",
-  "languageLabel": "Canvia idioma"
+  "meta": {
+    "pageTitle": "Accés segur"
+  },
+  "accessibility": {
+    "skipToContent": "Salta al contingut principal",
+    "languageLabel": "Canvia idioma"
+  },
+  "brand": {
+    "projectName": "chinvat",
+    "label": "Accés segur"
+  },
+  "auth": {
+    "title": "Inicia la sessió",
+    "intro": "Accedeix amb el teu compte o amb certificat FNMT.",
+    "support": "Si necessites ajuda, contacta amb suport tècnic.",
+    "divider": "o",
+    "actions": {
+      "continue": "Continua"
+    },
+    "status": {
+      "formReady": "La validació local s'ha completat. Connecta aquest formulari amb el teu backend segur per continuar.",
+      "errorSummaryTitle": "Revisa els camps marcats",
+      "certificateOpening": "S'està obrint la ruta segura de certificat…"
+    },
+    "fields": {
+      "username": {
+        "label": "Usuari",
+        "hint": "Introdueix el teu nom d'usuari.",
+        "required": "Introdueix el teu nom d'usuari."
+      },
+      "password": {
+        "label": "Contrasenya",
+        "hint": "La contrasenya distingeix majúscules i minúscules.",
+        "required": "Introdueix la teva contrasenya."
+      }
+    },
+    "certificate": {
+      "action": "Accedeix amb certificat FNMT",
+      "hint": "S'obrirà la ruta segura de certificat. Si el navegador detecta un certificat FNMT instal·lat, mostrarà el selector nadiu.",
+      "unavailable": "L'accés amb certificat FNMT només està disponible en navegador d'escriptori."
+    }
+  }
 }
