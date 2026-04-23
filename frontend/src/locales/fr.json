@@ -1,6 +1,6 @@
 {
   "meta": {
-    "pageTitle": "Connexion sécurisée"
+    "pageTitle": "Se connecter à chinvat"
   },
   "accessibility": {
     "skipToContent": "Aller au contenu principal",
@@ -8,37 +8,43 @@
   },
   "brand": {
     "projectName": "chinvat",
-    "label": "Accès sécurisé"
+    "label": "Vérification d’identité"
   },
   "auth": {
     "title": "Se connecter",
-    "intro": "Utilisez votre compte ou un certificat FNMT pour continuer.",
-    "support": "Si vous avez besoin d'aide, contactez le support technique.",
+    "intro": "Connectez-vous avec votre compte ou continuez avec un certificat FNMT.",
+    "support": "Si vous avez besoin d'aide pour accéder à votre compte, contactez le support technique.",
     "divider": "ou",
     "actions": {
-      "continue": "Continuer"
+      "continue": "Se connecter",
+      "submitting": "Connexion..."
     },
     "status": {
-      "formReady": "La validation locale est terminée. Reliez ce formulaire à votre backend sécurisé pour continuer.",
-      "errorSummaryTitle": "Vérifiez les champs signalés",
-      "certificateOpening": "Ouverture de la route sécurisée du certificat…"
+      "errorSummaryTitle": "Vérifiez les champs signalés et réessayez.",
+      "certificateOpening": "Redirection vers la connexion par certificat…",
+      "loginSuccess": "La connexion a été effectuée avec succès.",
+      "loginError": "Nous n'avons pas pu vous connecter. Vérifiez vos informations et réessayez.",
+      "networkError": "Le service est inaccessible. Vérifiez votre connexion et réessayez."
     },
     "fields": {
       "username": {
         "label": "Nom d’utilisateur",
-        "hint": "Saisissez votre nom d’utilisateur.",
+        "hint": "Utilisez le nom d’utilisateur attribué à votre compte.",
         "required": "Saisissez votre nom d’utilisateur."
       },
       "password": {
         "label": "Mot de passe",
         "hint": "Le mot de passe distingue les majuscules et minuscules.",
-        "required": "Saisissez votre mot de passe."
+        "required": "Saisissez votre mot de passe.",
+        "show": "Afficher le mot de passe",
+        "hide": "Masquer le mot de passe",
+        "capsLock": "Le verrouillage des majuscules est activé."
       }
     },
     "certificate": {
-      "action": "Continuer avec un certificat FNMT",
-      "hint": "La route sécurisée du certificat va s’ouvrir. Si le navigateur détecte un certificat FNMT installé, il affichera son sélecteur natif.",
-      "unavailable": "L’accès avec certificat FNMT est disponible uniquement dans un navigateur de bureau."
+      "action": "Utiliser un certificat FNMT",
+      "hint": "Vous serez redirigé vers le parcours sécurisé par certificat. Si un certificat FNMT est installé, votre navigateur vous demandera de le sélectionner.",
+      "unavailable": "La connexion avec certificat FNMT est disponible uniquement dans les navigateurs de bureau."
     }
   }
 }

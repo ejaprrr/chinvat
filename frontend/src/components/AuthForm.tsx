@@ -21,7 +21,10 @@ type TranslationKey =
   | "auth.fields.username.required"
   | "auth.fields.password.required"
   | "auth.status.errorSummaryTitle"
-  | "auth.status.certificateOpening";
+  | "auth.status.certificateOpening"
+  | "auth.status.loginSuccess"
+  | "auth.status.loginError"
+  | "auth.status.networkError";
 
 type StatusMessage =
   | {
@@ -62,6 +65,28 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
 
   const handleCapsLock = (event: KeyboardEvent<HTMLInputElement>) => {
     setCapsLockOn(event.getModifierState("CapsLock"));
+  };
+
+  const toStatusMessage = (response: {
+    ok: boolean;
+    message?: string;
+    messageKey?: string;
+  }): StatusMessage => {
+    if (response.messageKey) {
+      return {
+        tone: response.ok ? "default" : "critical",
+        translationKey: response.messageKey as TranslationKey,
+      };
+    }
+
+    if (response.message) {
+      return {
+        tone: response.ok ? "default" : "critical",
+        text: response.message,
+      };
+    }
+
+    return null;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -107,10 +132,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
       password,
     });
 
-    setStatusMessage({
-      tone: response.ok ? "default" : "critical",
-      text: response.message,
-    });
+    setStatusMessage(toStatusMessage(response));
     setIsSubmitting(false);
   };
 
@@ -118,10 +140,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
     const response = handleCertificateLoginStart();
 
     setCertificateLaunching(true);
-    setStatusMessage({
-      tone: response.ok ? "default" : "critical",
-      translationKey: "auth.status.certificateOpening",
-    });
+    setStatusMessage(toStatusMessage(response));
     onCertificateLogin();
   };
 

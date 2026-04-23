@@ -1,6 +1,6 @@
 {
   "meta": {
-    "pageTitle": "Sichere Anmeldung"
+    "pageTitle": "Bei chinvat anmelden"
   },
   "accessibility": {
     "skipToContent": "Zum Hauptinhalt springen",
@@ -8,37 +8,43 @@
   },
   "brand": {
     "projectName": "chinvat",
-    "label": "Sicherer Zugang"
+    "label": "Identitätsprüfung"
   },
   "auth": {
     "title": "Anmelden",
-    "intro": "Melden Sie sich mit Ihrem Konto oder einem FNMT-Zertifikat an.",
-    "support": "Wenn Sie Hilfe benötigen, wenden Sie sich an den technischen Support.",
+    "intro": "Melden Sie sich mit Ihrem Konto an oder fahren Sie mit einem FNMT-Zertifikat fort.",
+    "support": "Wenn Sie Hilfe beim Zugriff auf Ihr Konto benötigen, wenden Sie sich an den technischen Support.",
     "divider": "oder",
     "actions": {
-      "continue": "Weiter"
+      "continue": "Anmelden",
+      "submitting": "Anmeldung läuft..."
     },
     "status": {
-      "formReady": "Die lokale Validierung ist abgeschlossen. Verbinden Sie dieses Formular mit Ihrem sicheren Backend, um fortzufahren.",
-      "errorSummaryTitle": "Prüfen Sie die markierten Felder",
-      "certificateOpening": "Die sichere Zertifikatsroute wird geöffnet…"
+      "errorSummaryTitle": "Prüfen Sie die markierten Felder und versuchen Sie es erneut.",
+      "certificateOpening": "Weiterleitung zur Zertifikatsanmeldung…",
+      "loginSuccess": "Die Anmeldung wurde erfolgreich abgeschlossen.",
+      "loginError": "Wir konnten Sie nicht anmelden. Prüfen Sie Ihre Angaben und versuchen Sie es erneut.",
+      "networkError": "Der Dienst konnte nicht erreicht werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut."
     },
     "fields": {
       "username": {
         "label": "Benutzername",
-        "hint": "Geben Sie Ihren Benutzernamen ein.",
+        "hint": "Verwenden Sie den Ihrem Konto zugewiesenen Benutzernamen.",
         "required": "Geben Sie Ihren Benutzernamen ein."
       },
       "password": {
         "label": "Passwort",
         "hint": "Beim Passwort wird zwischen Groß- und Kleinschreibung unterschieden.",
-        "required": "Geben Sie Ihr Passwort ein."
+        "required": "Geben Sie Ihr Passwort ein.",
+        "show": "Passwort anzeigen",
+        "hide": "Passwort ausblenden",
+        "capsLock": "Die Feststelltaste ist aktiviert."
       }
     },
     "certificate": {
-      "action": "Mit FNMT-Zertifikat fortfahren",
-      "hint": "Die sichere Zertifikatsroute wird geöffnet. Wenn der Browser ein installiertes FNMT-Zertifikat findet, zeigt er die native Auswahl an.",
-      "unavailable": "Der Zugang per FNMT-Zertifikat ist nur in Desktop-Browsern verfügbar."
+      "action": "FNMT-Zertifikat verwenden",
+      "hint": "Sie werden zum sicheren Zertifikatsablauf weitergeleitet. Wenn ein FNMT-Zertifikat installiert ist, fordert Ihr Browser Sie zur Auswahl auf.",
+      "unavailable": "Die Anmeldung mit FNMT-Zertifikat ist nur in Desktop-Browsern verfügbar."
     }
   }
 }

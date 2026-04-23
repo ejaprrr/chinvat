@@ -2,18 +2,22 @@ export type RequestHandlerResult<T> =
   | {
       ok: true;
       data: T;
-      message: string;
       status: number;
+      message?: string;
+      messageKey?: string;
     }
   | {
       ok: false;
-      message: string;
       status?: number;
+      message?: string;
+      messageKey?: string;
     };
 
 type JsonResponseHandlerOptions<T> = {
-  successMessage: string;
-  errorMessage: string;
+  successMessage?: string;
+  successMessageKey?: string;
+  errorMessage?: string;
+  errorMessageKey?: string;
   parseData?: (payload: unknown) => T;
 };
 
@@ -30,13 +34,17 @@ export async function handleJsonResponse<T>(
   options: JsonResponseHandlerOptions<T>,
 ): Promise<RequestHandlerResult<T>> {
   const payload = await readJsonPayload(response);
-  const message = extractPayloadMessage(payload);
+  const payloadMessage = extractPayloadMessage(payload);
 
   if (!response.ok) {
     return {
       ok: false,
       status: response.status,
-      message: message ?? options.errorMessage,
+      ...resolveMessagePayload(
+        payloadMessage,
+        options.errorMessageKey,
+        options.errorMessage,
+      ),
     };
   }
 
@@ -44,13 +52,20 @@ export async function handleJsonResponse<T>(
     ok: true,
     status: response.status,
     data: options.parseData ? options.parseData(payload) : (payload as T),
-    message: message ?? options.successMessage,
+    ...resolveMessagePayload(
+      payloadMessage,
+      options.successMessageKey,
+      options.successMessage,
+    ),
   };
 }
 
 export function handleRequestError<T>(
   error: unknown,
-  fallbackMessage: string,
+  fallback: {
+    message?: string;
+    messageKey?: string;
+  },
 ): RequestHandlerResult<T> {
   if (error instanceof Error && error.message) {
     return {
@@ -61,7 +76,7 @@ export function handleRequestError<T>(
 
   return {
     ok: false,
-    message: fallbackMessage,
+    ...fallback,
   };
 }
 
@@ -98,4 +113,30 @@ function extractPayloadMessage(payload: unknown) {
   }
 
   return null;
+}
+
+function resolveMessagePayload(
+  payloadMessage: string | null,
+  fallbackMessageKey?: string,
+  fallbackMessage?: string,
+) {
+  if (payloadMessage) {
+    return {
+      message: payloadMessage,
+    };
+  }
+
+  if (fallbackMessageKey) {
+    return {
+      messageKey: fallbackMessageKey,
+    };
+  }
+
+  if (fallbackMessage) {
+    return {
+      message: fallbackMessage,
+    };
+  }
+
+  return {};
 }

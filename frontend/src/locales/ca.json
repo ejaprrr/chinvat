@@ -1,6 +1,6 @@
 {
   "meta": {
-    "pageTitle": "Accés segur"
+    "pageTitle": "Accedeix a chinvat"
   },
   "accessibility": {
     "skipToContent": "Salta al contingut principal",
@@ -8,37 +8,43 @@
   },
   "brand": {
     "projectName": "chinvat",
-    "label": "Accés segur"
+    "label": "Verificació d'identitat"
   },
   "auth": {
     "title": "Inicia la sessió",
-    "intro": "Accedeix amb el teu compte o amb certificat FNMT.",
-    "support": "Si necessites ajuda, contacta amb suport tècnic.",
+    "intro": "Accedeix amb el teu compte o continua amb un certificat FNMT.",
+    "support": "Si necessites ajuda per accedir al teu compte, contacta amb suport tècnic.",
     "divider": "o",
     "actions": {
-      "continue": "Continua"
+      "continue": "Accedeix",
+      "submitting": "Accedint..."
     },
     "status": {
-      "formReady": "La validació local s'ha completat. Connecta aquest formulari amb el teu backend segur per continuar.",
-      "errorSummaryTitle": "Revisa els camps marcats",
-      "certificateOpening": "S'està obrint la ruta segura de certificat…"
+      "errorSummaryTitle": "Revisa els camps marcats i torna-ho a provar.",
+      "certificateOpening": "S'està redirigint l'accés amb certificat…",
+      "loginSuccess": "L'accés s'ha completat correctament.",
+      "loginError": "No hem pogut iniciar la sessió. Revisa les dades i torna-ho a provar.",
+      "networkError": "No s'ha pogut connectar amb el servei. Revisa la connexió i torna-ho a provar."
     },
     "fields": {
       "username": {
         "label": "Usuari",
-        "hint": "Introdueix el teu nom d'usuari.",
+        "hint": "Fes servir el nom d'usuari assignat al teu compte.",
         "required": "Introdueix el teu nom d'usuari."
       },
       "password": {
         "label": "Contrasenya",
         "hint": "La contrasenya distingeix majúscules i minúscules.",
-        "required": "Introdueix la teva contrasenya."
+        "required": "Introdueix la teva contrasenya.",
+        "show": "Mostra la contrasenya",
+        "hide": "Amaga la contrasenya",
+        "capsLock": "El bloqueig de majúscules està activat."
       }
     },
     "certificate": {
-      "action": "Accedeix amb certificat FNMT",
-      "hint": "S'obrirà la ruta segura de certificat. Si el navegador detecta un certificat FNMT instal·lat, mostrarà el selector nadiu.",
-      "unavailable": "L'accés amb certificat FNMT només està disponible en navegador d'escriptori."
+      "action": "Fes servir certificat FNMT",
+      "hint": "Se't redirigirà al flux segur amb certificat. Si hi ha un certificat FNMT instal·lat, el navegador et demanarà que el seleccionis.",
+      "unavailable": "L'accés amb certificat FNMT només està disponible en navegadors d'escriptori."
     }
   }
 }

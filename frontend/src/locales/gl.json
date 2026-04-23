@@ -1,6 +1,6 @@
 {
   "meta": {
-    "pageTitle": "Acceso seguro"
+    "pageTitle": "Acceder a chinvat"
   },
   "accessibility": {
     "skipToContent": "Ir ao contido principal",
@@ -8,37 +8,43 @@
   },
   "brand": {
     "projectName": "chinvat",
-    "label": "Acceso seguro"
+    "label": "Verificación de identidade"
   },
   "auth": {
     "title": "Iniciar sesión",
-    "intro": "Accede coa túa conta ou con certificado FNMT.",
-    "support": "Se precisas axuda, contacta co soporte técnico.",
+    "intro": "Accede coa túa conta ou continúa cun certificado FNMT.",
+    "support": "Se precisas axuda para acceder á túa conta, contacta co soporte técnico.",
     "divider": "ou",
     "actions": {
-      "continue": "Continuar"
+      "continue": "Acceder",
+      "submitting": "Accedendo..."
     },
     "status": {
-      "formReady": "A validación local completouse. Conecta este formulario co teu backend seguro para continuar.",
-      "errorSummaryTitle": "Revisa os campos marcados",
-      "certificateOpening": "Abrindo a ruta segura de certificado…"
+      "errorSummaryTitle": "Revisa os campos marcados e téntao de novo.",
+      "certificateOpening": "Redirixindo ao acceso con certificado…",
+      "loginSuccess": "O acceso completouse correctamente.",
+      "loginError": "Non puidemos iniciar a sesión. Revisa os datos e téntao de novo.",
+      "networkError": "Non se puido conectar co servizo. Revisa a conexión e téntao de novo."
     },
     "fields": {
       "username": {
         "label": "Usuario",
-        "hint": "Introduce o teu nome de usuario.",
+        "hint": "Usa o nome de usuario asignado á túa conta.",
         "required": "Introduce o teu nome de usuario."
       },
       "password": {
         "label": "Contrasinal",
         "hint": "O contrasinal distingue maiúsculas e minúsculas.",
-        "required": "Introduce o teu contrasinal."
+        "required": "Introduce o teu contrasinal.",
+        "show": "Amosar contrasinal",
+        "hide": "Ocultar contrasinal",
+        "capsLock": "O bloqueo de maiúsculas está activado."
       }
     },
     "certificate": {
-      "action": "Acceder con certificado FNMT",
-      "hint": "Abrirase a ruta segura de certificado. Se o navegador detecta un certificado FNMT instalado, mostrará o seu selector nativo.",
-      "unavailable": "O acceso con certificado FNMT só está dispoñible en navegador de escritorio."
+      "action": "Usar certificado FNMT",
+      "hint": "Serás redirixido ao fluxo seguro con certificado. Se hai un certificado FNMT instalado, o navegador pedirache que o selecciones.",
+      "unavailable": "O acceso con certificado FNMT só está dispoñible en navegadores de escritorio."
     }
   }
 }

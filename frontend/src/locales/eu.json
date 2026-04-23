@@ -1,6 +1,6 @@
 {
   "meta": {
-    "pageTitle": "Sarbide segurua"
+    "pageTitle": "Hasi saioa chinvat-en"
   },
   "accessibility": {
     "skipToContent": "Joan eduki nagusira",
@@ -8,37 +8,43 @@
   },
   "brand": {
     "projectName": "chinvat",
-    "label": "Sarbide segurua"
+    "label": "Identitate-egiaztapena"
   },
   "auth": {
     "title": "Hasi saioa",
-    "intro": "Sartu zure kontuarekin edo FNMT ziurtagiriarekin.",
-    "support": "Laguntza behar baduzu, jarri harremanetan laguntza teknikoarekin.",
+    "intro": "Hasi saioa zure kontuarekin edo jarraitu FNMT ziurtagiriarekin.",
+    "support": "Zure kontuan sartzeko laguntza behar baduzu, jarri harremanetan laguntza teknikoarekin.",
     "divider": "edo",
     "actions": {
-      "continue": "Jarraitu"
+      "continue": "Sartu",
+      "submitting": "Saioa hasten..."
     },
     "status": {
-      "formReady": "Tokiko balidazioa osatu da. Konektatu formulario hau zure backend seguruarekin jarraitzeko.",
-      "errorSummaryTitle": "Egiaztatu markatutako eremuak",
-      "certificateOpening": "Ziurtagiriaren bide segurua irekitzen…"
+      "errorSummaryTitle": "Egiaztatu markatutako eremuak eta saiatu berriro.",
+      "certificateOpening": "Ziurtagiriarekin sartzera birbideratzen…",
+      "loginSuccess": "Saio-hasiera ondo osatu da.",
+      "loginError": "Ezin izan dugu saioa hasi. Egiaztatu datuak eta saiatu berriro.",
+      "networkError": "Ezin izan da zerbitzura konektatu. Egiaztatu konexioa eta saiatu berriro."
     },
     "fields": {
       "username": {
         "label": "Erabiltzailea",
-        "hint": "Idatzi zure erabiltzaile-izena.",
+        "hint": "Erabili zure kontuari esleitutako erabiltzaile-izena.",
         "required": "Idatzi zure erabiltzaile-izena."
       },
       "password": {
         "label": "Pasahitza",
         "hint": "Pasahitzak maiuskulak eta minuskulak bereizten ditu.",
-        "required": "Idatzi zure pasahitza."
+        "required": "Idatzi zure pasahitza.",
+        "show": "Erakutsi pasahitza",
+        "hide": "Ezkutatu pasahitza",
+        "capsLock": "Maiuskulen blokeoa aktibatuta dago."
       }
     },
     "certificate": {
-      "action": "Sartu FNMT ziurtagiriarekin",
-      "hint": "Ziurtagiriaren bide segurua irekiko da. Nabigatzaileak instalatutako FNMT ziurtagiria aurkitzen badu, bere hautatzaile natiboa erakutsiko du.",
-      "unavailable": "FNMT ziurtagiriarekin sartzea mahaigaineko nabigatzailean bakarrik dago erabilgarri."
+      "action": "Erabili FNMT ziurtagiria",
+      "hint": "Ziurtagiriaren fluxu segurura birbideratuko zara. FNMT ziurtagiri bat instalatuta badago, nabigatzaileak hautatzeko eskatuko dizu.",
+      "unavailable": "FNMT ziurtagiriarekin sartzea mahaigaineko nabigatzaileetan bakarrik dago erabilgarri."
     }
   }
 }
