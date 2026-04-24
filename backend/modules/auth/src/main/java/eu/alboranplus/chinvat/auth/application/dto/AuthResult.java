@@ -1,0 +1,17 @@
+package eu.alboranplus.chinvat.auth.application.dto;
+
+import java.util.Set;
+
+public record AuthResult(
+    Long userId,
+    String email,
+    String displayName,
+    Set<String> roles,
+    Set<String> permissions,
+    IssuedTokenPair tokens) {
+
+  public AuthResult {
+    roles = Set.copyOf(roles);
+    permissions = Set.copyOf(permissions);
+  }
+}

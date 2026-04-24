@@ -67,10 +67,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: infra/docker/app/Dockerfile
+          file: backend/Dockerfile
           target: prod
           push: false
           tags: chinvat-backend:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
 

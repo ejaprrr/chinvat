@@ -48,7 +48,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: infra/docker/app/Dockerfile
+          file: backend/Dockerfile
           target: prod
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -116,4 +116,3 @@ jobs:
             export APP_VERSION=${{ needs.build-and-push.outputs.image_tag }}
             docker compose -f infra/docker/compose.prod.yml pull app
             docker compose -f infra/docker/compose.prod.yml up -d --no-deps app nginx
-

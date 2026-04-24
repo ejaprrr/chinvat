@@ -1,4 +1,7 @@
-.PHONY: help backend-build backend-test backend-fmt backend-fmt-check backend-run-local backend-run-dev infra-config-dev infra-config-prod infra-dev-up infra-dev-down infra-dev-logs infra-prod-up infra-prod-down infra-prod-logs
+.PHONY: help backend-build backend-test backend-fmt backend-fmt-check backend-run-local backend-run-dev \
+        infra-config-dev infra-config-prod infra-dev-up infra-dev-down infra-dev-logs \
+        infra-prod-up infra-prod-down infra-prod-logs infra-docker-build \
+        db-migrate db-seed db-reset
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -46,3 +49,16 @@ infra-prod-down: ## Stop production infrastructure stack
 infra-prod-logs: ## Tail production infrastructure logs
 	$(MAKE) -C infra prod-logs
 
+infra-docker-build: ## Build the production backend image
+	$(MAKE) -C infra docker-build
+
+# ── Database helpers ──────────────────────────────────────────────────────────
+
+db-migrate: ## Run Prisma migrations against the dev database
+	$(MAKE) -C infra db-migrate
+
+db-seed: ## Seed the dev database
+	$(MAKE) -C infra db-seed
+
+db-reset: ## DEV ONLY – drop schema, re-migrate and re-seed
+	$(MAKE) -C infra db-reset

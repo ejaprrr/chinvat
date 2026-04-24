@@ -11,23 +11,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserType {
+  INDIVIDUAL
+  LIBRARY
+
+  @@map("user_type")
+}
+
+enum AccessLevel {
+  SUPERADMIN
+  ADMIN
+  GOLD
+  PREMIUM
+  NORMAL
+
+  @@map("access_level")
+}
+
 model AppUser {
-  id              BigInt    @id @default(autoincrement())
-  username        String    @unique @db.VarChar(100)
-  fullName        String    @db.VarChar(255)
-  phoneNumber     String?   @db.VarChar(40)
-  email           String    @unique @db.VarChar(255)
-  userType        String    @db.VarChar(40)
-  accessLevel     String    @db.VarChar(40)
-  addressLine     String?   @db.VarChar(255)
-  postalCode      String?   @db.VarChar(40)
-  city            String?   @db.VarChar(120)
-  country         String?   @db.VarChar(120)
-  defaultLanguage String    @db.VarChar(12)
-  createdAt       DateTime  @default(now()) @db.Timestamptz
-  updatedAt       DateTime  @default(now()) @db.Timestamptz
+  id              BigInt      @id @default(autoincrement())
+  username        String      @unique @db.VarChar(100)
+  fullName        String      @db.VarChar(255)
+  phoneNumber     String?     @db.VarChar(40)
+  email           String      @unique @db.VarChar(255)
+  userType        UserType
+  accessLevel     AccessLevel
+  addressLine     String?     @db.VarChar(255)
+  postalCode      String?     @db.VarChar(40)
+  city            String?     @db.VarChar(120)
+  country         String?     @db.VarChar(120)
+  defaultLanguage String      @db.VarChar(12)
+  createdAt       DateTime    @default(now()) @db.Timestamptz
+  updatedAt       DateTime    @default(now()) @db.Timestamptz
 
   password        UserPassword?
+  certificates    UserCertificate[]
+  recoveryTokens  PasswordRecoveryToken[]
   sessions        AuthSession[]
   auditEvents     AuthAuditEvent[]
 
@@ -46,10 +65,45 @@ model UserPassword {
   @@map("user_password")
 }
 
+/// Digital certificate for certificate-based login (X.509 / client TLS)
+model UserCertificate {
+  id              BigInt    @id @default(autoincrement())
+  userId          BigInt
+  subjectDn       String    @db.VarChar(512)           // Certificate Subject DN
+  issuerDn        String    @db.VarChar(512)           // Certificate Issuer DN
+  serialNumber    String    @db.VarChar(128)           // Serial number (hex)
+  thumbprintSha256 String   @unique @db.VarChar(64)    // SHA-256 fingerprint (hex)
+  notBefore       DateTime  @db.Timestamptz
+  notAfter        DateTime  @db.Timestamptz
+  revokedAt       DateTime? @db.Timestamptz
+  createdAt       DateTime  @default(now()) @db.Timestamptz
+
+  user AppUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], name: "idx_user_certificate_user_id")
+  @@index([thumbprintSha256], name: "idx_user_certificate_thumbprint")
+  @@map("user_certificate")
+}
+
+/// Short-lived token used for password recovery (emailed link)
+model PasswordRecoveryToken {
+  id          BigInt    @id @default(autoincrement())
+  userId      BigInt
+  tokenHash   String    @unique @db.VarChar(255)
+  expiresAt   DateTime  @db.Timestamptz
+  usedAt      DateTime? @db.Timestamptz
+  createdAt   DateTime  @default(now()) @db.Timestamptz
+
+  user AppUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], name: "idx_password_recovery_token_user_id")
+  @@map("password_recovery_token")
+}
+
 model AuthSession {
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId           BigInt
-  sessionTokenHash String    @db.VarChar(255)
+  sessionTokenHash String    @unique @db.VarChar(255)
   issuedAt         DateTime  @default(now()) @db.Timestamptz
   expiresAt        DateTime  @db.Timestamptz
   revokedAt        DateTime? @db.Timestamptz
@@ -75,4 +129,3 @@ model AuthAuditEvent {
   @@index([eventType], name: "idx_auth_audit_event_event_type")
   @@map("auth_audit_event")
 }
-

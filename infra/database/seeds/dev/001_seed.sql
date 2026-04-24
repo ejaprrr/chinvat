@@ -47,5 +47,10 @@ SELECT
     id,
     jsonb_build_object('seed', '001_seed.sql')
 FROM app_user
-WHERE username = 'admin';
+WHERE username = 'admin'
+  AND NOT EXISTS (
+      SELECT 1
+      FROM auth_audit_event
+      WHERE event_type = 'DEV_SEED_COMPLETED'
+  );
 

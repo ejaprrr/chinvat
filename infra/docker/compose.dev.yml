@@ -1,0 +1,126 @@
+name: chinvat-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-chinvat}
+      POSTGRES_USER: ${POSTGRES_USER:-chinvat}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chinvat}
+    ports:
+      - "${POSTGRES_EXPOSED_PORT:-5432}:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-chinvat} -d ${POSTGRES_DB:-chinvat}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - chinvat
+
+  # DEV ONLY: drops and recreates the public schema before migrations run.
+  # Controlled by ALLOW_DB_RESET=true – never set this in production.
+  db-reset:
+    image: postgres:16-alpine
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["sh", "/scripts/reset.sh"]
+    environment:
+      ALLOW_DB_RESET: ${ALLOW_DB_RESET:-true}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-chinvat}
+      POSTGRES_USER: ${POSTGRES_USER:-chinvat}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chinvat}
+    volumes:
+      - ../database/scripts:/scripts:ro
+    networks:
+      - chinvat
+
+  db-migrate:
+    build:
+      context: ../database
+      dockerfile: Dockerfile.migrate
+    depends_on:
+      db-reset:
+        condition: service_completed_successfully
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-chinvat}:${POSTGRES_PASSWORD:-chinvat}@postgres:5432/${POSTGRES_DB:-chinvat}
+    networks:
+      - chinvat
+
+  db-seed:
+    image: postgres:16-alpine
+    depends_on:
+      db-migrate:
+        condition: service_completed_successfully
+    command: ["sh", "/scripts/seed.sh", "/seed/001_seed.sql"]
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-chinvat}
+      POSTGRES_USER: ${POSTGRES_USER:-chinvat}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chinvat}
+    volumes:
+      - ../database/scripts:/scripts:ro
+      - ../database/seeds/dev:/seed:ro
+    networks:
+      - chinvat
+
+  backend:
+    build:
+      context: ../..
+      dockerfile: backend/Dockerfile
+      target: dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SERVER_PORT: 8080
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-chinvat}
+      DB_USERNAME: ${POSTGRES_USER:-chinvat}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-chinvat}
+      JPA_DDL_AUTO: validate
+      JPA_SHOW_SQL: true
+      APP_VERSION: ${APP_VERSION:-0.0.1-SNAPSHOT}
+      APP_TIME_ZONE: ${APP_TIME_ZONE:-UTC}
+    expose:
+      - "8080"
+    ports:
+      - "${APP_DEBUG_PORT:-5005}:5005"
+    depends_on:
+      db-seed:
+        condition: service_completed_successfully
+    networks:
+      - chinvat
+
+  nginx:
+    build:
+      context: ../..
+      dockerfile: infra/docker/nginx/Dockerfile
+    environment:
+      UPSTREAM_HOST: backend
+      UPSTREAM_PORT: 8080
+      MTLS_VERIFY_MODE: optional
+      TLS_CERT_PATH: /etc/nginx/tls/server.crt
+      TLS_KEY_PATH: /etc/nginx/tls/server.key
+      MTLS_CA_PATH: /etc/nginx/mtls/ca.crt
+    ports:
+      - "${NGINX_HTTP_PORT:-8080}:8080"
+      - "${NGINX_HTTPS_PORT:-8443}:8443"
+    volumes:
+      - ./nginx/certs/dev/tls:/etc/nginx/tls
+      - ./nginx/certs/dev/mtls:/etc/nginx/mtls
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - chinvat
+
+networks:
+  chinvat:
+    driver: bridge
+
+volumes:
+  postgres_dev_data:
+

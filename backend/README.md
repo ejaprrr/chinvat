@@ -25,11 +25,29 @@ cd /Users/jiriposavad/Documents/FullStack/chinvat-malaga-2026/backend
 ./mvnw spotless:check
 ```
 
-See `STYLE_GUIDE.md` for details.
+See `docs/STYLE_GUIDE.md` for details.
 
 ## CI
 
-GitHub Actions runs `spotless:check` and `test` for changes under `backend/**`.
+GitHub Actions runs `spotless:check`, `test`, and a production Docker build check for changes under `backend/**` and `infra/**`.
+
+## Architecture Checks
+
+ArchUnit tests enforce basic layer boundaries for `api`, `application`, `domain`, and `infrastructure` packages.
+
+## Branch Protection
+
+Recommended branch protection settings are documented in `../docs/branch-protection.md`.
+
+## Infrastructure
+
+Container orchestration, database jobs, NGINX gateway, and Qodana configuration live under `../infra`.
+
+```bash
+cd /Users/jiriposavad/Documents/FullStack/chinvat-malaga-2026
+make infra-config-dev
+make infra-dev-up
+```
 
 ## Run Application
 
