@@ -1,0 +1,119 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "prod"
+        type: choice
+        options: [prod]
+
+jobs:
+  # ── Build & push Docker image ───────────────────────────────────────────────
+  build-and-push:
+    name: Build & push prod image
+    runs-on: ubuntu-latest
+    environment: prod
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ vars.REGISTRY }}/${{ vars.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=,suffix=,format=short
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: infra/docker/app/Dockerfile
+          target: prod
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ steps.meta.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── Migrate production database (prisma migrate deploy – NEVER resets) ─────
+  db-migrate-prod:
+    name: Prisma migrate deploy (prod)
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: build-and-push
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: infra/database/prisma/package.json
+
+      - name: Install Prisma
+        working-directory: infra/database/prisma
+        run: npm install
+
+      - name: Run migrations (deploy only – no reset, no seed)
+        working-directory: infra/database/prisma
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: npx prisma migrate deploy --schema=schema.prisma
+
+      - name: Run idempotent prod seed
+        env:
+          PGPASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+        run: |
+          psql \
+            -v ON_ERROR_STOP=1 \
+            -h "${{ secrets.PROD_DB_HOST }}" \
+            -p "${{ secrets.PROD_DB_PORT }}" \
+            -U "${{ secrets.PROD_DB_USER }}" \
+            -d "${{ secrets.PROD_DB_NAME }}" \
+            -f infra/database/seeds/prod/001_seed.sql
+
+  # ── Deploy (example: SSH + docker compose pull & up) ───────────────────────
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: db-migrate-prod
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_SSH_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /opt/chinvat
+            export APP_VERSION=${{ needs.build-and-push.outputs.image_tag }}
+            docker compose -f infra/docker/compose.prod.yml pull app
+            docker compose -f infra/docker/compose.prod.yml up -d --no-deps app nginx
+

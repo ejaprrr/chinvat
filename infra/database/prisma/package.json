@@ -1,0 +1,15 @@
+{
+  "name": "chinvat-db",
+  "version": "1.0.0",
+  "description": "Prisma migration & seed runner for Chinvat",
+  "scripts": {
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:status": "prisma migrate status",
+    "seed:dev": "psql $DATABASE_URL -v ON_ERROR_STOP=1 -f /seeds/dev/001_seed.sql",
+    "seed:prod": "psql $DATABASE_URL -v ON_ERROR_STOP=1 -f /seeds/prod/001_seed.sql"
+  },
+  "dependencies": {
+    "prisma": "^5.14.0"
+  }
+}
+

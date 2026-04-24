@@ -1,0 +1,8 @@
+.git
+.github
+.idea
+infra/docker/nginx/certs/*/tls/*.key
+infra/docker/nginx/certs/*/mtls/*.key
+backend/target
+backend/**/target
+

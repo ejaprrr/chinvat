@@ -1,0 +1,78 @@
+// Prisma schema – source of truth for the Chinvat database.
+// Migrations are generated via `prisma migrate dev` locally and applied
+// in CI/CD with `prisma migrate deploy`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AppUser {
+  id              BigInt    @id @default(autoincrement())
+  username        String    @unique @db.VarChar(100)
+  fullName        String    @db.VarChar(255)
+  phoneNumber     String?   @db.VarChar(40)
+  email           String    @unique @db.VarChar(255)
+  userType        String    @db.VarChar(40)
+  accessLevel     String    @db.VarChar(40)
+  addressLine     String?   @db.VarChar(255)
+  postalCode      String?   @db.VarChar(40)
+  city            String?   @db.VarChar(120)
+  country         String?   @db.VarChar(120)
+  defaultLanguage String    @db.VarChar(12)
+  createdAt       DateTime  @default(now()) @db.Timestamptz
+  updatedAt       DateTime  @default(now()) @db.Timestamptz
+
+  password        UserPassword?
+  sessions        AuthSession[]
+  auditEvents     AuthAuditEvent[]
+
+  @@map("app_user")
+}
+
+model UserPassword {
+  userId              BigInt   @id
+  passwordHash        String   @db.VarChar(255)
+  passwordAlgorithm   String   @db.VarChar(50)
+  passwordChangedAt   DateTime @default(now()) @db.Timestamptz
+  recoveryRequired    Boolean  @default(false)
+
+  user AppUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_password")
+}
+
+model AuthSession {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId           BigInt
+  sessionTokenHash String    @db.VarChar(255)
+  issuedAt         DateTime  @default(now()) @db.Timestamptz
+  expiresAt        DateTime  @db.Timestamptz
+  revokedAt        DateTime? @db.Timestamptz
+  clientIp         String?   @db.VarChar(64)
+  userAgent        String?   @db.VarChar(512)
+
+  user AppUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], name: "idx_auth_session_user_id")
+  @@index([expiresAt], name: "idx_auth_session_expires_at")
+  @@map("auth_session")
+}
+
+model AuthAuditEvent {
+  id        BigInt   @id @default(autoincrement())
+  eventType String   @db.VarChar(120)
+  userId    BigInt?
+  details   Json     @default("{}")
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  user AppUser? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([eventType], name: "idx_auth_audit_event_event_type")
+  @@map("auth_audit_event")
+}
+
