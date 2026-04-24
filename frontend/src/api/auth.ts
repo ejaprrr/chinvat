@@ -59,6 +59,26 @@ export function getConfiguredResetPasswordUrl() {
   return import.meta.env.VITE_RESET_PASSWORD_URL?.trim() || null;
 }
 
+export function buildResetPasswordRecoveryUrl(
+  recoveryUrl: string,
+  email: string,
+) {
+  try {
+    const resolvedUrl = new URL(
+      recoveryUrl,
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "http://localhost",
+    );
+
+    resolvedUrl.searchParams.set("email", email.trim());
+
+    return resolvedUrl.toString();
+  } catch {
+    return recoveryUrl;
+  }
+}
+
 export function handleCertificateLoginStart(): RequestHandlerResult<null> {
   return {
     ok: true,

@@ -12,8 +12,8 @@
     "label": "Verificación de identidad"
   },
   "auth": {
-    "title": "Iniciar sesión",
-    "intro": "Accede con tu cuenta o continúa con un certificado FNMT.",
+    "title": "Bienvenido de nuevo",
+    "intro": "Accede con tu usuario y contraseña. Si lo prefieres, continúa con tu certificado FNMT.",
     "divider": "o",
     "actions": {
       "continue": "Acceder",
@@ -45,14 +45,59 @@
     },
     "certificate": {
       "action": "Usar certificado FNMT",
-      "hint": "Se te redirigirá al flujo seguro con certificado. Si hay un certificado FNMT instalado, el navegador te pedirá que lo selecciones.",
+      "hint": "Te llevaremos al acceso con certificado. Si el navegador encuentra un certificado FNMT, selecciónalo cuando te lo pida.",
       "unavailable": "El acceso con certificado FNMT solo está disponible en navegadores de escritorio."
     },
     "resetPassword": {
       "title": "Restablecer contraseña",
-      "intro": "Usa el flujo de recuperación para volver a acceder a tu cuenta.",
-      "configuredHint": "Continúa al servicio de recuperación para establecer una nueva contraseña de forma segura.",
-      "unavailable": "La recuperación de contraseña todavía no está configurada en este entorno. Contacta con el administrador."
+      "intro": "Usa tu correo, verifica el código y establece una nueva contraseña.",
+      "progress": {
+        "label": "Pasos de recuperación de contraseña",
+        "current": "Paso {{current}} de {{total}}",
+        "email": "Correo",
+        "code": "Código",
+        "password": "Contraseña"
+      },
+      "form": {
+        "codeSent": "Hemos enviado un código de verificación a {{email}}.",
+        "emailStepTitle": "Restablece tu contraseña",
+        "emailStepIntro": "Escribe el correo vinculado a tu cuenta y te enviaremos un código de verificación.",
+        "codeStepTitle": "Introduce el código",
+        "codeStepIntro": "Revisa tu correo y pega aquí el código de verificación.",
+        "passwordStepTitle": "Crea una nueva contraseña",
+        "passwordStepIntro": "Elige una contraseña nueva que no hayas usado recientemente.",
+        "doneTitle": "Contraseña actualizada",
+        "doneIntro": "Tu contraseña ya está lista. Puedes iniciar sesión ahora.",
+        "doneBody": "Tu contraseña se ha actualizado. Ya puedes acceder con tus nuevas credenciales.",
+        "email": {
+          "label": "Correo electrónico",
+          "hint": "Usa el correo asociado a tu cuenta para que podamos enviarte un código de verificación.",
+          "required": "Introduce el correo asociado a tu cuenta.",
+          "invalid": "Introduce un correo electrónico válido.",
+          "submit": "Enviar código de verificación"
+        },
+        "code": {
+          "label": "Código de verificación",
+          "hint": "Introduce el código recibido por correo. Un único campo es más fácil de pegar y funciona mejor con tecnologías de asistencia.",
+          "required": "Introduce el código de verificación.",
+          "submit": "Continuar",
+          "changeEmail": "Probar con otro correo"
+        },
+        "password": {
+          "label": "Nueva contraseña",
+          "hint": "Usa al menos 8 caracteres. Una frase de contraseña más larga suele ser más fácil de recordar y más difícil de adivinar.",
+          "required": "Introduce una nueva contraseña.",
+          "length": "Usa al menos {{count}} caracteres.",
+          "submit": "Restablecer contraseña",
+          "back": "Volver"
+        },
+        "confirmPassword": {
+          "label": "Confirmar nueva contraseña",
+          "hint": "Vuelve a escribir la contraseña exactamente igual que arriba.",
+          "required": "Confirma tu nueva contraseña.",
+          "mismatch": "Las contraseñas no coinciden."
+        }
+      }
     }
   }
 }

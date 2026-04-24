@@ -12,8 +12,8 @@
     "label": "Verificació d'identitat"
   },
   "auth": {
-    "title": "Inicia la sessió",
-    "intro": "Accedeix amb el teu compte o continua amb un certificat FNMT.",
+    "title": "Benvingut de nou",
+    "intro": "Accedeix amb el teu usuari i contrasenya. Si ho prefereixes, continua amb el teu certificat FNMT.",
     "divider": "o",
     "actions": {
       "continue": "Accedeix",
@@ -45,14 +45,59 @@
     },
     "certificate": {
       "action": "Fes servir certificat FNMT",
-      "hint": "Se't redirigirà al flux segur amb certificat. Si hi ha un certificat FNMT instal·lat, el navegador et demanarà que el seleccionis.",
+      "hint": "Et portarem a l'accés amb certificat. Si el navegador troba un certificat FNMT, selecciona'l quan t'ho demani.",
       "unavailable": "L'accés amb certificat FNMT només està disponible en navegadors d'escriptori."
     },
     "resetPassword": {
       "title": "Restableix la contrasenya",
-      "intro": "Fes servir el flux de recuperació per tornar a accedir al teu compte.",
-      "configuredHint": "Continua al servei de recuperació per establir una contrasenya nova de manera segura.",
-      "unavailable": "La recuperació de contrasenya encara no està configurada en aquest entorn. Contacta amb l'administrador."
+      "intro": "Fes servir el teu correu, verifica el codi i estableix una contrasenya nova.",
+      "progress": {
+        "label": "Passos de recuperació de contrasenya",
+        "current": "Pas {{current}} de {{total}}",
+        "email": "Correu",
+        "code": "Codi",
+        "password": "Contrasenya"
+      },
+      "form": {
+        "codeSent": "Hem enviat un codi de verificació a {{email}}.",
+        "emailStepTitle": "Restableix la contrasenya",
+        "emailStepIntro": "Escriu el correu vinculat al teu compte i t'enviarem un codi de verificació.",
+        "codeStepTitle": "Introdueix el codi",
+        "codeStepIntro": "Revisa el teu correu i enganxa aquí el codi de verificació.",
+        "passwordStepTitle": "Crea una contrasenya nova",
+        "passwordStepIntro": "Tria una contrasenya nova que no hagis fet servir recentment.",
+        "doneTitle": "Contrasenya actualitzada",
+        "doneIntro": "La contrasenya ja està llesta. Ja pots iniciar sessió.",
+        "doneBody": "La teva contrasenya s'ha actualitzat. Ja pots accedir amb les credencials noves.",
+        "email": {
+          "label": "Correu electrònic",
+          "hint": "Fes servir el correu associat al teu compte perquè et puguem enviar un codi de verificació.",
+          "required": "Introdueix el correu associat al teu compte.",
+          "invalid": "Introdueix un correu electrònic vàlid.",
+          "submit": "Enviar codi de verificació"
+        },
+        "code": {
+          "label": "Codi de verificació",
+          "hint": "Introdueix el codi rebut per correu. Un únic camp és més fàcil d'enganxar i funciona millor amb tecnologies d'assistència.",
+          "required": "Introdueix el codi de verificació.",
+          "submit": "Continua",
+          "changeEmail": "Prova amb un altre correu"
+        },
+        "password": {
+          "label": "Contrasenya nova",
+          "hint": "Fes servir almenys 8 caràcters. Una frase de contrasenya més llarga sol ser més fàcil de recordar i més difícil d'endevinar.",
+          "required": "Introdueix una contrasenya nova.",
+          "length": "Fes servir almenys {{count}} caràcters.",
+          "submit": "Restableix la contrasenya",
+          "back": "Torna"
+        },
+        "confirmPassword": {
+          "label": "Confirma la contrasenya nova",
+          "hint": "Torna a escriure la contrasenya exactament igual que a dalt.",
+          "required": "Confirma la contrasenya nova.",
+          "mismatch": "Les contrasenyes no coincideixen."
+        }
+      }
     }
   }
 }

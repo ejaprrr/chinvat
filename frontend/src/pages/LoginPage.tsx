@@ -1,18 +1,14 @@
 import AuthForm from "../components/AuthForm";
 import { getCertificateLoginUrl } from "../api/auth";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import useIsDesktopPlatform from "../hooks/useIsDesktopPlatform";
 
 function LoginPage() {
   useDocumentTitle("meta.pageTitle");
-
-  const isDesktopPlatform =
-    typeof window !== "undefined" &&
-    window.matchMedia(
-      "(pointer: fine) and (hover: hover) and (min-width: 768px)",
-    ).matches;
+  const isDesktopPlatform = useIsDesktopPlatform();
 
   const startCertificateLogin = () => {
-    window.location.href = getCertificateLoginUrl();
+    window.location.assign(getCertificateLoginUrl());
   };
 
   return (

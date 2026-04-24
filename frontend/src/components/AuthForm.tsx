@@ -6,7 +6,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Eye, EyeOff, AlertCircle, TriangleAlert } from "lucide-react";
+import { Eye, EyeOff, TriangleAlert } from "lucide-react";
 import {
   handleCertificateLoginStart,
   loginWithCredentials,
@@ -18,7 +18,7 @@ import {
   ActionLink,
 } from "./ui/Action";
 import AuthPageHeader from "./ui/AuthPageHeader";
-import InfoPanel from "./ui/InfoPanel";
+import FormField from "./ui/FormField";
 
 type FieldErrors = {
   username?: string;
@@ -51,25 +51,19 @@ type AuthFormProps = {
 
 const styles = {
   form: {
-    root: "flex flex-col gap-4",
-    sectionStack: "flex flex-col gap-3.5",
-    fieldStack: "space-y-1.5",
-    label: "flex items-center gap-1 text-sm font-medium text-ink",
+    root: "flex flex-col gap-5",
+    sectionStack: "flex flex-col gap-4",
     requiredMark: "text-brand-600",
-    hint: "text-[0.8125rem] text-muted",
-    inlineError: "flex items-center gap-2 text-[0.8125rem] text-danger-700",
-    warning:
-      "rounded-lg border border-warning-border bg-warning-surface px-3 py-2 text-[0.8125rem] text-warning-ink",
+    hint: "text-[0.8125rem] leading-5 text-muted",
+    warning: "text-[0.8125rem] leading-5 text-warning-ink",
     divider: "flex items-center gap-3 text-[0.75rem] text-muted-soft",
     dividerLine: "h-px flex-1 bg-border-subtle",
-    supportingActionRow: "flex justify-end",
-    auxiliaryRegion: "flex flex-col gap-3.5",
+    auxiliaryRegion: "flex flex-col gap-2.5",
   },
   status: {
-    base:
-      "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[0.8125rem] leading-5",
-    default: "border-border-subtle bg-surface-subtle text-muted",
-    critical: "border-danger-200 bg-danger-50 text-danger-700",
+    base: "flex items-start gap-2 text-[0.8125rem] leading-5",
+    default: "text-muted",
+    critical: "text-danger-700",
     icon: "mt-0.5 shrink-0",
   },
   control: {
@@ -271,18 +265,19 @@ function AuthForm({
 
       <div className={styles.form.sectionStack}>
         {/* ── Username ── */}
-        <div className={styles.form.fieldStack}>
-          <label htmlFor="username" className={styles.form.label}>
-            {t("auth.fields.username.label")}
-            {/*
-             * The asterisk is purely visual. aria-required on the input
-             * conveys "required" to assistive technology without
-             * making screen readers say "asterisk".
-             */}
+        <FormField
+          htmlFor="username"
+          label={t("auth.fields.username.label")}
+          labelSuffix={
             <span className={styles.form.requiredMark} aria-hidden="true">
               *
             </span>
-          </label>
+          }
+          hint={t("auth.fields.username.hint")}
+          hintId={usernameHintId}
+          error={fieldErrors.username ? t(fieldErrors.username) : undefined}
+          errorId={usernameErrorId}
+        >
           <input
             ref={usernameInputRef}
             id="username"
@@ -312,42 +307,46 @@ function AuthForm({
             aria-required="true"
             required
           />
-          <p id={usernameHintId} className={styles.form.hint}>
-            {t("auth.fields.username.hint")}
-          </p>
-          {fieldErrors.username ? (
-            /*
-             * role="alert" announces inline on insertion.
-             * The icon is aria-hidden — the text alone conveys the error.
-             * aria-atomic ensures the whole message is announced together.
-             */
-            <p
-              id={usernameErrorId}
-              className={styles.form.inlineError}
-              role="alert"
-              aria-atomic="true"
-            >
-              <AlertCircle size={13} aria-hidden="true" />
-              <span>{t(fieldErrors.username)}</span>
-            </p>
-          ) : null}
-        </div>
+        </FormField>
 
         {/* ── Password ── */}
-        <div className={styles.form.fieldStack}>
-          <label htmlFor="password" className={styles.form.label}>
-            {t("auth.fields.password.label")}
+        <FormField
+          htmlFor="password"
+          label={t("auth.fields.password.label")}
+          labelAction={
+            <ActionLink
+              to={appRoutes.resetPassword}
+              variant="text"
+              className="min-h-0 px-0 py-0 text-[0.8125rem]"
+            >
+              {t("auth.actions.resetPassword")}
+            </ActionLink>
+          }
+          labelSuffix={
             <span className={styles.form.requiredMark} aria-hidden="true">
               *
             </span>
-          </label>
-
-          {/*
-           * The wrapper groups the input and reveal toggle visually.
-           * The toggle uses aria-pressed (a stateful button) and
-           * aria-controls to associate it with the field it modifies.
-           * Importantly it is type="button" to prevent form submission.
-           */}
+          }
+          hint={t("auth.fields.password.hint")}
+          hintId={passwordHintId}
+          status={
+            capsLockOn ? (
+              <p
+                id={capsLockWarningId}
+                className={styles.form.warning}
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {t("auth.fields.password.capsLock", {
+                  defaultValue: "Caps Lock is on.",
+                })}
+              </p>
+            ) : null
+          }
+          error={fieldErrors.password ? t(fieldErrors.password) : undefined}
+          errorId={passwordErrorId}
+        >
           <div className="relative">
             <input
               ref={passwordInputRef}
@@ -400,51 +399,7 @@ function AuthForm({
               )}
             </button>
           </div>
-
-          <div className="flex flex-col gap-1">
-            <p id={passwordHintId} className={styles.form.hint}>
-              {t("auth.fields.password.hint")}
-            </p>
-            <div className={styles.form.supportingActionRow}>
-              <ActionLink
-                to={appRoutes.resetPassword}
-                variant="text"
-              >
-                {t("auth.actions.resetPassword")}
-              </ActionLink>
-            </div>
-          </div>
-
-          {/*
-           * Caps Lock warning is polite — it should not interrupt the user.
-           * It is also wired into aria-describedby so it is read on field focus.
-           */}
-          {capsLockOn ? (
-            <p
-              id={capsLockWarningId}
-              className={styles.form.warning}
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              {t("auth.fields.password.capsLock", {
-                defaultValue: "Caps Lock is on.",
-              })}
-            </p>
-          ) : null}
-
-          {fieldErrors.password ? (
-            <p
-              id={passwordErrorId}
-              className={styles.form.inlineError}
-              role="alert"
-              aria-atomic="true"
-            >
-              <AlertCircle size={13} aria-hidden="true" />
-              <span>{t(fieldErrors.password)}</span>
-            </p>
-          ) : null}
-        </div>
+        </FormField>
       </div>
 
       {/*
@@ -496,14 +451,14 @@ function AuthForm({
             </p>
           </>
         ) : (
-          <InfoPanel
+          <p
             id="certificate-option"
-            align="center"
+            className={`${styles.form.hint} text-center`}
             role="status"
             aria-live="polite"
           >
             {t("auth.certificate.unavailable")}
-          </InfoPanel>
+          </p>
         )}
       </div>
     </form>

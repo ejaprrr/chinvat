@@ -12,8 +12,8 @@
     "label": "Verificación de identidade"
   },
   "auth": {
-    "title": "Iniciar sesión",
-    "intro": "Accede coa túa conta ou continúa cun certificado FNMT.",
+    "title": "Benvido de novo",
+    "intro": "Accede co teu usuario e contrasinal. Se o prefires, continúa co teu certificado FNMT.",
     "divider": "ou",
     "actions": {
       "continue": "Acceder",
@@ -45,14 +45,59 @@
     },
     "certificate": {
       "action": "Usar certificado FNMT",
-      "hint": "Serás redirixido ao fluxo seguro con certificado. Se hai un certificado FNMT instalado, o navegador pedirache que o selecciones.",
+      "hint": "Levarémoste ao acceso con certificado. Se o navegador atopa un certificado FNMT, selecciónao cando cho pida.",
       "unavailable": "O acceso con certificado FNMT só está dispoñible en navegadores de escritorio."
     },
     "resetPassword": {
       "title": "Restablecer o contrasinal",
-      "intro": "Usa o fluxo de recuperación para volver acceder á túa conta.",
-      "configuredHint": "Continúa ao servizo de recuperación para establecer un novo contrasinal de forma segura.",
-      "unavailable": "A recuperación do contrasinal aínda non está configurada neste contorno. Contacta co administrador."
+      "intro": "Usa o teu correo, verifica o código e establece un novo contrasinal.",
+      "progress": {
+        "label": "Pasos de recuperación do contrasinal",
+        "current": "Paso {{current}} de {{total}}",
+        "email": "Correo",
+        "code": "Código",
+        "password": "Contrasinal"
+      },
+      "form": {
+        "codeSent": "Enviamos un código de verificación a {{email}}.",
+        "emailStepTitle": "Restablece o teu contrasinal",
+        "emailStepIntro": "Escribe o correo ligado á túa conta e enviarémosche un código de verificación.",
+        "codeStepTitle": "Introduce o código",
+        "codeStepIntro": "Revisa o teu correo e pega aquí o código de verificación.",
+        "passwordStepTitle": "Crea un novo contrasinal",
+        "passwordStepIntro": "Escolle un contrasinal novo que non empregases recentemente.",
+        "doneTitle": "Contrasinal actualizado",
+        "doneIntro": "O teu contrasinal xa está listo. Xa podes iniciar sesión.",
+        "doneBody": "O teu contrasinal actualizouse. Xa podes acceder coas novas credenciais.",
+        "email": {
+          "label": "Correo electrónico",
+          "hint": "Usa o correo asociado á túa conta para que poidamos enviarche un código de verificación.",
+          "required": "Introduce o correo asociado á túa conta.",
+          "invalid": "Introduce un correo electrónico válido.",
+          "submit": "Enviar código de verificación"
+        },
+        "code": {
+          "label": "Código de verificación",
+          "hint": "Introduce o código recibido por correo. Un único campo é máis doado de pegar e funciona mellor coas tecnoloxías de asistencia.",
+          "required": "Introduce o código de verificación.",
+          "submit": "Continuar",
+          "changeEmail": "Probar con outro correo"
+        },
+        "password": {
+          "label": "Novo contrasinal",
+          "hint": "Usa polo menos 8 caracteres. Unha frase de contrasinal máis longa adoita ser máis doada de lembrar e máis difícil de adiviñar.",
+          "required": "Introduce un novo contrasinal.",
+          "length": "Usa polo menos {{count}} caracteres.",
+          "submit": "Restablecer o contrasinal",
+          "back": "Volver"
+        },
+        "confirmPassword": {
+          "label": "Confirmar novo contrasinal",
+          "hint": "Volve escribir o contrasinal exactamente igual que enriba.",
+          "required": "Confirma o novo contrasinal.",
+          "mismatch": "Os contrasinais non coinciden."
+        }
+      }
     }
   }
 }

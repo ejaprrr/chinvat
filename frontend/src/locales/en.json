@@ -12,8 +12,8 @@
     "label": "Identity verification"
   },
   "auth": {
-    "title": "Sign in",
-    "intro": "Sign in with your account or continue with an FNMT certificate.",
+    "title": "Welcome back",
+    "intro": "Use your username and password. If you prefer, continue with your FNMT certificate.",
     "divider": "or",
     "actions": {
       "continue": "Sign in",
@@ -45,14 +45,59 @@
     },
     "certificate": {
       "action": "Use FNMT certificate",
-      "hint": "You'll be redirected to the secure certificate flow. If an FNMT certificate is installed, your browser will ask you to select it.",
+      "hint": "We'll take you to certificate sign-in. If your browser finds an FNMT certificate, choose it when prompted.",
       "unavailable": "FNMT certificate sign-in is only available in desktop browsers."
     },
     "resetPassword": {
       "title": "Reset password",
-      "intro": "Use the recovery flow to regain access to your account.",
-      "configuredHint": "Continue to the recovery service to set a new password securely.",
-      "unavailable": "Password recovery is not configured in this environment yet. Contact your administrator."
+      "intro": "Use your email, verify the code, and set a new password.",
+      "progress": {
+        "label": "Password recovery steps",
+        "current": "Step {{current}} of {{total}}",
+        "email": "Email",
+        "code": "Code",
+        "password": "Password"
+      },
+      "form": {
+        "codeSent": "We sent a verification code to {{email}}.",
+        "emailStepTitle": "Reset your password",
+        "emailStepIntro": "Enter the email linked to your account and we'll send you a verification code.",
+        "codeStepTitle": "Enter the code",
+        "codeStepIntro": "Check your email and paste the verification code here.",
+        "passwordStepTitle": "Create a new password",
+        "passwordStepIntro": "Choose a new password you haven't used recently.",
+        "doneTitle": "Password updated",
+        "doneIntro": "Your password has been updated. You can sign in now.",
+        "doneBody": "Your password has been updated. You can now sign in with your new credentials.",
+        "email": {
+          "label": "Email address",
+          "hint": "Use the email associated with your account so we can send you a verification code.",
+          "required": "Enter the email address associated with your account.",
+          "invalid": "Enter a valid email address.",
+          "submit": "Send verification code"
+        },
+        "code": {
+          "label": "Verification code",
+          "hint": "Enter the code from your email. A single input is easier to paste and works better with assistive technology.",
+          "required": "Enter the verification code.",
+          "submit": "Continue",
+          "changeEmail": "Try another email"
+        },
+        "password": {
+          "label": "New password",
+          "hint": "Use at least 8 characters. A longer passphrase is usually easier to remember and harder to guess.",
+          "required": "Enter a new password.",
+          "length": "Use at least {{count}} characters.",
+          "submit": "Reset password",
+          "back": "Back"
+        },
+        "confirmPassword": {
+          "label": "Confirm new password",
+          "hint": "Re-enter the password exactly as you typed it above.",
+          "required": "Confirm your new password.",
+          "mismatch": "The passwords do not match."
+        }
+      }
     }
   }
 }

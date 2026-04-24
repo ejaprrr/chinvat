@@ -34,11 +34,13 @@ function ActionButton({
   children,
   className,
   variant = "primary",
+  type = "button",
   ...props
 }: ActionButtonProps) {
   return (
     <button
       {...props}
+      type={type}
       className={getActionClassName(variant, className)}
     >
       {children}

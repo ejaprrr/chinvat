@@ -1,14 +1,9 @@
-import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "../components/LanguageSwitcher";
 
 function AuthLayout() {
-  const { i18n, t } = useTranslation();
-
-  useEffect(() => {
-    document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language;
-  }, [i18n.language, i18n.resolvedLanguage]);
+  const { t } = useTranslation();
 
   return (
     <>
@@ -21,10 +16,11 @@ function AuthLayout() {
 
       <main
         id="main-content"
-        className="grid min-h-screen min-h-dvh place-items-center px-4 py-4"
+        tabIndex={-1}
+        className="grid min-h-screen min-h-dvh place-items-center px-4 py-4 sm:px-6"
       >
         <section
-          className="w-full max-w-[23.5rem] rounded-[0.875rem] border border-border-subtle bg-panel p-7 shadow-panel motion-safe:animate-panel-in"
+          className="w-full max-w-[29rem] rounded-[0.875rem] border border-border-subtle bg-panel p-6 shadow-panel motion-safe:animate-panel-in sm:p-8"
         >
           <header className="mb-5 flex items-center justify-between gap-4">
             <p className="font-display text-[0.8125rem] font-semibold uppercase tracking-[0.1em] text-ink">

@@ -12,8 +12,8 @@
     "label": "Identitate-egiaztapena"
   },
   "auth": {
-    "title": "Hasi saioa",
-    "intro": "Hasi saioa zure kontuarekin edo jarraitu FNMT ziurtagiriarekin.",
+    "title": "Ongi etorri berriro",
+    "intro": "Sartu zure erabiltzaile-izenarekin eta pasahitzarekin. Nahi baduzu, jarraitu zure FNMT ziurtagiriarekin.",
     "divider": "edo",
     "actions": {
       "continue": "Sartu",
@@ -45,14 +45,59 @@
     },
     "certificate": {
       "action": "Erabili FNMT ziurtagiria",
-      "hint": "Ziurtagiriaren fluxu segurura birbideratuko zara. FNMT ziurtagiri bat instalatuta badago, nabigatzaileak hautatzeko eskatuko dizu.",
+      "hint": "Ziurtagiriarekin sartzera eramango zaitugu. Nabigatzaileak FNMT ziurtagiri bat aurkitzen badu, hautatu eskatzen dizunean.",
       "unavailable": "FNMT ziurtagiriarekin sartzea mahaigaineko nabigatzaileetan bakarrik dago erabilgarri."
     },
     "resetPassword": {
       "title": "Berrezarri pasahitza",
-      "intro": "Erabili berreskurapen-fluxua zure konturako sarbidea berreskuratzeko.",
-      "configuredHint": "Jarraitu berreskurapen-zerbitzura pasahitz berri bat modu seguruan ezartzeko.",
-      "unavailable": "Pasahitzaren berreskurapena oraindik ez dago konfiguratuta ingurune honetan. Jarri harremanetan administratzailearekin."
+      "intro": "Erabili zure posta elektronikoa, egiaztatu kodea eta ezarri pasahitz berri bat.",
+      "progress": {
+        "label": "Pasahitza berreskuratzeko urratsak",
+        "current": "{{current}} / {{total}} urratsa",
+        "email": "Posta",
+        "code": "Kodea",
+        "password": "Pasahitza"
+      },
+      "form": {
+        "codeSent": "Egiaztapen-kode bat bidali dugu {{email}} helbidera.",
+        "emailStepTitle": "Berrezarri zure pasahitza",
+        "emailStepIntro": "Idatzi zure kontuari lotutako helbide elektronikoa eta egiaztapen-kode bat bidaliko dizugu.",
+        "codeStepTitle": "Sartu kodea",
+        "codeStepIntro": "Begiratu zure posta elektronikoa eta itsatsi hemen egiaztapen-kodea.",
+        "passwordStepTitle": "Sortu pasahitz berri bat",
+        "passwordStepIntro": "Aukeratu azkenaldian erabili ez duzun pasahitz berri bat.",
+        "doneTitle": "Pasahitza eguneratu da",
+        "doneIntro": "Zure pasahitza prest dago. Orain saioa hasi dezakezu.",
+        "doneBody": "Zure pasahitza eguneratu da. Orain kredentzial berriekin has dezakezu saioa.",
+        "email": {
+          "label": "Posta elektronikoa",
+          "hint": "Erabili zure kontuari lotutako posta elektronikoa egiaztapen-kode bat bidali ahal izateko.",
+          "required": "Idatzi zure kontuari lotutako posta elektronikoa.",
+          "invalid": "Idatzi baliozko posta elektroniko bat.",
+          "submit": "Bidali egiaztapen-kodea"
+        },
+        "code": {
+          "label": "Egiaztapen-kodea",
+          "hint": "Idatzi posta bidez jasotako kodea. Eremu bakarra errazago itsasten da eta hobeto dabil laguntza-teknologiekin.",
+          "required": "Idatzi egiaztapen-kodea.",
+          "submit": "Jarraitu",
+          "changeEmail": "Saiatu beste posta batekin"
+        },
+        "password": {
+          "label": "Pasahitz berria",
+          "hint": "Erabili gutxienez 8 karaktere. Pasahitz-esaldi luzeago bat errazago gogoratzen da eta zailagoa da asmatzen.",
+          "required": "Idatzi pasahitz berri bat.",
+          "length": "Erabili gutxienez {{count}} karaktere.",
+          "submit": "Berrezarri pasahitza",
+          "back": "Itzuli"
+        },
+        "confirmPassword": {
+          "label": "Berretsi pasahitz berria",
+          "hint": "Idatzi berriro goian jarritako pasahitz bera.",
+          "required": "Berretsi pasahitz berria.",
+          "mismatch": "Pasahitzak ez datoz bat."
+        }
+      }
     }
   }
 }
