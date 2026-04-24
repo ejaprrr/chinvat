@@ -1,6 +1,7 @@
 {
   "meta": {
-    "pageTitle": "Accedeix a chinvat"
+    "pageTitle": "Accedeix a chinvat",
+    "resetPasswordPageTitle": "Restableix la contrasenya | chinvat"
   },
   "accessibility": {
     "skipToContent": "Salta al contingut principal",
@@ -13,14 +14,15 @@
   "auth": {
     "title": "Inicia la sessió",
     "intro": "Accedeix amb el teu compte o continua amb un certificat FNMT.",
-    "support": "Si necessites ajuda per accedir al teu compte, contacta amb suport tècnic.",
     "divider": "o",
     "actions": {
       "continue": "Accedeix",
-      "submitting": "Accedint..."
+      "submitting": "Accedint...",
+      "resetPassword": "Restableix la contrasenya",
+      "continueToReset": "Continua amb la recuperació",
+      "backToSignIn": "Torna a l'accés"
     },
     "status": {
-      "errorSummaryTitle": "Revisa els camps marcats i torna-ho a provar.",
       "certificateOpening": "S'està redirigint l'accés amb certificat…",
       "loginSuccess": "L'accés s'ha completat correctament.",
       "loginError": "No hem pogut iniciar la sessió. Revisa les dades i torna-ho a provar.",
@@ -45,6 +47,12 @@
       "action": "Fes servir certificat FNMT",
       "hint": "Se't redirigirà al flux segur amb certificat. Si hi ha un certificat FNMT instal·lat, el navegador et demanarà que el seleccionis.",
       "unavailable": "L'accés amb certificat FNMT només està disponible en navegadors d'escriptori."
+    },
+    "resetPassword": {
+      "title": "Restableix la contrasenya",
+      "intro": "Fes servir el flux de recuperació per tornar a accedir al teu compte.",
+      "configuredHint": "Continua al servei de recuperació per establir una contrasenya nova de manera segura.",
+      "unavailable": "La recuperació de contrasenya encara no està configurada en aquest entorn. Contacta amb l'administrador."
     }
   }
 }

@@ -11,6 +11,14 @@ import {
   handleCertificateLoginStart,
   loginWithCredentials,
 } from "../api/auth";
+import { cx } from "../lib/cx";
+import { appRoutes } from "../router/paths";
+import {
+  ActionButton,
+  ActionLink,
+} from "./ui/Action";
+import AuthPageHeader from "./ui/AuthPageHeader";
+import InfoPanel from "./ui/InfoPanel";
 
 type FieldErrors = {
   username?: string;
@@ -20,7 +28,6 @@ type FieldErrors = {
 type TranslationKey =
   | "auth.fields.username.required"
   | "auth.fields.password.required"
-  | "auth.status.errorSummaryTitle"
   | "auth.status.certificateOpening"
   | "auth.status.loginSuccess"
   | "auth.status.loginError"
@@ -42,7 +49,55 @@ type AuthFormProps = {
   onCertificateLogin: () => void;
 };
 
-function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
+const styles = {
+  form: {
+    root: "flex flex-col gap-4",
+    sectionStack: "flex flex-col gap-3.5",
+    fieldStack: "space-y-1.5",
+    label: "flex items-center gap-1 text-sm font-medium text-ink",
+    requiredMark: "text-brand-600",
+    hint: "text-[0.8125rem] text-muted",
+    inlineError: "flex items-center gap-2 text-[0.8125rem] text-danger-700",
+    warning:
+      "rounded-lg border border-warning-border bg-warning-surface px-3 py-2 text-[0.8125rem] text-warning-ink",
+    divider: "flex items-center gap-3 text-[0.75rem] text-muted-soft",
+    dividerLine: "h-px flex-1 bg-border-subtle",
+    supportingActionRow: "flex justify-end",
+    auxiliaryRegion: "flex flex-col gap-3.5",
+  },
+  status: {
+    base:
+      "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-[0.8125rem] leading-5",
+    default: "border-border-subtle bg-surface-subtle text-muted",
+    critical: "border-danger-200 bg-danger-50 text-danger-700",
+    icon: "mt-0.5 shrink-0",
+  },
+  control: {
+    inputBase:
+      "block min-h-11 w-full rounded-lg border bg-white px-3.5 py-3 text-sm text-ink outline-none transition disabled:cursor-not-allowed disabled:opacity-60",
+    inputDefault:
+      "border-border-subtle focus:border-brand-500 focus:ring-3 focus:ring-brand-500/15",
+    inputError:
+      "border-danger-200 focus:border-danger-700 focus:ring-3 focus:ring-danger-700/10",
+    iconButton:
+      "absolute inset-y-0 right-0 inline-flex min-h-11 min-w-11 items-center justify-center rounded-r-lg px-3 text-muted transition hover:bg-surface-hover hover:text-ink focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
+  },
+} as const;
+
+function getInputClassName(hasError: boolean, hasTrailingButton = false) {
+  return cx(
+    styles.control.inputBase,
+    hasTrailingButton ? "pr-12" : "",
+    hasError
+      ? styles.control.inputError
+      : styles.control.inputDefault,
+  );
+}
+
+function AuthForm({
+  isDesktopPlatform,
+  onCertificateLogin,
+}: AuthFormProps) {
   const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -110,19 +165,13 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
     }
 
     if (nextErrors.username) {
-      setStatusMessage({
-        tone: "critical",
-        translationKey: "auth.status.errorSummaryTitle",
-      });
+      setStatusMessage(null);
       usernameInputRef.current?.focus();
       return;
     }
 
     if (nextErrors.password) {
-      setStatusMessage({
-        tone: "critical",
-        translationKey: "auth.status.errorSummaryTitle",
-      });
+      setStatusMessage(null);
       passwordInputRef.current?.focus();
       return;
     }
@@ -134,6 +183,10 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
 
     setStatusMessage(toStatusMessage(response));
     setIsSubmitting(false);
+  };
+
+  const clearTransientFeedback = () => {
+    setStatusMessage(null);
   };
 
   const handleCertificateLogin = () => {
@@ -170,15 +223,17 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
 
   return (
     <form
-      className="auth-form"
+      className={styles.form.root}
       noValidate
       onSubmit={handleSubmit}
       aria-labelledby="login-title"
+      aria-busy={isSubmitting || certificateLaunching}
     >
-      <header className="auth-copy">
-        <h1 id="login-title">{t("auth.title")}</h1>
-        <p>{t("auth.intro")}</p>
-      </header>
+      <AuthPageHeader
+        id="login-title"
+        title={t("auth.title")}
+        intro={t("auth.intro")}
+      />
 
       {/*
        * Status region:
@@ -187,12 +242,17 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
        * aria-atomic="true" ensures the full message is read, not just the changed portion.
        */}
       <div
-        className="status-slot"
+        className={statusMessage ? "block" : "hidden"}
         aria-hidden={statusMessage ? undefined : "true"}
       >
         {statusMessage ? (
           <p
-            className={`status-banner${isErrorStatus ? " status-banner-critical" : ""}`}
+            className={cx(
+              styles.status.base,
+              isErrorStatus
+                ? styles.status.critical
+                : styles.status.default,
+            )}
             role={isErrorStatus ? "alert" : "status"}
             aria-live={isErrorStatus ? "assertive" : "polite"}
             aria-atomic="true"
@@ -201,7 +261,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
               <TriangleAlert
                 size={15}
                 aria-hidden="true"
-                className="status-icon"
+                className={styles.status.icon}
               />
             )}
             {resolvedStatusMessage}
@@ -209,17 +269,17 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
         ) : null}
       </div>
 
-      <div className="field-list">
+      <div className={styles.form.sectionStack}>
         {/* ── Username ── */}
-        <div className="field">
-          <label htmlFor="username">
+        <div className={styles.form.fieldStack}>
+          <label htmlFor="username" className={styles.form.label}>
             {t("auth.fields.username.label")}
             {/*
              * The asterisk is purely visual. aria-required on the input
              * conveys "required" to assistive technology without
              * making screen readers say "asterisk".
              */}
-            <span className="required-mark" aria-hidden="true">
+            <span className={styles.form.requiredMark} aria-hidden="true">
               *
             </span>
           </label>
@@ -240,7 +300,10 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
                 ...current,
                 username: undefined,
               }));
+              clearTransientFeedback();
             }}
+            inputMode="text"
+            className={getInputClassName(Boolean(fieldErrors.username))}
             aria-describedby={usernameDescribedBy}
             aria-errormessage={
               fieldErrors.username ? usernameErrorId : undefined
@@ -249,7 +312,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
             aria-required="true"
             required
           />
-          <p id={usernameHintId} className="hint">
+          <p id={usernameHintId} className={styles.form.hint}>
             {t("auth.fields.username.hint")}
           </p>
           {fieldErrors.username ? (
@@ -260,21 +323,21 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
              */
             <p
               id={usernameErrorId}
-              className="field-error"
+              className={styles.form.inlineError}
               role="alert"
               aria-atomic="true"
             >
               <AlertCircle size={13} aria-hidden="true" />
-              {t(fieldErrors.username)}
+              <span>{t(fieldErrors.username)}</span>
             </p>
           ) : null}
         </div>
 
         {/* ── Password ── */}
-        <div className="field">
-          <label htmlFor="password">
+        <div className={styles.form.fieldStack}>
+          <label htmlFor="password" className={styles.form.label}>
             {t("auth.fields.password.label")}
-            <span className="required-mark" aria-hidden="true">
+            <span className={styles.form.requiredMark} aria-hidden="true">
               *
             </span>
           </label>
@@ -285,7 +348,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
            * aria-controls to associate it with the field it modifies.
            * Importantly it is type="button" to prevent form submission.
            */}
-          <div className="input-wrapper">
+          <div className="relative">
             <input
               ref={passwordInputRef}
               id="password"
@@ -300,9 +363,12 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
                   ...current,
                   password: undefined,
                 }));
+                clearTransientFeedback();
               }}
               onKeyUp={handleCapsLock}
               onKeyDown={handleCapsLock}
+              onBlur={() => setCapsLockOn(false)}
+              className={getInputClassName(Boolean(fieldErrors.password), true)}
               aria-describedby={passwordDescribedBy}
               aria-errormessage={
                 fieldErrors.password ? passwordErrorId : undefined
@@ -313,7 +379,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
             />
             <button
               type="button"
-              className="password-toggle"
+              className={styles.control.iconButton}
               onClick={() => setShowPassword((v) => !v)}
               aria-pressed={showPassword}
               aria-label={
@@ -335,9 +401,19 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
             </button>
           </div>
 
-          <p id={passwordHintId} className="hint">
-            {t("auth.fields.password.hint")}
-          </p>
+          <div className="flex flex-col gap-1">
+            <p id={passwordHintId} className={styles.form.hint}>
+              {t("auth.fields.password.hint")}
+            </p>
+            <div className={styles.form.supportingActionRow}>
+              <ActionLink
+                to={appRoutes.resetPassword}
+                variant="text"
+              >
+                {t("auth.actions.resetPassword")}
+              </ActionLink>
+            </div>
+          </div>
 
           {/*
            * Caps Lock warning is polite — it should not interrupt the user.
@@ -346,7 +422,7 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
           {capsLockOn ? (
             <p
               id={capsLockWarningId}
-              className="caps-warning"
+              className={styles.form.warning}
               role="status"
               aria-live="polite"
               aria-atomic="true"
@@ -360,12 +436,12 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
           {fieldErrors.password ? (
             <p
               id={passwordErrorId}
-              className="field-error"
+              className={styles.form.inlineError}
               role="alert"
               aria-atomic="true"
             >
               <AlertCircle size={13} aria-hidden="true" />
-              {t(fieldErrors.password)}
+              <span>{t(fieldErrors.password)}</span>
             </p>
           ) : null}
         </div>
@@ -376,9 +452,9 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
        * We use disabled to block double-submission but preserve tab stop
        * semantics. aria-busy additionally informs assistive tech.
        */}
-      <button
+      <ActionButton
         type="submit"
-        className="primary-action"
+        variant="primary"
         aria-busy={isSubmitting}
         disabled={isSubmitting}
       >
@@ -387,43 +463,49 @@ function AuthForm({ isDesktopPlatform, onCertificateLogin }: AuthFormProps) {
               defaultValue: "Submitting…",
             })
           : t("auth.actions.continue")}
-      </button>
+      </ActionButton>
 
-      <div className="alternate-actions" aria-labelledby="certificate-option">
-        <p className="divider" aria-hidden="true">
+      <div
+        className={styles.form.auxiliaryRegion}
+        aria-label={t("auth.certificate.action")}
+      >
+        <p className={styles.form.divider} aria-hidden="true">
+          <span className={styles.form.dividerLine} />
           <span>{t("auth.divider")}</span>
+          <span className={styles.form.dividerLine} />
         </p>
 
         {isDesktopPlatform ? (
           <>
-            <button
+            <ActionButton
               id="certificate-option"
               type="button"
-              className="secondary"
+              variant="secondary"
               onClick={handleCertificateLogin}
               aria-describedby={certificateHintId}
               aria-busy={certificateLaunching}
-              disabled={certificateLaunching}
+              disabled={certificateLaunching || isSubmitting}
             >
               {t("auth.certificate.action")}
-            </button>
-            <p id={certificateHintId} className="hint alternate-hint">
+            </ActionButton>
+            <p
+              id={certificateHintId}
+              className={`${styles.form.hint} text-center leading-5`}
+            >
               {t("auth.certificate.hint")}
             </p>
           </>
         ) : (
-          <p
+          <InfoPanel
             id="certificate-option"
-            className="hint alternate-hint"
+            align="center"
             role="status"
             aria-live="polite"
           >
             {t("auth.certificate.unavailable")}
-          </p>
+          </InfoPanel>
         )}
       </div>
-
-      <p className="support-copy">{t("auth.support")}</p>
     </form>
   );
 }

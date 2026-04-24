@@ -1,6 +1,7 @@
 {
   "meta": {
-    "pageTitle": "Se connecter à chinvat"
+    "pageTitle": "Se connecter à chinvat",
+    "resetPasswordPageTitle": "Réinitialiser le mot de passe | chinvat"
   },
   "accessibility": {
     "skipToContent": "Aller au contenu principal",
@@ -13,14 +14,15 @@
   "auth": {
     "title": "Se connecter",
     "intro": "Connectez-vous avec votre compte ou continuez avec un certificat FNMT.",
-    "support": "Si vous avez besoin d'aide pour accéder à votre compte, contactez le support technique.",
     "divider": "ou",
     "actions": {
       "continue": "Se connecter",
-      "submitting": "Connexion..."
+      "submitting": "Connexion...",
+      "resetPassword": "Réinitialiser le mot de passe",
+      "continueToReset": "Continuer vers la récupération",
+      "backToSignIn": "Retour à la connexion"
     },
     "status": {
-      "errorSummaryTitle": "Vérifiez les champs signalés et réessayez.",
       "certificateOpening": "Redirection vers la connexion par certificat…",
       "loginSuccess": "La connexion a été effectuée avec succès.",
       "loginError": "Nous n'avons pas pu vous connecter. Vérifiez vos informations et réessayez.",
@@ -45,6 +47,12 @@
       "action": "Utiliser un certificat FNMT",
       "hint": "Vous serez redirigé vers le parcours sécurisé par certificat. Si un certificat FNMT est installé, votre navigateur vous demandera de le sélectionner.",
       "unavailable": "La connexion avec certificat FNMT est disponible uniquement dans les navigateurs de bureau."
+    },
+    "resetPassword": {
+      "title": "Réinitialiser le mot de passe",
+      "intro": "Utilisez le parcours de récupération pour retrouver l'accès à votre compte.",
+      "configuredHint": "Continuez vers le service de récupération pour définir un nouveau mot de passe en toute sécurité.",
+      "unavailable": "La récupération du mot de passe n'est pas encore configurée dans cet environnement. Contactez votre administrateur."
     }
   }
 }

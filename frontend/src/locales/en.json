@@ -1,6 +1,7 @@
 {
   "meta": {
-    "pageTitle": "Sign in to chinvat"
+    "pageTitle": "Sign in to chinvat",
+    "resetPasswordPageTitle": "Reset password | chinvat"
   },
   "accessibility": {
     "skipToContent": "Skip to main content",
@@ -13,14 +14,15 @@
   "auth": {
     "title": "Sign in",
     "intro": "Sign in with your account or continue with an FNMT certificate.",
-    "support": "If you need help accessing your account, contact technical support.",
     "divider": "or",
     "actions": {
       "continue": "Sign in",
-      "submitting": "Signing in..."
+      "submitting": "Signing in...",
+      "resetPassword": "Reset password",
+      "continueToReset": "Continue to recovery",
+      "backToSignIn": "Back to sign in"
     },
     "status": {
-      "errorSummaryTitle": "Check the highlighted fields and try again.",
       "certificateOpening": "Redirecting to certificate sign-in…",
       "loginSuccess": "Sign-in completed successfully.",
       "loginError": "We couldn't sign you in. Check your details and try again.",
@@ -45,6 +47,12 @@
       "action": "Use FNMT certificate",
       "hint": "You'll be redirected to the secure certificate flow. If an FNMT certificate is installed, your browser will ask you to select it.",
       "unavailable": "FNMT certificate sign-in is only available in desktop browsers."
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "intro": "Use the recovery flow to regain access to your account.",
+      "configuredHint": "Continue to the recovery service to set a new password securely.",
+      "unavailable": "Password recovery is not configured in this environment yet. Contact your administrator."
     }
   }
 }

@@ -1,6 +1,7 @@
 {
   "meta": {
-    "pageTitle": "Acceder a chinvat"
+    "pageTitle": "Acceder a chinvat",
+    "resetPasswordPageTitle": "Restablecer contraseña | chinvat"
   },
   "accessibility": {
     "skipToContent": "Saltar al contenido principal",
@@ -13,14 +14,15 @@
   "auth": {
     "title": "Iniciar sesión",
     "intro": "Accede con tu cuenta o continúa con un certificado FNMT.",
-    "support": "Si necesitas ayuda para acceder a tu cuenta, contacta con soporte técnico.",
     "divider": "o",
     "actions": {
       "continue": "Acceder",
-      "submitting": "Accediendo..."
+      "submitting": "Accediendo...",
+      "resetPassword": "Restablecer contraseña",
+      "continueToReset": "Continuar con la recuperación",
+      "backToSignIn": "Volver al acceso"
     },
     "status": {
-      "errorSummaryTitle": "Revisa los campos marcados e inténtalo de nuevo.",
       "certificateOpening": "Redirigiendo al acceso con certificado…",
       "loginSuccess": "El acceso se ha completado correctamente.",
       "loginError": "No hemos podido iniciar tu sesión. Revisa tus datos e inténtalo de nuevo.",
@@ -45,6 +47,12 @@
       "action": "Usar certificado FNMT",
       "hint": "Se te redirigirá al flujo seguro con certificado. Si hay un certificado FNMT instalado, el navegador te pedirá que lo selecciones.",
       "unavailable": "El acceso con certificado FNMT solo está disponible en navegadores de escritorio."
+    },
+    "resetPassword": {
+      "title": "Restablecer contraseña",
+      "intro": "Usa el flujo de recuperación para volver a acceder a tu cuenta.",
+      "configuredHint": "Continúa al servicio de recuperación para establecer una nueva contraseña de forma segura.",
+      "unavailable": "La recuperación de contraseña todavía no está configurada en este entorno. Contacta con el administrador."
     }
   }
 }

@@ -55,6 +55,10 @@ export function getCertificateLoginUrl() {
   return buildBackendUrl(backendRequests.certificateLogin.path);
 }
 
+export function getConfiguredResetPasswordUrl() {
+  return import.meta.env.VITE_RESET_PASSWORD_URL?.trim() || null;
+}
+
 export function handleCertificateLoginStart(): RequestHandlerResult<null> {
   return {
     ok: true,

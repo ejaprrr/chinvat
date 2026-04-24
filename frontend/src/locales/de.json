@@ -1,6 +1,7 @@
 {
   "meta": {
-    "pageTitle": "Bei chinvat anmelden"
+    "pageTitle": "Bei chinvat anmelden",
+    "resetPasswordPageTitle": "Passwort zurücksetzen | chinvat"
   },
   "accessibility": {
     "skipToContent": "Zum Hauptinhalt springen",
@@ -13,14 +14,15 @@
   "auth": {
     "title": "Anmelden",
     "intro": "Melden Sie sich mit Ihrem Konto an oder fahren Sie mit einem FNMT-Zertifikat fort.",
-    "support": "Wenn Sie Hilfe beim Zugriff auf Ihr Konto benötigen, wenden Sie sich an den technischen Support.",
     "divider": "oder",
     "actions": {
       "continue": "Anmelden",
-      "submitting": "Anmeldung läuft..."
+      "submitting": "Anmeldung läuft...",
+      "resetPassword": "Passwort zurücksetzen",
+      "continueToReset": "Mit der Wiederherstellung fortfahren",
+      "backToSignIn": "Zurück zur Anmeldung"
     },
     "status": {
-      "errorSummaryTitle": "Prüfen Sie die markierten Felder und versuchen Sie es erneut.",
       "certificateOpening": "Weiterleitung zur Zertifikatsanmeldung…",
       "loginSuccess": "Die Anmeldung wurde erfolgreich abgeschlossen.",
       "loginError": "Wir konnten Sie nicht anmelden. Prüfen Sie Ihre Angaben und versuchen Sie es erneut.",
@@ -45,6 +47,12 @@
       "action": "FNMT-Zertifikat verwenden",
       "hint": "Sie werden zum sicheren Zertifikatsablauf weitergeleitet. Wenn ein FNMT-Zertifikat installiert ist, fordert Ihr Browser Sie zur Auswahl auf.",
       "unavailable": "Die Anmeldung mit FNMT-Zertifikat ist nur in Desktop-Browsern verfügbar."
+    },
+    "resetPassword": {
+      "title": "Passwort zurücksetzen",
+      "intro": "Verwenden Sie den Wiederherstellungsablauf, um wieder Zugriff auf Ihr Konto zu erhalten.",
+      "configuredHint": "Fahren Sie mit dem Wiederherstellungsdienst fort, um sicher ein neues Passwort festzulegen.",
+      "unavailable": "Die Passwortwiederherstellung ist in dieser Umgebung noch nicht konfiguriert. Kontaktieren Sie Ihren Administrator."
     }
   }
 }

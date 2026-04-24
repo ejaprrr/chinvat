@@ -1,6 +1,7 @@
 {
   "meta": {
-    "pageTitle": "Acceder a chinvat"
+    "pageTitle": "Acceder a chinvat",
+    "resetPasswordPageTitle": "Restablecer o contrasinal | chinvat"
   },
   "accessibility": {
     "skipToContent": "Ir ao contido principal",
@@ -13,14 +14,15 @@
   "auth": {
     "title": "Iniciar sesión",
     "intro": "Accede coa túa conta ou continúa cun certificado FNMT.",
-    "support": "Se precisas axuda para acceder á túa conta, contacta co soporte técnico.",
     "divider": "ou",
     "actions": {
       "continue": "Acceder",
-      "submitting": "Accedendo..."
+      "submitting": "Accedendo...",
+      "resetPassword": "Restablecer o contrasinal",
+      "continueToReset": "Continuar coa recuperación",
+      "backToSignIn": "Volver ao acceso"
     },
     "status": {
-      "errorSummaryTitle": "Revisa os campos marcados e téntao de novo.",
       "certificateOpening": "Redirixindo ao acceso con certificado…",
       "loginSuccess": "O acceso completouse correctamente.",
       "loginError": "Non puidemos iniciar a sesión. Revisa os datos e téntao de novo.",
@@ -45,6 +47,12 @@
       "action": "Usar certificado FNMT",
       "hint": "Serás redirixido ao fluxo seguro con certificado. Se hai un certificado FNMT instalado, o navegador pedirache que o selecciones.",
       "unavailable": "O acceso con certificado FNMT só está dispoñible en navegadores de escritorio."
+    },
+    "resetPassword": {
+      "title": "Restablecer o contrasinal",
+      "intro": "Usa o fluxo de recuperación para volver acceder á túa conta.",
+      "configuredHint": "Continúa ao servizo de recuperación para establecer un novo contrasinal de forma segura.",
+      "unavailable": "A recuperación do contrasinal aínda non está configurada neste contorno. Contacta co administrador."
     }
   }
 }

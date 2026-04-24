@@ -1,49 +1,8 @@
-import { useEffect } from "react";
-import { useTranslation } from "react-i18next";
-import { getCertificateLoginUrl } from "./api/auth";
-import AuthForm from "./components/AuthForm";
-import LanguageSwitcher from "./components/LanguageSwitcher";
+import { RouterProvider } from "react-router";
+import { router } from "./router";
 
 function App() {
-  const { i18n, t } = useTranslation();
-
-  useEffect(() => {
-    document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language;
-    document.title = t("meta.pageTitle");
-  }, [i18n.language, i18n.resolvedLanguage, t]);
-
-  const isDesktopPlatform =
-    typeof window !== "undefined" &&
-    window.matchMedia(
-      "(pointer: fine) and (hover: hover) and (min-width: 768px)",
-    ).matches;
-
-  const startCertificateLogin = () => {
-    window.location.href = getCertificateLoginUrl();
-  };
-
-  return (
-    <>
-      <a className="skip-link" href="#main-content">
-        {t("accessibility.skipToContent")}
-      </a>
-
-      <main id="main-content" className="page-shell">
-        <section className="auth-panel" aria-labelledby="login-title">
-          <header className="panel-header">
-            <p className="wordmark" aria-label={t("brand.projectName")}>
-              {t("brand.projectName")}
-            </p>
-            <LanguageSwitcher />
-          </header>
-          <AuthForm
-            isDesktopPlatform={isDesktopPlatform}
-            onCertificateLogin={startCertificateLogin}
-          />
-        </section>
-      </main>
-    </>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;

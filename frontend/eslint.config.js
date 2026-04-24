@@ -1,5 +1,6 @@
 import js from '@eslint/js'
 import globals from 'globals'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
@@ -12,12 +13,36 @@ export default defineConfig([
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
+      jsxA11y.flatConfigs.strict,
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
+    rules: {
+      'jsx-a11y/label-has-associated-control': [
+        'error',
+        {
+          assert: 'either',
+          depth: 3,
+        },
+      ],
+      'jsx-a11y/no-autofocus': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='style']",
+          message:
+            'Avoid inline style props in the frontend. Use Tailwind utilities or global theme tokens from src/index.css instead.',
+        },
+      ],
     },
   },
 ])

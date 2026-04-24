@@ -1,6 +1,7 @@
 {
   "meta": {
-    "pageTitle": "Hasi saioa chinvat-en"
+    "pageTitle": "Hasi saioa chinvat-en",
+    "resetPasswordPageTitle": "Berrezarri pasahitza | chinvat"
   },
   "accessibility": {
     "skipToContent": "Joan eduki nagusira",
@@ -13,14 +14,15 @@
   "auth": {
     "title": "Hasi saioa",
     "intro": "Hasi saioa zure kontuarekin edo jarraitu FNMT ziurtagiriarekin.",
-    "support": "Zure kontuan sartzeko laguntza behar baduzu, jarri harremanetan laguntza teknikoarekin.",
     "divider": "edo",
     "actions": {
       "continue": "Sartu",
-      "submitting": "Saioa hasten..."
+      "submitting": "Saioa hasten...",
+      "resetPassword": "Berrezarri pasahitza",
+      "continueToReset": "Jarraitu berreskurapenarekin",
+      "backToSignIn": "Itzuli saio-hasierara"
     },
     "status": {
-      "errorSummaryTitle": "Egiaztatu markatutako eremuak eta saiatu berriro.",
       "certificateOpening": "Ziurtagiriarekin sartzera birbideratzen…",
       "loginSuccess": "Saio-hasiera ondo osatu da.",
       "loginError": "Ezin izan dugu saioa hasi. Egiaztatu datuak eta saiatu berriro.",
@@ -45,6 +47,12 @@
       "action": "Erabili FNMT ziurtagiria",
       "hint": "Ziurtagiriaren fluxu segurura birbideratuko zara. FNMT ziurtagiri bat instalatuta badago, nabigatzaileak hautatzeko eskatuko dizu.",
       "unavailable": "FNMT ziurtagiriarekin sartzea mahaigaineko nabigatzaileetan bakarrik dago erabilgarri."
+    },
+    "resetPassword": {
+      "title": "Berrezarri pasahitza",
+      "intro": "Erabili berreskurapen-fluxua zure konturako sarbidea berreskuratzeko.",
+      "configuredHint": "Jarraitu berreskurapen-zerbitzura pasahitz berri bat modu seguruan ezartzeko.",
+      "unavailable": "Pasahitzaren berreskurapena oraindik ez dago konfiguratuta ingurune honetan. Jarri harremanetan administratzailearekin."
     }
   }
 }
