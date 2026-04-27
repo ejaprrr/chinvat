@@ -1,11 +1,19 @@
 package eu.alboranplus.chinvat.users.application.dto;
 
-import java.util.Set;
+import eu.alboranplus.chinvat.users.domain.model.AccessLevel;
+import eu.alboranplus.chinvat.users.domain.model.UserType;
 
 public record UserView(
-    Long id, String email, String displayName, Set<String> roles, boolean active) {
+    Long id,
+    String username,
+    String fullName,
+    String phoneNumber,
+    String email,
+    UserType userType,
+    AccessLevel accessLevel,
+    String addressLine,
+    String postalCode,
+    String city,
+    String country,
+    String defaultLanguage) {}
 
-  public UserView {
-    roles = Set.copyOf(roles);
-  }
-}

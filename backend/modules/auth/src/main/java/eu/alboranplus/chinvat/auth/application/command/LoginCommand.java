@@ -1,3 +1,3 @@
 package eu.alboranplus.chinvat.auth.application.command;
 
-public record LoginCommand(String email, String password) {}
+public record LoginCommand(String email, String password, String clientIp, String userAgent) {}

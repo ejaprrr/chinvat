@@ -28,7 +28,8 @@ class CleanArchitectureTest {
               "java..",
               "jakarta..",
               "org.springframework..",
-              "com.fasterxml.jackson..")
+              "com.fasterxml.jackson..",
+              "io.swagger.v3.oas.annotations..")
           .because("API should depend on use cases and API-facing models, not infrastructure.");
 
   @ArchTest

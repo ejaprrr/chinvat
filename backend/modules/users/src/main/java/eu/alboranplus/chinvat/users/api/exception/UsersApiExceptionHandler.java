@@ -1,6 +1,7 @@
 package eu.alboranplus.chinvat.users.api.exception;
 
 import eu.alboranplus.chinvat.users.domain.exception.UserAlreadyExistsException;
+import eu.alboranplus.chinvat.users.domain.exception.UserNotFoundException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,12 @@ public class UsersApiExceptionHandler {
         .body(new UsersErrorResponse(exception.getMessage(), Instant.now()));
   }
 
+  @ExceptionHandler(UserNotFoundException.class)
+  public ResponseEntity<UsersErrorResponse> handleNotFound(UserNotFoundException exception) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(new UsersErrorResponse(exception.getMessage(), Instant.now()));
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<UsersErrorResponse> handleValidation(
       MethodArgumentNotValidException exception) {
@@ -29,3 +36,4 @@ public class UsersApiExceptionHandler {
 
   public record UsersErrorResponse(String message, Instant timestamp) {}
 }
+

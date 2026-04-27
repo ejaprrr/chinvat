@@ -22,6 +22,11 @@ public class AuthUsersFacadeAdapter implements AuthUsersPort {
   }
 
   @Override
+  public Optional<AuthUserProjection> findById(Long userId) {
+    return usersFacade.findSecurityViewById(userId).map(this::mapUser);
+  }
+
+  @Override
   public boolean verifyPassword(String email, String rawPassword) {
     return usersFacade.verifyPassword(email, rawPassword);
   }

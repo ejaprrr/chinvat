@@ -1,11 +1,19 @@
 package eu.alboranplus.chinvat.users.application.command;
 
-import java.util.Set;
+import eu.alboranplus.chinvat.users.domain.model.AccessLevel;
+import eu.alboranplus.chinvat.users.domain.model.UserType;
 
 public record CreateUserCommand(
-    String email, String rawPassword, String displayName, Set<String> roles) {
+    String username,
+    String fullName,
+    String phoneNumber,
+    String email,
+    String rawPassword,
+    UserType userType,
+    AccessLevel accessLevel,
+    String addressLine,
+    String postalCode,
+    String city,
+    String country,
+    String defaultLanguage) {}
 
-  public CreateUserCommand {
-    roles = roles == null ? Set.of() : Set.copyOf(roles);
-  }
-}

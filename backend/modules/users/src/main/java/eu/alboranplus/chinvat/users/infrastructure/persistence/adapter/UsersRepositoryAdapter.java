@@ -6,6 +6,7 @@ import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.entity.UserAccountJpaEntity;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.jpa.UserAccountJpaRepository;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.mapper.UserAccountJpaMapper;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 
@@ -28,10 +29,27 @@ public class UsersRepositoryAdapter implements UsersRepositoryPort {
   }
 
   @Override
+  public boolean existsByUsername(String username) {
+    return userAccountJpaRepository.existsByUsernameIgnoreCase(username);
+  }
+
+  @Override
   public Optional<UserAccount> findByEmail(UserEmail email) {
     return userAccountJpaRepository
         .findByEmailIgnoreCase(email.value())
         .map(userAccountJpaMapper::toDomain);
+  }
+
+  @Override
+  public Optional<UserAccount> findById(Long id) {
+    return userAccountJpaRepository.findById(id).map(userAccountJpaMapper::toDomain);
+  }
+
+  @Override
+  public List<UserAccount> findAll() {
+    return userAccountJpaRepository.findAll().stream()
+        .map(userAccountJpaMapper::toDomain)
+        .toList();
   }
 
   @Override
@@ -40,4 +58,10 @@ public class UsersRepositoryAdapter implements UsersRepositoryPort {
         userAccountJpaRepository.save(userAccountJpaMapper.toEntity(userAccount));
     return userAccountJpaMapper.toDomain(persisted);
   }
+
+  @Override
+  public void deleteById(Long id) {
+    userAccountJpaRepository.deleteById(id);
+  }
 }
+

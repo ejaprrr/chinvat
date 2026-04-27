@@ -9,11 +9,14 @@ COPY backend/modules/auth/pom.xml modules/auth/pom.xml
 COPY backend/app/pom.xml app/pom.xml
 RUN ./mvnw dependency:go-offline -q
 
-FROM base AS build
+FROM base AS test
 COPY backend/modules/users/src modules/users/src
 COPY backend/modules/rbac/src modules/rbac/src
 COPY backend/modules/auth/src modules/auth/src
 COPY backend/app/src app/src
+RUN ./mvnw test --no-transfer-progress
+
+FROM test AS build
 RUN ./mvnw -pl app -am package -DskipTests -q
 
 RUN java -Djarmode=layertools \

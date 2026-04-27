@@ -3,6 +3,7 @@ package eu.alboranplus.chinvat.rbac.application.usecase;
 import eu.alboranplus.chinvat.rbac.application.port.out.RbacRepositoryPort;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,9 +32,7 @@ public class ResolvePermissionsUseCase {
             .flatMap(roleName -> BuiltinRolePermissions.permissionsFor(roleName).stream())
             .collect(Collectors.toUnmodifiableSet());
 
-    return Set.copyOf(
-        Set.of(repositoryPermissions, builtinPermissions).stream()
-            .flatMap(Set::stream)
-            .collect(Collectors.toSet()));
+    return Stream.concat(repositoryPermissions.stream(), builtinPermissions.stream())
+        .collect(Collectors.toUnmodifiableSet());
   }
 }

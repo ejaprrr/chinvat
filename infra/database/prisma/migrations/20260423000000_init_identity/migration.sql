@@ -8,7 +8,7 @@ CREATE TYPE "user_type" AS ENUM ('INDIVIDUAL', 'LIBRARY');
 CREATE TYPE "access_level" AS ENUM ('SUPERADMIN', 'ADMIN', 'GOLD', 'PREMIUM', 'NORMAL');
 
 -- CreateTable
-CREATE TABLE "app_user" (
+CREATE TABLE "user" (
     "id" BIGSERIAL NOT NULL,
     "username" VARCHAR(100) NOT NULL,
     "full_name" VARCHAR(255) NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE "app_user" (
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT "app_user_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -92,10 +92,10 @@ CREATE TABLE "auth_audit_event" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "app_user_username_key" ON "app_user"("username");
+CREATE UNIQUE INDEX "user_username_key" ON "user"("username");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "app_user_email_key" ON "app_user"("email");
+CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "password_recovery_token_token_hash_key" ON "password_recovery_token"("token_hash");
@@ -131,21 +131,21 @@ CREATE INDEX "idx_auth_audit_event_event_type" ON "auth_audit_event"("event_type
 
 -- AddForeignKey
 ALTER TABLE "user_password" ADD CONSTRAINT "user_password_user_id_fkey"
-FOREIGN KEY ("user_id") REFERENCES "app_user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "password_recovery_token" ADD CONSTRAINT "password_recovery_token_user_id_fkey"
-FOREIGN KEY ("user_id") REFERENCES "app_user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "user_certificate" ADD CONSTRAINT "user_certificate_user_id_fkey"
-FOREIGN KEY ("user_id") REFERENCES "app_user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "auth_session" ADD CONSTRAINT "auth_session_user_id_fkey"
-FOREIGN KEY ("user_id") REFERENCES "app_user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "auth_audit_event" ADD CONSTRAINT "auth_audit_event_user_id_fkey"
-FOREIGN KEY ("user_id") REFERENCES "app_user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 

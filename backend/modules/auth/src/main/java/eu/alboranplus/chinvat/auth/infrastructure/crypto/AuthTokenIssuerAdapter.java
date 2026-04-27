@@ -27,11 +27,12 @@ public class AuthTokenIssuerAdapter implements AuthTokenIssuerPort {
   @Override
   public IssuedTokenPair issue(Long userId, String email, Instant issuedAt) {
     Instant accessExpiresAt = issuedAt.plus(accessTokenTtl);
+    Instant refreshExpiresAt = issuedAt.plus(refreshTokenTtl);
 
     String accessToken = newToken(userId, email, accessExpiresAt, "A");
-    String refreshToken = newToken(userId, email, issuedAt.plus(refreshTokenTtl), "R");
+    String refreshToken = newToken(userId, email, refreshExpiresAt, "R");
 
-    return new IssuedTokenPair(accessToken, refreshToken, accessExpiresAt);
+    return new IssuedTokenPair(accessToken, refreshToken, accessExpiresAt, refreshExpiresAt);
   }
 
   private String newToken(Long userId, String email, Instant expiresAt, String tokenKind) {
