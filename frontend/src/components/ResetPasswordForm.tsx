@@ -13,6 +13,7 @@ import {
   ActionButton,
   ActionLink,
 } from "./ui/Action";
+import LanguageSwitcher from "./LanguageSwitcher";
 import AuthPageHeader from "./ui/AuthPageHeader";
 import FormField from "./ui/FormField";
 
@@ -36,24 +37,24 @@ const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordMinLength = 8;
 
 const styles = {
-  root: "flex flex-col gap-5",
+  root: "flex flex-col gap-4.5",
   progressText:
     "text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-muted-soft",
-  form: "flex flex-col gap-4",
+  form: "flex flex-col gap-3.5",
   inputBase:
-    "block min-h-11 w-full rounded-lg border bg-white px-3.5 py-3 text-sm text-ink outline-none transition disabled:cursor-not-allowed disabled:opacity-60",
+    "block min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-60",
   inputDefault:
     "border-border-subtle focus:border-brand-500 focus:ring-3 focus:ring-brand-500/15",
   inputError:
     "border-danger-200 focus:border-danger-700 focus:ring-3 focus:ring-danger-700/10",
   iconButton:
-    "absolute inset-y-0 right-0 inline-flex min-h-11 min-w-11 items-center justify-center rounded-r-lg px-3 text-muted transition hover:bg-surface-hover hover:text-ink focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
-  statusMessage: "text-[0.8125rem] leading-5",
-  statusMessageDefault: "text-muted",
-  statusMessageWarning: "text-warning-ink",
+    "absolute inset-y-0 right-0 inline-flex min-h-12 min-w-12 items-center justify-center rounded-r-xl px-3 text-muted transition hover:bg-surface-hover hover:text-ink focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
+  statusMessage: "rounded-2xl border px-4 py-3 text-[0.8125rem] leading-5",
+  statusMessageDefault: "border-border-subtle bg-surface-subtle text-muted",
+  statusMessageWarning: "border-warning-border bg-warning-surface text-warning-ink",
   completion: "flex items-start gap-2 text-[0.8125rem] leading-5 text-muted",
   completionIcon: "mt-0.5 shrink-0 text-brand-600",
-  actions: "flex flex-col gap-2.5",
+  actions: "flex flex-col gap-2",
 } as const;
 
 function getInputClassName(hasError: boolean, hasTrailingButton = false) {
@@ -262,6 +263,7 @@ function ResetPasswordForm() {
       </p>
 
       <AuthPageHeader
+        action={<LanguageSwitcher />}
         id="reset-password-title"
         introId={headerIntroId}
         title={headerTitle}

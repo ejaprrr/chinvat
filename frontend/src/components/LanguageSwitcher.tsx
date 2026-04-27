@@ -8,7 +8,7 @@ function LanguageSwitcher() {
 
   return (
     <label
-      className="inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-[0.8125rem] text-muted focus-within:outline-none focus-within:ring-4 focus-within:ring-brand-500/15"
+      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border-subtle bg-white px-3 text-[0.8125rem] text-muted shadow-sm focus-within:outline-none focus-within:ring-4 focus-within:ring-brand-500/10"
       htmlFor="locale-select"
     >
       <span className="sr-only">
@@ -20,7 +20,7 @@ function LanguageSwitcher() {
       <select
         id="locale-select"
         value={locale}
-        className="min-h-11 min-w-0 rounded-sm bg-transparent py-1 text-[0.8125rem] text-inherit outline-none"
+        className="min-h-11 min-w-0 rounded-sm bg-transparent py-1 text-[0.8125rem] font-medium text-inherit outline-none"
         onChange={(event) =>
           void i18n.changeLanguage(event.target.value as Locale)
         }

@@ -16,10 +16,10 @@ type FormFieldProps = {
 };
 
 const styles = {
-  root: "space-y-2",
-  labelRow: "flex items-center justify-between gap-4",
+  root: "space-y-2.5",
+  labelRow: "flex flex-col gap-1.5 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between min-[480px]:gap-4",
   label: "flex items-center gap-1 text-sm font-medium text-ink",
-  labelActionRow: "shrink-0",
+  labelActionRow: "shrink-0 self-start min-[480px]:self-auto",
   supportingRow:
     "flex flex-col gap-1.5 min-[480px]:flex-row min-[480px]:items-start min-[480px]:justify-between min-[480px]:gap-4",
   supportingCopy: "min-w-0 flex-1",

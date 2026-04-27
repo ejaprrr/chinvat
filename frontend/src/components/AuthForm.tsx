@@ -17,6 +17,7 @@ import {
   ActionButton,
   ActionLink,
 } from "./ui/Action";
+import LanguageSwitcher from "./LanguageSwitcher";
 import AuthPageHeader from "./ui/AuthPageHeader";
 import FormField from "./ui/FormField";
 
@@ -51,8 +52,8 @@ type AuthFormProps = {
 
 const styles = {
   form: {
-    root: "flex flex-col gap-5",
-    sectionStack: "flex flex-col gap-4",
+    root: "flex flex-col gap-4.5",
+    sectionStack: "flex flex-col gap-3.5",
     requiredMark: "text-brand-600",
     hint: "text-[0.8125rem] leading-5 text-muted",
     warning: "text-[0.8125rem] leading-5 text-warning-ink",
@@ -61,20 +62,21 @@ const styles = {
     auxiliaryRegion: "flex flex-col gap-2.5",
   },
   status: {
-    base: "flex items-start gap-2 text-[0.8125rem] leading-5",
+    base: "rounded-2xl border px-4 py-3 flex items-start gap-2 text-[0.8125rem] leading-5",
     default: "text-muted",
-    critical: "text-danger-700",
+    critical: "border-danger-200 bg-danger-50 text-danger-700",
+    success: "border-border-subtle bg-surface-subtle text-muted",
     icon: "mt-0.5 shrink-0",
   },
   control: {
     inputBase:
-      "block min-h-11 w-full rounded-lg border bg-white px-3.5 py-3 text-sm text-ink outline-none transition disabled:cursor-not-allowed disabled:opacity-60",
+      "block min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-60",
     inputDefault:
       "border-border-subtle focus:border-brand-500 focus:ring-3 focus:ring-brand-500/15",
     inputError:
       "border-danger-200 focus:border-danger-700 focus:ring-3 focus:ring-danger-700/10",
     iconButton:
-      "absolute inset-y-0 right-0 inline-flex min-h-11 min-w-11 items-center justify-center rounded-r-lg px-3 text-muted transition hover:bg-surface-hover hover:text-ink focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
+      "absolute inset-y-0 right-0 inline-flex min-h-12 min-w-12 items-center justify-center rounded-r-xl px-3 text-muted transition hover:bg-surface-hover hover:text-ink focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
   },
 } as const;
 
@@ -224,6 +226,7 @@ function AuthForm({
       aria-busy={isSubmitting || certificateLaunching}
     >
       <AuthPageHeader
+        action={<LanguageSwitcher />}
         id="login-title"
         title={t("auth.title")}
         intro={t("auth.intro")}
@@ -245,7 +248,7 @@ function AuthForm({
               styles.status.base,
               isErrorStatus
                 ? styles.status.critical
-                : styles.status.default,
+                : styles.status.success,
             )}
             role={isErrorStatus ? "alert" : "status"}
             aria-live={isErrorStatus ? "assertive" : "polite"}
@@ -317,7 +320,7 @@ function AuthForm({
             <ActionLink
               to={appRoutes.resetPassword}
               variant="text"
-              className="min-h-0 px-0 py-0 text-[0.8125rem]"
+              className="w-auto px-0 py-0 text-[0.8125rem]"
             >
               {t("auth.actions.resetPassword")}
             </ActionLink>
@@ -445,7 +448,7 @@ function AuthForm({
             </ActionButton>
             <p
               id={certificateHintId}
-              className={`${styles.form.hint} text-center leading-5`}
+              className={`${styles.form.hint} px-2 text-center leading-5`}
             >
               {t("auth.certificate.hint")}
             </p>
