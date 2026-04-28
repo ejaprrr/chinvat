@@ -12,6 +12,11 @@ export const backendRequests = {
     path: "/api/auth/login",
     description: "Primary username/password sign-in endpoint.",
   },
+  registerUser: {
+    method: "POST",
+    path: "/api/auth/register",
+    description: "User self-service registration endpoint.",
+  },
   certificateLogin: {
     method: "GET",
     path: "/cert-login",

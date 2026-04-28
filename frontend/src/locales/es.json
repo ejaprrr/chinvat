@@ -1,6 +1,7 @@
 {
   "meta": {
     "pageTitle": "Acceder a chinvat",
+    "registerPageTitle": "Crear cuenta | chinvat",
     "resetPasswordPageTitle": "Restablecer contraseña | chinvat"
   },
   "accessibility": {
@@ -47,6 +48,107 @@
       "action": "Usar certificado FNMT",
       "hint": "Te llevaremos al acceso con certificado. Si el navegador encuentra un certificado FNMT, selecciónalo cuando te lo pida.",
       "unavailable": "El acceso con certificado FNMT solo está disponible en navegadores de escritorio."
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "intro": "Registra un nuevo usuario con sus datos principales, contraseña y un fichero opcional de certificado FNMT.",
+      "footer": "La solicitud de registro crea el perfil de usuario y su registro de contraseña asociado.",
+      "levelNotice": "Los registros de autoservicio se crean con el nivel de acceso predeterminado: normal.",
+      "loginPrompt": "¿Todavía no tienes cuenta?",
+      "progress": {
+        "current": "Paso {{current}} de {{total}}"
+      },
+      "actions": {
+        "open": "Crear cuenta",
+        "next": "Continuar",
+        "back": "Volver",
+        "submit": "Crear cuenta",
+        "submitting": "Creando cuenta..."
+      },
+      "steps": {
+        "identity": {
+          "title": "Identidad de la cuenta",
+          "intro": "Empieza con los campos principales que definen al nuevo usuario."
+        },
+        "contact": {
+          "title": "Contacto y dirección",
+          "intro": "Añade el correo principal y un único campo de ubicación para que podamos normalizarlo en la base de datos."
+        },
+        "security": {
+          "title": "Contraseña y acceso",
+          "intro": "Crea el registro de contraseña para la nueva cuenta."
+        },
+        "certificate": {
+          "title": "Certificado FNMT",
+          "intro": "Adjunta ahora un certificado FNMT o sáltate este paso y termina el registro."
+        },
+        "done": {
+          "title": "Cuenta creada",
+          "intro": "La nueva cuenta ya está lista para iniciar sesión."
+        }
+      },
+      "status": {
+        "success": "La cuenta se ha creado correctamente. Ya puedes iniciar sesión.",
+        "error": "No hemos podido crear la cuenta. Revisa los datos e inténtalo de nuevo.",
+        "networkError": "No se ha podido conectar con el servicio de registro. Revisa tu conexión e inténtalo de nuevo."
+      },
+      "fields": {
+        "username": {
+          "label": "Usuario",
+          "hint": "Este identificador se usa para iniciar sesión y debe ser único.",
+          "required": "Introduce un nombre de usuario."
+        },
+        "fullName": {
+          "label": "Nombre completo",
+          "hint": "Introduce el nombre completo de la persona o el contacto institucional.",
+          "required": "Introduce el nombre completo."
+        },
+        "phoneNumber": {
+          "label": "Teléfono",
+          "hint": "Opcional. El prefijo del país se detecta según el idioma actual de la página y puedes cambiarlo antes de escribir el número local.",
+          "countryCodeLabel": "Prefijo internacional del teléfono",
+          "countryCodeHint": "Prefijo telefónico seleccionado: {{dialCode}}. Puedes buscar por país, código ISO o prefijo."
+        },
+        "email": {
+          "label": "Correo electrónico",
+          "hint": "Usaremos este correo para el acceso y los avisos de recuperación de cuenta.",
+          "required": "Introduce un correo electrónico.",
+          "invalid": "Introduce un correo electrónico válido."
+        },
+        "location": {
+          "label": "Ubicación",
+          "hint": "Opcional. Empieza a escribir la dirección completa, incluido el número, y elige una sugerencia exacta.",
+          "lookupLoading": "Buscando sugerencias de ubicación...",
+          "lookupResolved": "Normalizado a partir de: {{location}}",
+          "lookupError": "Ahora mismo no hemos podido cargar sugerencias de ubicación. Puedes continuar igualmente.",
+          "selectExact": "Elige una de las sugerencias exactas que incluya número.",
+          "needsHouseNumber": "Incluye el número en la búsqueda antes de que podamos sugerir direcciones.",
+          "noExactResults": "No hemos encontrado una dirección exacta con número.",
+          "requiredExact": "Elige una dirección exacta que incluya el número."
+        },
+        "defaultLanguage": {
+          "label": "Idioma predeterminado",
+          "hint": "Este idioma se guardará como idioma preferido de la interfaz."
+        },
+        "password": {
+          "label": "Contraseña",
+          "hint": "Usa al menos 8 caracteres.",
+          "required": "Introduce una contraseña.",
+          "length": "Usa al menos {{count}} caracteres."
+        },
+        "confirmPassword": {
+          "label": "Confirmar contraseña",
+          "hint": "Vuelve a escribir la contraseña exactamente igual que arriba.",
+          "required": "Confirma la contraseña.",
+          "mismatch": "Las contraseñas no coinciden."
+        },
+        "certificate": {
+          "label": "Certificado FNMT",
+          "hint": "Opcional. Sube ahora el fichero del certificado si esta cuenta deberá acceder más adelante con FNMT.",
+          "empty": "No se ha seleccionado ningún certificado.",
+          "action": "Seleccionar archivo"
+        }
+      }
     },
     "resetPassword": {
       "title": "Restablecer contraseña",

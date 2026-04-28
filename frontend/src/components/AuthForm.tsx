@@ -423,6 +423,17 @@ function AuthForm({
           : t("auth.actions.continue")}
       </ActionButton>
 
+      <p className="text-center text-sm text-muted">
+        {t("auth.register.loginPrompt")}{" "}
+        <ActionLink
+          to={appRoutes.register}
+          variant="text"
+          className="min-h-0 w-auto px-0 py-0 text-sm"
+        >
+          {t("auth.register.actions.open")}
+        </ActionLink>
+      </p>
+
       <div
         className={styles.form.auxiliaryRegion}
         aria-label={t("auth.certificate.action")}

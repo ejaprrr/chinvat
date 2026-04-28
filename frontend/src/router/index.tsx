@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import AuthLayout from "../layouts/AuthLayout";
 import LoginPage from "../pages/LoginPage";
+import RegisterPage from "../pages/RegisterPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
 import { appRoutes, authRouteSegments } from "./paths";
 
@@ -12,6 +13,10 @@ export const router = createBrowserRouter(
         {
           index: true,
           element: <LoginPage />,
+        },
+        {
+          path: authRouteSegments.register,
+          element: <RegisterPage />,
         },
         {
           path: authRouteSegments.resetPassword,

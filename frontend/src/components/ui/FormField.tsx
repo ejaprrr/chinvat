@@ -17,7 +17,8 @@ type FormFieldProps = {
 
 const styles = {
   root: "space-y-2.5",
-  labelRow: "flex flex-col gap-1.5 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between min-[480px]:gap-4",
+  labelRow:
+    "flex flex-col gap-1.5 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between min-[480px]:gap-4",
   label: "flex items-center gap-1 text-sm font-medium text-ink",
   labelActionRow: "shrink-0 self-start min-[480px]:self-auto",
   supportingRow:
@@ -59,10 +60,7 @@ function FormField({
         <div className={styles.supportingRow}>
           <div className={styles.supportingCopy}>
             {hint ? (
-              <p
-                id={hintId}
-                className={error ? "sr-only" : styles.hint}
-              >
+              <p id={hintId} className={error ? "sr-only" : styles.hint}>
                 {hint}
               </p>
             ) : null}
