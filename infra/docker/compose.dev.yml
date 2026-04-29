@@ -74,6 +74,15 @@ services:
       context: ../..
       dockerfile: backend/Dockerfile
       target: dev
+    develop:
+      watch:
+        - path: ../../backend
+          action: rebuild
+          ignore:
+            - ../../backend/**/target/
+            - ../../backend/.mvn/
+            - ../../backend/.idea/
+            - ../../backend/.vscode/
     environment:
       SPRING_PROFILES_ACTIVE: dev
       SERVER_PORT: 8080
@@ -101,6 +110,7 @@ services:
     environment:
       UPSTREAM_HOST: backend
       UPSTREAM_PORT: 8080
+      HTTPS_REDIRECT_PORT: ${NGINX_HTTPS_PORT:-8443}
       MTLS_VERIFY_MODE: optional
       TLS_CERT_PATH: /etc/nginx/tls/server.crt
       TLS_KEY_PATH: /etc/nginx/tls/server.key

@@ -14,20 +14,33 @@ public interface AuthPasswordResetJpaRepository
 
   @Query(
       "SELECT r FROM AuthPasswordResetJpaEntity r "
-          + "WHERE r.resetTokenHash = :hash "
+          + "WHERE r.userId = :userId "
+          + "AND r.resetTokenHash = :hash "
           + "AND r.consumedAt IS NULL "
           + "AND r.expiresAt > :now")
-  Optional<AuthPasswordResetJpaEntity> findActiveByTokenHash(
+  Optional<AuthPasswordResetJpaEntity> findActiveByUserIdAndTokenHash(
+      @Param("userId") Long userId,
       @Param("hash") String hash, @Param("now") Instant now);
 
   @Modifying
   @Query(
       "UPDATE AuthPasswordResetJpaEntity r "
           + "SET r.consumedAt = :now "
-          + "WHERE r.resetTokenHash = :hash "
+          + "WHERE r.userId = :userId "
+          + "AND r.resetTokenHash = :hash "
           + "AND r.consumedAt IS NULL "
           + "AND r.expiresAt > :now")
-  int consumeByTokenHash(
+  int consumeByUserIdAndTokenHash(
+      @Param("userId") Long userId,
       @Param("hash") String hash, @Param("now") Instant now);
+
+  @Modifying
+  @Query(
+      "UPDATE AuthPasswordResetJpaEntity r "
+          + "SET r.consumedAt = :now "
+          + "WHERE r.userId = :userId "
+          + "AND r.consumedAt IS NULL "
+          + "AND r.expiresAt > :now")
+  int revokeActiveByUserId(@Param("userId") Long userId, @Param("now") Instant now);
 }
 

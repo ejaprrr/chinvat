@@ -10,9 +10,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
-import java.util.Objects;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +32,9 @@ public class AuthMeController {
     this.authApiMapper = authApiMapper;
   }
 
-  @Operation(summary = "Get current user profile", security = {})
+  @Operation(
+      summary = "Get current user profile",
+      description = "Returns profile information for the authenticated user.")
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
@@ -40,6 +42,7 @@ public class AuthMeController {
         content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthMeResponse.class))),
     @ApiResponse(responseCode = "401", description = "Unauthorized")
   })
+  @SecurityRequirement(name = "bearerAuth")
   @GetMapping("/me")
   public ResponseEntity<AuthMeResponse> me(Authentication authentication) {
     TokenPrincipal principal = principal(authentication);

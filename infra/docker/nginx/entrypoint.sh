@@ -9,6 +9,7 @@ MTLS_CA_PATH=${MTLS_CA_PATH:-/etc/nginx/mtls/ca.crt}
 UPSTREAM_HOST=${UPSTREAM_HOST:-app}
 UPSTREAM_PORT=${UPSTREAM_PORT:-8080}
 MTLS_VERIFY_MODE=${MTLS_VERIFY_MODE:-optional}
+HTTPS_REDIRECT_PORT=${HTTPS_REDIRECT_PORT:-8443}
 
 mkdir -p "$TLS_DIR" "$MTLS_DIR"
 
@@ -28,7 +29,7 @@ if [ ! -f "$MTLS_CA_PATH" ]; then
     -subj "/CN=chinvat-local-ca"
 fi
 
-envsubst '${UPSTREAM_HOST} ${UPSTREAM_PORT} ${MTLS_VERIFY_MODE} ${TLS_CERT_PATH} ${TLS_KEY_PATH} ${MTLS_CA_PATH}' \
+envsubst '${UPSTREAM_HOST} ${UPSTREAM_PORT} ${MTLS_VERIFY_MODE} ${TLS_CERT_PATH} ${TLS_KEY_PATH} ${MTLS_CA_PATH} ${HTTPS_REDIRECT_PORT}' \
   < /etc/nginx/templates/gateway.conf.template \
   > /etc/nginx/conf.d/default.conf
 

@@ -49,6 +49,15 @@ make infra-config-dev
 make infra-dev-up
 ```
 
+For Docker-based development with automatic backend rebuild/restart on source changes:
+
+```bash
+cd /Users/jiriposavad/Documents/FullStack/chinvat-malaga-2026/infra
+make dev-up
+```
+
+Use `make dev-up-nowatch` if you need the old one-shot startup without file watching.
+
 ## Run Application
 
 ```bash

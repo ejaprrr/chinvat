@@ -37,7 +37,7 @@ class RequestPasswordResetUseCaseTest {
   @Mock private AuthClockPort authClockPort;
 
   @Test
-  void execute_knownEmail_generatesAndStoresResetToken() {
+    void execute_knownEmail_generatesAndStoresResetCode() {
     RequestPasswordResetUseCase sut =
         new RequestPasswordResetUseCase(
             authUsersPort, tokenGeneratorPort, passwordResetTokenPort, authClockPort, TTL);
@@ -53,15 +53,15 @@ class RequestPasswordResetUseCaseTest {
     given(authClockPort.now()).willReturn(NOW);
     given(authUsersPort.findByEmail("alice@example.com")).willReturn(Optional.of(user));
     given(tokenGeneratorPort.generateToken(10L, "alice@example.com", expiresAt))
-        .willReturn("raw-reset-token");
+        .willReturn("482193");
 
     PasswordResetRequestResult result = sut.execute(cmd);
 
-    assertThat(result.resetToken()).isEqualTo("raw-reset-token");
+    assertThat(result.resetCode()).isEqualTo("482193");
     assertThat(result.requestedAt()).isEqualTo(NOW);
 
     verify(passwordResetTokenPort)
-        .save(eq(10L), eq("raw-reset-token"), eq(NOW), eq(expiresAt), eq("127.0.0.1"), eq("Agent"));
+        .save(eq(10L), eq("482193"), eq(NOW), eq(expiresAt), eq("127.0.0.1"), eq("Agent"));
   }
 
   @Test
@@ -78,7 +78,7 @@ class RequestPasswordResetUseCaseTest {
 
     PasswordResetRequestResult result = sut.execute(cmd);
 
-    assertThat(result.resetToken()).isNull();
+    assertThat(result.resetCode()).isNull();
     assertThat(result.requestedAt()).isEqualTo(NOW);
 
     verifyNoInteractions(tokenGeneratorPort, passwordResetTokenPort);

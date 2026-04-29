@@ -18,7 +18,7 @@ public class AuthPasswordResetJpaEntity {
   @Column(name = "user_id", nullable = false)
   private Long userId;
 
-  @Column(name = "reset_token_hash", nullable = false, unique = true, length = 255)
+  @Column(name = "reset_token_hash", nullable = false, length = 255)
   private String resetTokenHash;
 
   @Column(name = "issued_at", nullable = false)

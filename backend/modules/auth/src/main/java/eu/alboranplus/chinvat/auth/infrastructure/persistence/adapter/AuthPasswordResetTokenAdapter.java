@@ -26,12 +26,14 @@ public class AuthPasswordResetTokenAdapter implements AuthPasswordResetTokenPort
   @Transactional
   public void save(
       Long userId,
-      String rawToken,
+      String rawCode,
       Instant issuedAt,
       Instant expiresAt,
       String clientIp,
       String userAgent) {
-    String hash = sha256Hex(rawToken);
+    repository.revokeActiveByUserId(userId, issuedAt);
+
+    String hash = sha256Hex(rawCode);
     AuthPasswordResetJpaEntity entity =
         new AuthPasswordResetJpaEntity(
             UUID.randomUUID(), userId, hash, issuedAt, expiresAt, clientIp, userAgent);
@@ -40,15 +42,14 @@ public class AuthPasswordResetTokenAdapter implements AuthPasswordResetTokenPort
 
   @Override
   @Transactional
-  public Optional<Long> consume(String rawToken, Instant now) {
-    String hash = sha256Hex(rawToken);
-    // Load user id if token is active, then mark consumed.
-    Optional<AuthPasswordResetJpaEntity> active = repository.findActiveByTokenHash(hash, now);
+  public Optional<Long> consume(Long userId, String rawCode, Instant now) {
+    String hash = sha256Hex(rawCode);
+    Optional<AuthPasswordResetJpaEntity> active =
+        repository.findActiveByUserIdAndTokenHash(userId, hash, now);
     if (active.isEmpty()) {
       return Optional.empty();
     }
-    int updated = repository.consumeByTokenHash(hash, now);
-    // Consume should succeed if active record still existed.
+    int updated = repository.consumeByUserIdAndTokenHash(userId, hash, now);
     return updated > 0 ? active.map(AuthPasswordResetJpaEntity::getUserId) : Optional.empty();
   }
 

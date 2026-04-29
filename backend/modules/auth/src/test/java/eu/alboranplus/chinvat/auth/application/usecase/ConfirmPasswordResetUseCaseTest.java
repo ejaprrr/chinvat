@@ -8,13 +8,16 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import eu.alboranplus.chinvat.auth.application.command.ConfirmPasswordResetCommand;
+import eu.alboranplus.chinvat.auth.application.dto.AuthUserProjection;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthClockPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthPasswordChangePort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthPasswordResetTokenPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
+import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -26,6 +29,7 @@ class ConfirmPasswordResetUseCaseTest {
 
   private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
 
+  @Mock private AuthUsersPort authUsersPort;
   @Mock private AuthPasswordResetTokenPort passwordResetTokenPort;
   @Mock private AuthPasswordChangePort passwordChangePort;
   @Mock private AuthSessionPort authSessionPort;
@@ -34,12 +38,15 @@ class ConfirmPasswordResetUseCaseTest {
   @InjectMocks private ConfirmPasswordResetUseCase sut;
 
   @Test
-  void execute_validToken_changesPasswordAndRevokesSessions() {
+  void execute_validCode_changesPasswordAndRevokesSessions() {
     ConfirmPasswordResetCommand cmd =
-        new ConfirmPasswordResetCommand("reset-token", "NewPass123456!", "127.0.0.1", "Agent");
+        new ConfirmPasswordResetCommand(
+            "alice@example.com", "482193", "NewPass123456!", "127.0.0.1", "Agent");
 
     given(authClockPort.now()).willReturn(NOW);
-    given(passwordResetTokenPort.consume("reset-token", NOW)).willReturn(Optional.of(10L));
+    given(authUsersPort.findByEmail("alice@example.com"))
+        .willReturn(Optional.of(new AuthUserProjection(10L, "alice@example.com", "Alice", Set.of("USER"), true)));
+    given(passwordResetTokenPort.consume(10L, "482193", NOW)).willReturn(Optional.of(10L));
 
     sut.execute(cmd);
 
@@ -48,12 +55,15 @@ class ConfirmPasswordResetUseCaseTest {
   }
 
   @Test
-  void execute_invalidToken_throwsInvalidAuthentication() {
+  void execute_invalidCode_throwsInvalidAuthentication() {
     ConfirmPasswordResetCommand cmd =
-        new ConfirmPasswordResetCommand("bad-token", "NewPass123456!", "127.0.0.1", "Agent");
+        new ConfirmPasswordResetCommand(
+            "alice@example.com", "000000", "NewPass123456!", "127.0.0.1", "Agent");
 
     given(authClockPort.now()).willReturn(NOW);
-    given(passwordResetTokenPort.consume("bad-token", NOW)).willReturn(Optional.empty());
+    given(authUsersPort.findByEmail("alice@example.com"))
+        .willReturn(Optional.of(new AuthUserProjection(10L, "alice@example.com", "Alice", Set.of("USER"), true)));
+    given(passwordResetTokenPort.consume(10L, "000000", NOW)).willReturn(Optional.empty());
 
     assertThatThrownBy(() -> sut.execute(cmd))
         .isInstanceOf(InvalidAuthenticationException.class);

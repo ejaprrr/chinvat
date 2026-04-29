@@ -1,5 +1,5 @@
 package eu.alboranplus.chinvat.auth.application.command;
 
 public record ConfirmPasswordResetCommand(
-    String resetToken, String newPassword, String clientIp, String userAgent) {}
+    String email, String resetCode, String newPassword, String clientIp, String userAgent) {}
 

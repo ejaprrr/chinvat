@@ -36,6 +36,8 @@ public class AuthSessionAdapter implements AuthSessionPort {
       Instant expiresAt,
       String clientIp,
       String userAgent) {
+    repository.revokeActiveByUserIdAndTokenKind(userId, tokenKind.name(), issuedAt);
+
     String hash = sha256Hex(rawToken);
     AuthSessionJpaEntity entity =
         new AuthSessionJpaEntity(

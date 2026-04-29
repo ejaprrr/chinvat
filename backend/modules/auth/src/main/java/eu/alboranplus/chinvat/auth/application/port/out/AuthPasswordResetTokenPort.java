@@ -6,16 +6,12 @@ import java.util.Optional;
 public interface AuthPasswordResetTokenPort {
   void save(
       Long userId,
-      String rawToken,
+      String rawCode,
       Instant issuedAt,
       Instant expiresAt,
       String clientIp,
       String userAgent);
 
-  /**
-   * Consumes a raw reset token and returns the associated user id if the token is valid
-   * (not expired, not consumed).
-   */
-  Optional<Long> consume(String rawToken, Instant now);
+  Optional<Long> consume(Long userId, String rawCode, Instant now);
 }
 

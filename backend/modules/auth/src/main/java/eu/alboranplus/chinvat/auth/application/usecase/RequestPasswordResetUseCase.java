@@ -48,13 +48,13 @@ public class RequestPasswordResetUseCase {
     var user = userOpt.get();
     Instant expiresAt = now.plus(resetTokenTtl);
 
-    String resetToken =
+    String resetCode =
         tokenGeneratorPort.generateToken(user.userId(), user.email(), expiresAt);
     passwordResetTokenPort.save(
-        user.userId(), resetToken, now, expiresAt, command.clientIp(), command.userAgent());
+      user.userId(), resetCode, now, expiresAt, command.clientIp(), command.userAgent());
 
-    String tokenForResponse = command.revealToken() ? resetToken : null;
-    return new PasswordResetRequestResult(tokenForResponse, now);
+    String codeForResponse = command.revealCode() ? resetCode : null;
+    return new PasswordResetRequestResult(codeForResponse, now);
   }
 }
 

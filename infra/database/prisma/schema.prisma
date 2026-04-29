@@ -93,7 +93,7 @@ model UserCertificate {
 model AuthPasswordReset {
   id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId         BigInt
-  resetTokenHash String    @unique @db.VarChar(255)
+  resetTokenHash String    @db.VarChar(255)
   issuedAt       DateTime  @db.Timestamptz
   expiresAt      DateTime  @db.Timestamptz
   consumedAt     DateTime? @db.Timestamptz
@@ -103,6 +103,7 @@ model AuthPasswordReset {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId], name: "idx_auth_password_reset_user_id")
+  @@index([userId, resetTokenHash], name: "idx_auth_password_reset_user_hash")
   @@index([expiresAt], name: "idx_auth_password_reset_expires_at")
   @@map("auth_password_reset")
 }

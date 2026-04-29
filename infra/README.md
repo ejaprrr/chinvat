@@ -30,8 +30,14 @@ Compose defaults come from:
 
 NGINX exposes:
 
-- HTTP on `8080`
-- HTTPS on `8443`
+- HTTP on `8080` (redirect-only to HTTPS)
+- HTTPS on `8443` (primary entrypoint)
+
+Use HTTPS for local API calls:
+
+```bash
+curl -k https://localhost:8443/api/v1/health
+```
 
 The HTTPS gateway is prepared for mTLS with:
 

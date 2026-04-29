@@ -4,11 +4,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import eu.alboranplus.chinvat.auth.application.dto.AuthResult;
 import eu.alboranplus.chinvat.auth.application.dto.IssuedTokenPair;
+import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
 import eu.alboranplus.chinvat.auth.application.facade.AuthFacade;
 import java.time.Instant;
 import java.util.Optional;
@@ -138,6 +140,37 @@ class AuthControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"accessToken\":\"some-access\",\"refreshToken\":\"some-refresh\"}"))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void passwordResetRequest_debugRevealReturnsResetCode() throws Exception {
+    given(authFacade.requestPasswordReset(any()))
+        .willReturn(new eu.alboranplus.chinvat.auth.application.dto.PasswordResetRequestResult("482193", Instant.now()));
+    given(authFacade.validateAccessToken(any())).willReturn(Optional.empty());
+
+    mockMvc
+        .perform(
+            post("/api/v1/auth/password-reset/request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .header("X-Debug-Reveal-Reset-Code", "true")
+                .content("{\"email\":\"alice@example.com\"}"))
+        .andExpect(status().isAccepted())
+        .andExpect(jsonPath("$.resetCode").value("482193"));
+  }
+
+  @Test
+  void changePassword_authenticated_returns204() throws Exception {
+    doNothing().when(authFacade).changePassword(any(), any());
+    given(authFacade.validateAccessToken("valid-access"))
+        .willReturn(Optional.of(new TokenPrincipal(1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"))));
+
+    mockMvc
+        .perform(
+            post("/api/v1/auth/password/change")
+                .header("Authorization", "Bearer valid-access")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"currentPassword\":\"CurrentPass1!\",\"newPassword\":\"NewPassword123!\"}"))
         .andExpect(status().isNoContent());
   }
 }

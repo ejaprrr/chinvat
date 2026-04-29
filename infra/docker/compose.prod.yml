@@ -83,6 +83,7 @@ services:
     environment:
       UPSTREAM_HOST: backend
       UPSTREAM_PORT: 8080
+      HTTPS_REDIRECT_PORT: ${NGINX_HTTPS_PORT:-443}
       MTLS_VERIFY_MODE: optional
       TLS_CERT_PATH: /etc/nginx/tls/server.crt
       TLS_KEY_PATH: /etc/nginx/tls/server.key

@@ -4,6 +4,7 @@ import eu.alboranplus.chinvat.auth.api.dto.AuthApiErrorResponse;
 import eu.alboranplus.chinvat.auth.api.dto.AuthResponse;
 import eu.alboranplus.chinvat.auth.api.dto.AuthSessionResponse;
 import eu.alboranplus.chinvat.auth.api.dto.AuthMeResponse;
+import eu.alboranplus.chinvat.auth.api.dto.PasswordChangeRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetConfirmRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetRequestResponse;
@@ -24,10 +25,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.Optional;
+import org.springframework.security.core.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -116,7 +119,7 @@ public class AuthController {
 
   @Operation(
       summary = "Password reset request",
-      description = "Requests a password reset token for the given email.",
+      description = "Requests a six-digit password reset code for the given email.",
       security = {})
   @ApiResponses({
     @ApiResponse(
@@ -134,25 +137,26 @@ public class AuthController {
     String clientIp = resolveClientIp(httpRequest);
     String userAgent = httpRequest.getHeader("User-Agent");
 
-    // In local/test profile, the token can be returned for integration/e2e tests.
-    boolean revealToken = Boolean.parseBoolean(
-        httpRequest.getHeader("X-Debug-Reveal-Reset-Token") != null ? "true" : "false");
+    // In local/test profile, the code can be returned for integration/e2e tests.
+    boolean revealCode =
+        httpRequest.getHeader("X-Debug-Reveal-Reset-Code") != null
+            || httpRequest.getHeader("X-Debug-Reveal-Reset-Token") != null;
 
     var result =
         authFacade.requestPasswordReset(
-            authApiMapper.toRequestPasswordResetCommand(request, revealToken, clientIp, userAgent));
+            authApiMapper.toRequestPasswordResetCommand(request, revealCode, clientIp, userAgent));
     return ResponseEntity.accepted().body(authApiMapper.toPasswordResetRequestResponse(result));
   }
 
   @Operation(
       summary = "Password reset confirm",
-      description = "Consumes the password reset token and updates the user password.",
+      description = "Consumes the six-digit password reset code and updates the user password.",
       security = {})
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Password updated successfully"),
     @ApiResponse(
         responseCode = "401",
-        description = "Invalid or expired reset token",
+        description = "Invalid or expired reset code",
         content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthApiErrorResponse.class)))
   })
   @PostMapping("/password-reset/confirm")
@@ -165,6 +169,28 @@ public class AuthController {
         authApiMapper.toConfirmPasswordResetCommand(request, clientIp, userAgent));
     return ResponseEntity.noContent().build();
   }
+
+    @Operation(
+            summary = "Change password",
+            description = "Changes the current user's password using the current password.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Password changed successfully"),
+        @ApiResponse(
+                responseCode = "400",
+                description = "Validation failed",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthApiErrorResponse.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Current password invalid",
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthApiErrorResponse.class)))
+    })
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping("/password/change")
+    public ResponseEntity<Void> changePassword(
+            Authentication authentication, @Valid @RequestBody PasswordChangeRequest request) {
+        authFacade.changePassword(principal(authentication), authApiMapper.toChangePasswordCommand(request));
+        return ResponseEntity.noContent().build();
+    }
 
   @Operation(
       summary = "Refresh tokens",
@@ -227,6 +253,16 @@ public class AuthController {
     authFacade.logout(authApiMapper.toLogoutCommand(request));
     return ResponseEntity.noContent().build();
   }
+
+    private static eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal principal(
+            Authentication authentication) {
+        Object details = authentication == null ? null : authentication.getDetails();
+        if (details instanceof eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal tokenPrincipal) {
+            return tokenPrincipal;
+        }
+        throw new eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException(
+                "Authenticated principal is not available");
+    }
 
   private static String resolveClientIp(HttpServletRequest request) {
     String forwarded = request.getHeader("X-Forwarded-For");

@@ -5,10 +5,12 @@ import eu.alboranplus.chinvat.auth.api.mapper.AuthApiMapper;
 import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
 import eu.alboranplus.chinvat.auth.application.facade.AuthFacade;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -34,7 +36,9 @@ public class AuthSessionsController {
     this.authApiMapper = authApiMapper;
   }
 
-  @Operation(summary = "List active sessions", security = {})
+  @Operation(
+      summary = "List active sessions",
+      description = "Returns all currently active sessions for the authenticated user.")
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
@@ -42,30 +46,39 @@ public class AuthSessionsController {
         content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthSessionResponse.class))),
     @ApiResponse(responseCode = "401", description = "Unauthorized")
   })
+  @SecurityRequirement(name = "bearerAuth")
   @GetMapping("/sessions")
   public ResponseEntity<List<AuthSessionResponse>> list(Authentication authentication) {
     TokenPrincipal principal = principal(authentication);
     return ResponseEntity.ok(authFacade.listSessions(principal).stream().map(authApiMapper::toSessionResponse).toList());
   }
 
-  @Operation(summary = "Revoke a single active session", security = {})
+  @Operation(
+      summary = "Revoke a single active session",
+      description = "Revokes one active session by session ID for the authenticated user.")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Session revoked"),
+    @ApiResponse(responseCode = "401", description = "Unauthorized"),
     @ApiResponse(responseCode = "404", description = "Session not found")
   })
+  @SecurityRequirement(name = "bearerAuth")
   @DeleteMapping("/sessions/{sessionId}")
   public ResponseEntity<Void> revoke(
-      Authentication authentication, @PathVariable @NotNull UUID sessionId) {
+      Authentication authentication,
+      @Parameter(description = "Session UUID to revoke") @PathVariable @NotNull UUID sessionId) {
     TokenPrincipal principal = principal(authentication);
     authFacade.revokeSession(principal, sessionId);
     return ResponseEntity.noContent().build();
   }
 
-  @Operation(summary = "Revoke all active sessions", security = {})
+  @Operation(
+      summary = "Revoke all active sessions",
+      description = "Revokes all active sessions for the authenticated user.")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "All sessions revoked"),
     @ApiResponse(responseCode = "401", description = "Unauthorized")
   })
+  @SecurityRequirement(name = "bearerAuth")
   @DeleteMapping("/sessions")
   public ResponseEntity<Void> logoutAll(Authentication authentication) {
     TokenPrincipal principal = principal(authentication);

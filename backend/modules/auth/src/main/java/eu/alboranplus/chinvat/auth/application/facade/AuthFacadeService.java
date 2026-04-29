@@ -3,6 +3,7 @@ package eu.alboranplus.chinvat.auth.application.facade;
 import eu.alboranplus.chinvat.auth.application.command.LoginCommand;
 import eu.alboranplus.chinvat.auth.application.command.LogoutCommand;
 import eu.alboranplus.chinvat.auth.application.command.RefreshCommand;
+import eu.alboranplus.chinvat.auth.application.command.ChangePasswordCommand;
 import eu.alboranplus.chinvat.auth.application.command.ConfirmPasswordResetCommand;
 import eu.alboranplus.chinvat.auth.application.command.RequestPasswordResetCommand;
 import eu.alboranplus.chinvat.auth.application.command.RegisterCommand;
@@ -14,6 +15,7 @@ import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
 import eu.alboranplus.chinvat.auth.application.usecase.LoginUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.RegisterUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.RequestPasswordResetUseCase;
+import eu.alboranplus.chinvat.auth.application.usecase.AuthChangePasswordUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.ConfirmPasswordResetUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.LogoutUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.GetMeUseCase;
@@ -37,6 +39,7 @@ public class AuthFacadeService implements AuthFacade {
   private final RegisterUseCase registerUseCase;
   private final RequestPasswordResetUseCase requestPasswordResetUseCase;
   private final ConfirmPasswordResetUseCase confirmPasswordResetUseCase;
+  private final AuthChangePasswordUseCase changePasswordUseCase;
   private final GetMeUseCase getMeUseCase;
   private final ListSessionsUseCase listSessionsUseCase;
   private final RevokeSessionUseCase revokeSessionUseCase;
@@ -50,6 +53,7 @@ public class AuthFacadeService implements AuthFacade {
       RegisterUseCase registerUseCase,
       RequestPasswordResetUseCase requestPasswordResetUseCase,
       ConfirmPasswordResetUseCase confirmPasswordResetUseCase,
+      AuthChangePasswordUseCase changePasswordUseCase,
       GetMeUseCase getMeUseCase,
       ListSessionsUseCase listSessionsUseCase,
       RevokeSessionUseCase revokeSessionUseCase,
@@ -61,6 +65,7 @@ public class AuthFacadeService implements AuthFacade {
     this.registerUseCase = registerUseCase;
     this.requestPasswordResetUseCase = requestPasswordResetUseCase;
     this.confirmPasswordResetUseCase = confirmPasswordResetUseCase;
+    this.changePasswordUseCase = changePasswordUseCase;
     this.getMeUseCase = getMeUseCase;
     this.listSessionsUseCase = listSessionsUseCase;
     this.revokeSessionUseCase = revokeSessionUseCase;
@@ -100,6 +105,11 @@ public class AuthFacadeService implements AuthFacade {
   @Override
   public void confirmPasswordReset(ConfirmPasswordResetCommand command) {
     confirmPasswordResetUseCase.execute(command);
+  }
+
+  @Override
+  public void changePassword(TokenPrincipal principal, ChangePasswordCommand command) {
+    changePasswordUseCase.execute(principal, command);
   }
 
   @Override

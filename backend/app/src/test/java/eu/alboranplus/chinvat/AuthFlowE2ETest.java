@@ -37,6 +37,7 @@ class AuthFlowE2ETest {
   private static final String SESSIONS_URL = "/api/v1/auth/sessions";
   private static final String PASSWORD_RESET_REQUEST_URL = "/api/v1/auth/password-reset/request";
   private static final String PASSWORD_RESET_CONFIRM_URL = "/api/v1/auth/password-reset/confirm";
+    private static final String PASSWORD_CHANGE_URL = "/api/v1/auth/password/change";
   private static final String ROLES_URL = "/api/v1/rbac/roles/USER";
 
   @Test
@@ -128,14 +129,14 @@ class AuthFlowE2ETest {
         .andExpect(status().isOk());
 
     // 6. Password reset (invalidates all sessions)
-    String newPassword = "E2EPasswordNew1234!";
+    String resetPassword = "E2EPasswordNew1234!";
 
     MvcResult resetRequest =
         mockMvc
             .perform(
                 post(PASSWORD_RESET_REQUEST_URL)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .header("X-Debug-Reveal-Reset-Token", "true")
+                    .header("X-Debug-Reveal-Reset-Code", "true")
                     .content(
                         """
                         {
@@ -146,7 +147,7 @@ class AuthFlowE2ETest {
             .andReturn();
 
     String resetBody = resetRequest.getResponse().getContentAsString();
-    String resetToken = JsonPath.read(resetBody, "$.resetToken");
+        String resetCode = JsonPath.read(resetBody, "$.resetCode");
 
     mockMvc
         .perform(
@@ -155,10 +156,11 @@ class AuthFlowE2ETest {
                 .content(
                     """
                     {
-                      "resetToken": "%s",
+                                            "email": "e2e-user@example.com",
+                                            "resetCode": "%s",
                       "newPassword": "%s"
                     }
-                    """.formatted(resetToken, newPassword)))
+                                        """.formatted(resetCode, resetPassword)))
         .andExpect(status().isNoContent());
 
     mockMvc
@@ -178,15 +180,55 @@ class AuthFlowE2ETest {
                           "email": "e2e-user@example.com",
                           "password": "%s"
                         }
-                        """.formatted(newPassword)))
+                        """.formatted(resetPassword)))
             .andExpect(status().isOk())
             .andReturn();
 
     String reloginBody = reloginResult.getResponse().getContentAsString();
-    String finalAccessToken = JsonPath.read(reloginBody, "$.tokens.accessToken");
-    String finalRefreshToken = JsonPath.read(reloginBody, "$.tokens.refreshToken");
+    String changedAccessToken = JsonPath.read(reloginBody, "$.tokens.accessToken");
 
-    // 8. Logout with final token pair
+    // 8. Authenticated password change invalidates all sessions again.
+    String finalPassword = "E2EPasswordFinal1234!";
+
+    mockMvc
+        .perform(
+            post(PASSWORD_CHANGE_URL)
+                .header("Authorization", "Bearer " + changedAccessToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "currentPassword": "%s",
+                      "newPassword": "%s"
+                    }
+                    """.formatted(resetPassword, finalPassword)))
+        .andExpect(status().isNoContent());
+
+    mockMvc
+        .perform(
+            get(ROLES_URL).header("Authorization", "Bearer " + changedAccessToken))
+        .andExpect(status().isUnauthorized());
+
+    MvcResult finalLoginResult =
+        mockMvc
+            .perform(
+                post(LOGIN_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "email": "e2e-user@example.com",
+                          "password": "%s"
+                        }
+                        """.formatted(finalPassword)))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    String finalLoginBody = finalLoginResult.getResponse().getContentAsString();
+    String finalAccessToken = JsonPath.read(finalLoginBody, "$.tokens.accessToken");
+    String finalRefreshToken = JsonPath.read(finalLoginBody, "$.tokens.refreshToken");
+
+    // 9. Logout with final token pair
     mockMvc
         .perform(
             post(LOGOUT_URL)
@@ -199,7 +241,7 @@ class AuthFlowE2ETest {
                         + "\"}"))
         .andExpect(status().isNoContent());
 
-    // 9. Token rejected after logout
+    // 10. Token rejected after logout
     mockMvc
         .perform(
             get(ROLES_URL).header("Authorization", "Bearer " + finalAccessToken))

@@ -48,4 +48,15 @@ public interface AuthSessionJpaRepository extends JpaRepository<AuthSessionJpaEn
       "UPDATE AuthSessionJpaEntity s SET s.revokedAt = :now "
           + "WHERE s.id = :sessionId AND s.revokedAt IS NULL")
   void revokeActiveById(@Param("sessionId") UUID sessionId, @Param("now") Instant now);
+
+  @Modifying
+  @Query(
+      "UPDATE AuthSessionJpaEntity s SET s.revokedAt = :now "
+          + "WHERE s.userId = :userId "
+          + "AND s.sessionTokenKind = :tokenKind "
+          + "AND s.revokedAt IS NULL")
+  void revokeActiveByUserIdAndTokenKind(
+      @Param("userId") Long userId,
+      @Param("tokenKind") String tokenKind,
+      @Param("now") Instant now);
 }

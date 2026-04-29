@@ -2,6 +2,7 @@ package eu.alboranplus.chinvat.auth.application.facade;
 
 import eu.alboranplus.chinvat.auth.application.command.LoginCommand;
 import eu.alboranplus.chinvat.auth.application.command.LogoutCommand;
+import eu.alboranplus.chinvat.auth.application.command.ChangePasswordCommand;
 import eu.alboranplus.chinvat.auth.application.command.ConfirmPasswordResetCommand;
 import eu.alboranplus.chinvat.auth.application.command.RequestPasswordResetCommand;
 import eu.alboranplus.chinvat.auth.application.command.RegisterCommand;
@@ -29,6 +30,8 @@ public interface AuthFacade {
   PasswordResetRequestResult requestPasswordReset(RequestPasswordResetCommand command);
 
   void confirmPasswordReset(ConfirmPasswordResetCommand command);
+
+  void changePassword(TokenPrincipal principal, ChangePasswordCommand command);
 
   AuthMeView me(TokenPrincipal principal);
 

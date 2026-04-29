@@ -13,7 +13,6 @@ config-dev: ## Render development Compose configuration
 
 config-prod: ## Render production Compose configuration
 	$(COMPOSE_PROD) config
-
 dev-up: ## Start the development stack
 	$(COMPOSE_DEV) up --build -d
 

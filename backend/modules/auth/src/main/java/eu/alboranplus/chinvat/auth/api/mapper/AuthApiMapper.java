@@ -3,10 +3,12 @@ package eu.alboranplus.chinvat.auth.api.mapper;
 import eu.alboranplus.chinvat.auth.api.dto.AuthResponse;
 import eu.alboranplus.chinvat.auth.api.dto.AuthMeResponse;
 import eu.alboranplus.chinvat.auth.api.dto.AuthSessionResponse;
+import eu.alboranplus.chinvat.auth.api.dto.PasswordChangeRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetConfirmRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetRequestResponse;
 import eu.alboranplus.chinvat.auth.api.dto.RegisterRequest;
+import eu.alboranplus.chinvat.auth.application.command.ChangePasswordCommand;
 import eu.alboranplus.chinvat.auth.api.dto.LoginRequest;
 import eu.alboranplus.chinvat.auth.api.dto.LogoutRequest;
 import eu.alboranplus.chinvat.auth.api.dto.RefreshRequest;
@@ -57,14 +59,18 @@ public class AuthApiMapper {
   }
 
   public RequestPasswordResetCommand toRequestPasswordResetCommand(
-      PasswordResetRequest request, boolean revealToken, String clientIp, String userAgent) {
-    return new RequestPasswordResetCommand(request.email(), clientIp, userAgent, revealToken);
+      PasswordResetRequest request, boolean revealCode, String clientIp, String userAgent) {
+    return new RequestPasswordResetCommand(request.email(), clientIp, userAgent, revealCode);
   }
 
   public ConfirmPasswordResetCommand toConfirmPasswordResetCommand(
       PasswordResetConfirmRequest request, String clientIp, String userAgent) {
     return new ConfirmPasswordResetCommand(
-        request.resetToken(), request.newPassword(), clientIp, userAgent);
+        request.email(), request.resetCode(), request.newPassword(), clientIp, userAgent);
+  }
+
+  public ChangePasswordCommand toChangePasswordCommand(PasswordChangeRequest request) {
+    return new ChangePasswordCommand(request.currentPassword(), request.newPassword());
   }
 
   public AuthResponse toResponse(AuthResult authResult) {
@@ -102,7 +108,7 @@ public class AuthApiMapper {
 
   public PasswordResetRequestResponse toPasswordResetRequestResponse(
       PasswordResetRequestResult result) {
-    return new PasswordResetRequestResponse(result.resetToken());
+    return new PasswordResetRequestResponse(result.resetCode());
   }
 }
 
