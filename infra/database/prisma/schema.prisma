@@ -54,6 +54,7 @@ model User {
   resetTokens   AuthPasswordReset[]
   sessions      AuthSession[]
   auditEvents   AuthAuditEvent[]
+  userRoles     UserRole[]
 
   @@map("user")
 }
@@ -143,6 +144,44 @@ model RbacRole {
   id             BigInt @id @default(autoincrement())
   roleName       String @unique @db.VarChar(80)
   permissionsCsv String @db.VarChar(2000)
+  rolePermissions RbacRolePermission[]
+  userRoles        UserRole[]
 
   @@map("rbac_role")
+}
+
+model RbacPermission {
+  id             BigInt @id @default(autoincrement())
+  permissionCode String @unique @db.VarChar(120)
+  description    String? @db.VarChar(255)
+  createdAt      DateTime @default(now()) @db.Timestamptz
+  rolePermissions RbacRolePermission[]
+
+  @@map("rbac_permission")
+}
+
+model RbacRolePermission {
+  roleId       BigInt
+  permissionId BigInt
+
+  role       RbacRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission RbacPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId], name: "idx_rbac_role_permission_permission_id")
+  @@map("rbac_role_permission")
+}
+
+model UserRole {
+  userId     BigInt
+  roleId     BigInt
+  assignedAt DateTime @default(now()) @db.Timestamptz
+  assignedBy String? @db.VarChar(120)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role RbacRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId], name: "idx_user_role_role_id")
+  @@map("user_role")
 }

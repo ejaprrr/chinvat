@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 import eu.alboranplus.chinvat.rbac.RbacTestApplication;
 
@@ -23,12 +24,13 @@ class RbacRepositoryAdapterIT {
 
   @Autowired private RoleJpaRepository roleJpaRepository;
   @Autowired private RoleJpaMapper roleJpaMapper;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private RbacRepositoryAdapter sut;
 
   @BeforeEach
   void setUp() {
-    sut = new RbacRepositoryAdapter(roleJpaRepository, roleJpaMapper);
+    sut = new RbacRepositoryAdapter(roleJpaRepository, roleJpaMapper, jdbcTemplate);
   }
 
   @Test

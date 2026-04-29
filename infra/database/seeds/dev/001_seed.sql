@@ -107,6 +107,43 @@ VALUES
 ON CONFLICT (role_name) DO UPDATE
 SET permissions_csv = EXCLUDED.permissions_csv;
 
+INSERT INTO rbac_permission (permission_code, description)
+VALUES
+        ('PROFILE:READ', 'Read profile details'),
+        ('PROFILE:WRITE', 'Update profile details'),
+        ('USERS:MANAGE', 'Manage users'),
+        ('RBAC:MANAGE', 'Manage RBAC model'),
+        ('AUTH:MANAGE', 'Manage authentication flows')
+ON CONFLICT (permission_code) DO UPDATE
+SET description = EXCLUDED.description;
+
+INSERT INTO rbac_role_permission (role_id, permission_id)
+SELECT r.id, p.id
+FROM rbac_role r
+JOIN rbac_permission p
+    ON p.permission_code = ANY (
+            CASE r.role_name
+                WHEN 'USER' THEN ARRAY['PROFILE:READ']
+                WHEN 'ADMIN' THEN ARRAY['PROFILE:READ', 'PROFILE:WRITE', 'USERS:MANAGE']
+                WHEN 'SUPERADMIN' THEN ARRAY['PROFILE:READ', 'PROFILE:WRITE', 'USERS:MANAGE', 'RBAC:MANAGE', 'AUTH:MANAGE']
+                ELSE ARRAY[]::VARCHAR[]
+            END
+    )
+ON CONFLICT (role_id, permission_id) DO NOTHING;
+
+INSERT INTO user_role (user_id, role_id, assigned_by)
+SELECT u.id, r.id, 'seed:dev'
+FROM "user" u
+JOIN rbac_role r
+    ON r.role_name =
+            CASE
+                WHEN u.username = 'superadmin' THEN 'SUPERADMIN'
+                WHEN u.username = 'admin' THEN 'ADMIN'
+                ELSE 'USER'
+            END
+WHERE u.username IN ('superadmin', 'admin', 'gold_user', 'premium_user', 'normal_user')
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
 INSERT INTO auth_audit_event (event_type, user_id, details)
 SELECT
     'DEV_SEED_COMPLETED',

@@ -5,12 +5,14 @@ import static org.mockito.BDDMockito.given;
 
 import eu.alboranplus.chinvat.users.application.dto.UserSecurityView;
 import eu.alboranplus.chinvat.users.application.port.out.UsersRepositoryPort;
+import eu.alboranplus.chinvat.users.application.port.out.UsersRoleRepositoryPort;
 import eu.alboranplus.chinvat.users.domain.model.AccessLevel;
 import eu.alboranplus.chinvat.users.domain.model.UserAccount;
 import eu.alboranplus.chinvat.users.domain.model.UserType;
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class GetUserSecurityViewUseCaseTest {
 
   @Mock private UsersRepositoryPort usersRepositoryPort;
+  @Mock private UsersRoleRepositoryPort usersRoleRepositoryPort;
 
   @InjectMocks private GetUserSecurityViewUseCase sut;
 
@@ -37,6 +40,7 @@ class GetUserSecurityViewUseCaseTest {
   void execute_byEmail_found_returnsMappedView() {
     given(usersRepositoryPort.findByEmail(UserEmail.of("alice@example.com")))
         .willReturn(Optional.of(existingUser));
+    given(usersRoleRepositoryPort.findRoleNamesByUserId(42L)).willReturn(Set.of("USER"));
 
     Optional<UserSecurityView> result = sut.execute("alice@example.com");
 
@@ -45,7 +49,7 @@ class GetUserSecurityViewUseCaseTest {
     assertThat(view.id()).isEqualTo(42L);
     assertThat(view.email()).isEqualTo("alice@example.com");
     assertThat(view.displayName()).isEqualTo("Alice Smith");
-    assertThat(view.roles()).containsExactly("GOLD");
+    assertThat(view.roles()).containsExactlyInAnyOrder("GOLD", "USER");
     assertThat(view.active()).isTrue();
   }
 
@@ -60,6 +64,7 @@ class GetUserSecurityViewUseCaseTest {
   @Test
   void executeById_found_returnsMappedView() {
     given(usersRepositoryPort.findById(42L)).willReturn(Optional.of(existingUser));
+    given(usersRoleRepositoryPort.findRoleNamesByUserId(42L)).willReturn(Set.of());
 
     Optional<UserSecurityView> result = sut.executeById(42L);
 
