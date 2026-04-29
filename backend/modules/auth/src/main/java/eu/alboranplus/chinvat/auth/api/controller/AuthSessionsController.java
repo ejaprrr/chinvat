@@ -1,0 +1,84 @@
+package eu.alboranplus.chinvat.auth.api.controller;
+
+import eu.alboranplus.chinvat.auth.api.dto.AuthSessionResponse;
+import eu.alboranplus.chinvat.auth.api.mapper.AuthApiMapper;
+import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
+import eu.alboranplus.chinvat.auth.application.facade.AuthFacade;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotNull;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@Tag(name = "Auth", description = "Session management")
+@RestController
+@RequestMapping("/api/v1/auth")
+public class AuthSessionsController {
+
+  private final AuthFacade authFacade;
+  private final AuthApiMapper authApiMapper;
+
+  public AuthSessionsController(AuthFacade authFacade, AuthApiMapper authApiMapper) {
+    this.authFacade = authFacade;
+    this.authApiMapper = authApiMapper;
+  }
+
+  @Operation(summary = "List active sessions", security = {})
+  @ApiResponses({
+    @ApiResponse(
+        responseCode = "200",
+        description = "Active sessions",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthSessionResponse.class))),
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+  })
+  @GetMapping("/sessions")
+  public ResponseEntity<List<AuthSessionResponse>> list(Authentication authentication) {
+    TokenPrincipal principal = principal(authentication);
+    return ResponseEntity.ok(authFacade.listSessions(principal).stream().map(authApiMapper::toSessionResponse).toList());
+  }
+
+  @Operation(summary = "Revoke a single active session", security = {})
+  @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "Session revoked"),
+    @ApiResponse(responseCode = "404", description = "Session not found")
+  })
+  @DeleteMapping("/sessions/{sessionId}")
+  public ResponseEntity<Void> revoke(
+      Authentication authentication, @PathVariable @NotNull UUID sessionId) {
+    TokenPrincipal principal = principal(authentication);
+    authFacade.revokeSession(principal, sessionId);
+    return ResponseEntity.noContent().build();
+  }
+
+  @Operation(summary = "Revoke all active sessions", security = {})
+  @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "All sessions revoked"),
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+  })
+  @DeleteMapping("/sessions")
+  public ResponseEntity<Void> logoutAll(Authentication authentication) {
+    TokenPrincipal principal = principal(authentication);
+    authFacade.logoutAll(principal);
+    return ResponseEntity.noContent().build();
+  }
+
+  private static TokenPrincipal principal(@NotNull Authentication authentication) {
+    Object details = authentication.getDetails();
+    if (details instanceof TokenPrincipal principal) {
+      return principal;
+    }
+    throw new IllegalStateException("Token principal missing from authentication details");
+  }
+}
+

@@ -23,5 +23,7 @@ public interface UsersFacade {
   Optional<UserSecurityView> findSecurityViewById(Long id);
 
   boolean verifyPassword(String email, String rawPassword);
+
+  void changePassword(Long userId, String rawPassword);
 }
 

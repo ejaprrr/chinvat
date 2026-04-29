@@ -63,8 +63,8 @@ class RefreshTokenUseCaseTest {
     assertThat(result.tokens().refreshToken()).isEqualTo("new-refresh");
     // Old refresh token must be revoked
     verify(authSessionPort).revokeByRawToken("old-refresh", NOW);
-    // Two new sessions saved
-    verify(authSessionPort, times(2)).save(any(), any(), any(), any(), any(), any());
+    // Two new sessions saved (access + refresh)
+    verify(authSessionPort, times(2)).save(any(), any(), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -78,7 +78,7 @@ class RefreshTokenUseCaseTest {
         .hasMessageContaining("Invalid or expired refresh token");
 
     verify(authSessionPort, never()).revokeByRawToken(any(), any());
-    verify(authSessionPort, never()).save(any(), any(), any(), any(), any(), any());
+    verify(authSessionPort, never()).save(any(), any(), any(), any(), any(), any(), any());
   }
 
   @Test

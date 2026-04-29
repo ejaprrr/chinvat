@@ -19,6 +19,7 @@ import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthTokenIssuerPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
+import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
@@ -80,11 +81,25 @@ class LoginUseCaseTest {
 
     // Access session
     verify(authSessionPort)
-        .save(eq(1L), eq("access-token"), eq(NOW), eq(ACCESS_EXP), eq("127.0.0.1"), eq("TestAgent"));
+        .save(
+            eq(1L),
+            eq(AuthSessionTokenKind.ACCESS),
+            eq("access-token"),
+            eq(NOW),
+            eq(ACCESS_EXP),
+            eq("127.0.0.1"),
+            eq("TestAgent"));
     // Refresh session
     verify(authSessionPort)
-        .save(eq(1L), eq("refresh-token"), eq(NOW), eq(REFRESH_EXP), eq("127.0.0.1"), eq("TestAgent"));
-    verify(authSessionPort, times(2)).save(any(), any(), any(), any(), any(), any());
+        .save(
+            eq(1L),
+            eq(AuthSessionTokenKind.REFRESH),
+            eq("refresh-token"),
+            eq(NOW),
+            eq(REFRESH_EXP),
+            eq("127.0.0.1"),
+            eq("TestAgent"));
+    verify(authSessionPort, times(2)).save(any(), any(), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -97,7 +112,7 @@ class LoginUseCaseTest {
         .isInstanceOf(InvalidAuthenticationException.class)
         .hasMessageContaining("Invalid email or password");
 
-    verify(authSessionPort, never()).save(any(), any(), any(), any(), any(), any());
+    verify(authSessionPort, never()).save(any(), any(), any(), any(), any(), any(), any());
   }
 
   @Test
@@ -110,7 +125,7 @@ class LoginUseCaseTest {
     assertThatThrownBy(() -> sut.execute(cmd))
         .isInstanceOf(InvalidAuthenticationException.class);
 
-    verify(authSessionPort, never()).save(any(), any(), any(), any(), any(), any());
+    verify(authSessionPort, never()).save(any(), any(), any(), any(), any(), any(), any());
   }
 
   @Test

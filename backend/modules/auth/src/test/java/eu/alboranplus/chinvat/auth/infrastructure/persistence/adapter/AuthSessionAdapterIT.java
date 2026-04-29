@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import eu.alboranplus.chinvat.auth.AuthTestApplication;
+import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 
 @SpringBootTest(classes = AuthTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
@@ -32,7 +33,14 @@ class AuthSessionAdapterIT {
 
   @Test
   void save_persistsSession_tokenHashedWithSha256() {
-    sut.save(USER_ID, "my-raw-token", NOW, FUTURE, "127.0.0.1", "TestAgent");
+    sut.save(
+        USER_ID,
+        AuthSessionTokenKind.ACCESS,
+        "my-raw-token",
+        NOW,
+        FUTURE,
+        "127.0.0.1",
+        "TestAgent");
 
     assertThat(repository.findAll()).hasSize(1);
     // Raw token must NOT be stored
@@ -43,7 +51,14 @@ class AuthSessionAdapterIT {
 
   @Test
   void findActiveUserId_validNonExpiredToken_returnsUserId() {
-    sut.save(USER_ID, "valid-token", NOW, FUTURE, "127.0.0.1", "Agent");
+    sut.save(
+        USER_ID,
+        AuthSessionTokenKind.ACCESS,
+        "valid-token",
+        NOW,
+        FUTURE,
+        "127.0.0.1",
+        "Agent");
 
     Optional<Long> result = sut.findActiveUserId("valid-token", NOW);
 
@@ -52,7 +67,14 @@ class AuthSessionAdapterIT {
 
   @Test
   void findActiveUserId_expiredToken_returnsEmpty() {
-    sut.save(USER_ID, "expired-token", NOW, PAST, "127.0.0.1", "Agent");
+    sut.save(
+        USER_ID,
+        AuthSessionTokenKind.ACCESS,
+        "expired-token",
+        NOW,
+        PAST,
+        "127.0.0.1",
+        "Agent");
 
     Optional<Long> result = sut.findActiveUserId("expired-token", NOW);
 
@@ -66,7 +88,14 @@ class AuthSessionAdapterIT {
 
   @Test
   void revokeByRawToken_setsRevokedAt() {
-    sut.save(USER_ID, "to-revoke", NOW, FUTURE, "127.0.0.1", "Agent");
+    sut.save(
+        USER_ID,
+        AuthSessionTokenKind.ACCESS,
+        "to-revoke",
+        NOW,
+        FUTURE,
+        "127.0.0.1",
+        "Agent");
 
     sut.revokeByRawToken("to-revoke", NOW);
 
@@ -76,7 +105,14 @@ class AuthSessionAdapterIT {
 
   @Test
   void findActiveUserId_revokedToken_returnsEmpty() {
-    sut.save(USER_ID, "revoked-access", NOW, FUTURE, "127.0.0.1", "Agent");
+    sut.save(
+        USER_ID,
+        AuthSessionTokenKind.ACCESS,
+        "revoked-access",
+        NOW,
+        FUTURE,
+        "127.0.0.1",
+        "Agent");
     sut.revokeByRawToken("revoked-access", NOW);
 
     assertThat(sut.findActiveUserId("revoked-access", NOW)).isEmpty();
@@ -84,9 +120,9 @@ class AuthSessionAdapterIT {
 
   @Test
   void revokeAllByUserId_revokesAllSessions() {
-    sut.save(USER_ID, "token-a", NOW, FUTURE, "127.0.0.1", "Agent");
-    sut.save(USER_ID, "token-b", NOW, FUTURE, "127.0.0.1", "Agent");
-    sut.save(2L, "other-user-token", NOW, FUTURE, "127.0.0.1", "Agent");
+    sut.save(USER_ID, AuthSessionTokenKind.ACCESS, "token-a", NOW, FUTURE, "127.0.0.1", "Agent");
+    sut.save(USER_ID, AuthSessionTokenKind.REFRESH, "token-b", NOW, FUTURE, "127.0.0.1", "Agent");
+    sut.save(2L, AuthSessionTokenKind.ACCESS, "other-user-token", NOW, FUTURE, "127.0.0.1", "Agent");
 
     sut.revokeAllByUserId(USER_ID, NOW);
 
@@ -99,11 +135,25 @@ class AuthSessionAdapterIT {
   @Test
   void differentTokensSameRawValue_wouldCollide_uniqueHashEnforced() {
     // Same raw token saved twice should fail due to unique hash constraint
-    sut.save(USER_ID, "unique-token", NOW, FUTURE, "127.0.0.1", "Agent");
+    sut.save(
+        USER_ID,
+        AuthSessionTokenKind.ACCESS,
+        "unique-token",
+        NOW,
+        FUTURE,
+        "127.0.0.1",
+        "Agent");
 
     org.assertj.core.api.Assertions.assertThatThrownBy(
             () -> {
-              sut.save(USER_ID, "unique-token", NOW, FUTURE, "10.0.0.1", "AnotherAgent");
+              sut.save(
+                  USER_ID,
+                  AuthSessionTokenKind.ACCESS,
+                  "unique-token",
+                  NOW,
+                  FUTURE,
+                  "10.0.0.1",
+                  "AnotherAgent");
               repository.flush();
             })
         .isInstanceOf(Exception.class); // DataIntegrityViolationException or similar

@@ -87,12 +87,25 @@ INSERT INTO user_password (
 )
 SELECT
     id,
-    'CHANGE_ME_BEFORE_REAL_AUTH_IS_ENABLED',
-    'placeholder',
-    TRUE
+    crypt('DevPassword1234!', gen_salt('bf')),
+    'bcrypt',
+    FALSE
 FROM "user"
 WHERE username IN ('superadmin', 'admin', 'gold_user', 'premium_user', 'normal_user')
-ON CONFLICT (user_id) DO NOTHING;
+ON CONFLICT (user_id) DO UPDATE
+SET
+    password_hash = EXCLUDED.password_hash,
+    password_algorithm = EXCLUDED.password_algorithm,
+    password_changed_at = CURRENT_TIMESTAMP,
+    recovery_required = EXCLUDED.recovery_required;
+
+INSERT INTO rbac_role (role_name, permissions_csv)
+VALUES
+    ('USER', 'PROFILE:READ'),
+    ('ADMIN', 'PROFILE:READ,PROFILE:WRITE,USERS:MANAGE'),
+    ('SUPERADMIN', 'PROFILE:READ,PROFILE:WRITE,USERS:MANAGE,RBAC:MANAGE,AUTH:MANAGE')
+ON CONFLICT (role_name) DO UPDATE
+SET permissions_csv = EXCLUDED.permissions_csv;
 
 INSERT INTO auth_audit_event (event_type, user_id, details)
 SELECT

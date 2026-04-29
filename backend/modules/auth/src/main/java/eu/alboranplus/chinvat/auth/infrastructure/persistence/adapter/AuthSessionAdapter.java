@@ -1,17 +1,21 @@
 package eu.alboranplus.chinvat.auth.infrastructure.persistence.adapter;
 
 import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
+import eu.alboranplus.chinvat.auth.application.dto.AuthSessionView;
 import eu.alboranplus.chinvat.auth.infrastructure.persistence.entity.AuthSessionJpaEntity;
 import eu.alboranplus.chinvat.auth.infrastructure.persistence.repository.AuthSessionJpaRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.HexFormat;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 
 @Component
 public class AuthSessionAdapter implements AuthSessionPort {
@@ -26,6 +30,7 @@ public class AuthSessionAdapter implements AuthSessionPort {
   @Transactional
   public void save(
       Long userId,
+      AuthSessionTokenKind tokenKind,
       String rawToken,
       Instant issuedAt,
       Instant expiresAt,
@@ -34,7 +39,7 @@ public class AuthSessionAdapter implements AuthSessionPort {
     String hash = sha256Hex(rawToken);
     AuthSessionJpaEntity entity =
         new AuthSessionJpaEntity(
-            UUID.randomUUID(), userId, hash, issuedAt, expiresAt, clientIp, userAgent);
+            UUID.randomUUID(), userId, hash, tokenKind, issuedAt, expiresAt, clientIp, userAgent);
     repository.save(entity);
   }
 
@@ -60,6 +65,41 @@ public class AuthSessionAdapter implements AuthSessionPort {
   @Transactional
   public void revokeAllByUserId(Long userId, Instant now) {
     repository.revokeAllByUserId(userId, now);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public List<AuthSessionView> listActiveSessionsByUserId(Long userId, Instant now) {
+    return repository
+        .findActiveByUserIdOrderByIssuedAtDesc(userId, now)
+        .stream()
+        .map(this::toView)
+        .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Optional<AuthSessionView> findActiveSessionById(UUID sessionId, Instant now) {
+    return repository
+        .findActiveById(sessionId, now)
+        .map(this::toView);
+  }
+
+  @Override
+  @Transactional
+  public void revokeActiveSessionById(UUID sessionId, Instant now) {
+    repository.revokeActiveById(sessionId, now);
+  }
+
+  private AuthSessionView toView(AuthSessionJpaEntity entity) {
+    return new AuthSessionView(
+        entity.getId(),
+        entity.getUserId(),
+        entity.getSessionTokenKind(),
+        entity.getIssuedAt(),
+        entity.getExpiresAt(),
+        entity.getClientIp(),
+        entity.getUserAgent());
   }
 
   private static String sha256Hex(String input) {

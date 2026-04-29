@@ -2,6 +2,7 @@ package eu.alboranplus.chinvat.auth.api.exception;
 
 import eu.alboranplus.chinvat.auth.api.dto.AuthApiErrorResponse;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
+import eu.alboranplus.chinvat.auth.domain.exception.AuthResourceNotFoundException;
 import java.time.Instant;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,5 +27,11 @@ public class AuthApiExceptionHandler {
     FieldError firstError = exception.getFieldErrors().stream().findFirst().orElse(null);
     String message = firstError == null ? "Validation failed" : firstError.getDefaultMessage();
     return ResponseEntity.badRequest().body(new AuthApiErrorResponse(message, Instant.now()));
+  }
+
+  @ExceptionHandler(AuthResourceNotFoundException.class)
+  public ResponseEntity<AuthApiErrorResponse> handleNotFound(AuthResourceNotFoundException ex) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        .body(new AuthApiErrorResponse(ex.getMessage(), Instant.now()));
   }
 }

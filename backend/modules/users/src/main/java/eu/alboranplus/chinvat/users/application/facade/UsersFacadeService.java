@@ -2,8 +2,10 @@ package eu.alboranplus.chinvat.users.application.facade;
 
 import eu.alboranplus.chinvat.users.application.command.CreateUserCommand;
 import eu.alboranplus.chinvat.users.application.command.UpdateUserCommand;
+import eu.alboranplus.chinvat.users.application.command.ChangePasswordCommand;
 import eu.alboranplus.chinvat.users.application.dto.UserSecurityView;
 import eu.alboranplus.chinvat.users.application.dto.UserView;
+import eu.alboranplus.chinvat.users.application.usecase.ChangePasswordUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.CreateUserUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.DeleteUserUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetAllUsersUseCase;
@@ -26,6 +28,7 @@ public class UsersFacadeService implements UsersFacade {
   private final DeleteUserUseCase deleteUserUseCase;
   private final GetUserSecurityViewUseCase getUserSecurityViewUseCase;
   private final VerifyUserPasswordUseCase verifyUserPasswordUseCase;
+  private final ChangePasswordUseCase changePasswordUseCase;
 
   public UsersFacadeService(
       CreateUserUseCase createUserUseCase,
@@ -34,7 +37,8 @@ public class UsersFacadeService implements UsersFacade {
       UpdateUserUseCase updateUserUseCase,
       DeleteUserUseCase deleteUserUseCase,
       GetUserSecurityViewUseCase getUserSecurityViewUseCase,
-      VerifyUserPasswordUseCase verifyUserPasswordUseCase) {
+      VerifyUserPasswordUseCase verifyUserPasswordUseCase,
+      ChangePasswordUseCase changePasswordUseCase) {
     this.createUserUseCase = createUserUseCase;
     this.getUserByIdUseCase = getUserByIdUseCase;
     this.getAllUsersUseCase = getAllUsersUseCase;
@@ -42,6 +46,7 @@ public class UsersFacadeService implements UsersFacade {
     this.deleteUserUseCase = deleteUserUseCase;
     this.getUserSecurityViewUseCase = getUserSecurityViewUseCase;
     this.verifyUserPasswordUseCase = verifyUserPasswordUseCase;
+    this.changePasswordUseCase = changePasswordUseCase;
   }
 
   @Override
@@ -82,6 +87,11 @@ public class UsersFacadeService implements UsersFacade {
   @Override
   public boolean verifyPassword(String email, String rawPassword) {
     return verifyUserPasswordUseCase.execute(email, rawPassword);
+  }
+
+  @Override
+  public void changePassword(Long userId, String rawPassword) {
+    changePasswordUseCase.execute(new ChangePasswordCommand(userId, rawPassword));
   }
 
   private UserView toView(UserAccount user) {

@@ -53,5 +53,8 @@ public class BearerTokenAuthFilter extends OncePerRequestFilter {
         new UsernamePasswordAuthenticationToken(principal.email(), null, authorities);
 
     SecurityContextHolder.getContext().setAuthentication(authentication);
+
+    // Keep the full token principal for downstream endpoints (e.g. /auth/me, /auth/sessions).
+    authentication.setDetails(principal);
   }
 }

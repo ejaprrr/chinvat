@@ -8,6 +8,7 @@ public interface AuthSessionPort {
   /** Persists a hashed token as an active session. Raw token is hashed by the adapter. */
   void save(
       Long userId,
+      eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind tokenKind,
       String rawToken,
       Instant issuedAt,
       Instant expiresAt,
@@ -25,4 +26,15 @@ public interface AuthSessionPort {
 
   /** Revokes all active sessions for a user (logout-all). */
   void revokeAllByUserId(Long userId, Instant now);
+
+  /** Returns active sessions for a user (non-expired, not revoked), most recent first. */
+  java.util.List<eu.alboranplus.chinvat.auth.application.dto.AuthSessionView> listActiveSessionsByUserId(
+      Long userId, Instant now);
+
+  /** Returns active session info by session id (used for ownership checks). */
+  java.util.Optional<eu.alboranplus.chinvat.auth.application.dto.AuthSessionView> findActiveSessionById(
+      java.util.UUID sessionId, Instant now);
+
+  /** Revokes a single active session by its session id. No-op if already revoked/expired. */
+  void revokeActiveSessionById(java.util.UUID sessionId, Instant now);
 }

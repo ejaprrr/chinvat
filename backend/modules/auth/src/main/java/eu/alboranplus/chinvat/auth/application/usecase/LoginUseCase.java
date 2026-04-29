@@ -10,6 +10,7 @@ import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthTokenIssuerPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
+import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 import java.time.Instant;
 import java.util.Set;
 import org.springframework.stereotype.Service;
@@ -56,6 +57,7 @@ public class LoginUseCase {
 
     authSessionPort.save(
         user.userId(),
+        AuthSessionTokenKind.ACCESS,
         tokens.accessToken(),
         now,
         tokens.expiresAt(),
@@ -64,6 +66,7 @@ public class LoginUseCase {
 
     authSessionPort.save(
         user.userId(),
+        AuthSessionTokenKind.REFRESH,
         tokens.refreshToken(),
         now,
         tokens.refreshExpiresAt(),

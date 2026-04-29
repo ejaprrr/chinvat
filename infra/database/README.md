@@ -6,19 +6,19 @@ Migrace jsou spravovány přes **Prisma Migrate**. Seed data jsou čistá SQL.
 
 Aktuální model splňuje požadovanou strukturu a zároveň přidává bezpečnostní rozšíření:
 
-- `app_user` (User Table)
+- `user` (User Table)
   - `id`, `username`, `full_name`, `phone_number`, `email`
   - `user_type` (`INDIVIDUAL`, `LIBRARY`)
   - `access_level` (`SUPERADMIN`, `ADMIN`, `GOLD`, `PREMIUM`, `NORMAL`)
   - `address_line`, `postal_code`, `city`, `country`, `default_language`
 - `user_password` (Password Table)
-  - `user_id` (FK na `app_user.id`)
+  - `user_id` (FK na `user.id`)
   - `password_hash` (+ metadata změny hesla)
-- `password_recovery_token`
-  - tokeny pro obnovu hesla (expirace + single-use přes `used_at`)
+- `auth_password_reset`
+  - tokeny pro obnovu hesla (expirace + single-use přes `consumed_at`)
 - `auth_session`
   - hash session tokenu, expirace/revokace
-  - unikátní hash tokenu + omezení jedné aktivní nerevokované session na uživatele
+  - unikátní hash tokenu + omezení jedné aktivní session na uživatele a token kind (ACCESS/REFRESH)
 - `user_certificate`
   - podpora loginu přes digitální certifikát (subject/issuer/fingerprint/platnost)
 

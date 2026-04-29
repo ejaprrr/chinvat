@@ -13,7 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
-@SpringBootTest(classes = AuthTokenIssuerAdapter.class)
+@SpringBootTest(
+    classes = {AuthTokenIssuerAdapter.class, SessionOpaqueTokenGeneratorAdapter.class})
 @TestPropertySource(properties = {"auth.tokens.access-ttl=PT15M", "auth.tokens.refresh-ttl=P14D"})
 class AuthTokenIssuerAdapterTest {
 
