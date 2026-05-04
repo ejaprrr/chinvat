@@ -1,7 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-const desktopPlatformQuery =
-  "(pointer: fine) and (hover: hover) and (min-width: 768px)";
+const desktopPlatformQuery = "(pointer: fine) and (hover: hover)";
 
 function subscribe(onStoreChange: () => void) {
   if (typeof window === "undefined") {

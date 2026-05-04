@@ -1,12 +1,17 @@
 import { createBrowserRouter, Navigate } from "react-router";
 import AuthLayout from "../layouts/AuthLayout";
 import LoginPage from "../pages/LoginPage";
+import ProfilePage from "../pages/ProfilePage";
 import RegisterPage from "../pages/RegisterPage";
 import ResetPasswordPage from "../pages/ResetPasswordPage";
 import { appRoutes, authRouteSegments } from "./paths";
 
 export const router = createBrowserRouter(
   [
+    {
+      path: authRouteSegments.profile,
+      element: <ProfilePage />,
+    },
     {
       element: <AuthLayout />,
       children: [

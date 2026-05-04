@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 function AuthLayout() {
   const { t } = useTranslation();
+  const isPopupWindow = typeof window !== "undefined" && Boolean(window.opener);
 
   return (
     <>
@@ -16,10 +17,10 @@ function AuthLayout() {
       <main
         id="main-content"
         tabIndex={-1}
-        className="flex min-h-screen min-h-dvh items-center justify-center px-4 py-3 sm:px-6"
+        className={`auth-popup-shell${isPopupWindow ? " auth-popup-shell--window" : ""}`}
       >
         <section
-          className="mx-auto w-full max-w-[32rem] rounded-[1.25rem] border border-border-subtle bg-panel p-5 shadow-panel motion-safe:animate-panel-in sm:p-6"
+          className={`auth-popup${isPopupWindow ? " auth-popup--window" : ""}`}
         >
           <Outlet />
         </section>

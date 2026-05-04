@@ -11,23 +11,10 @@ type FormFieldProps = {
   label: string;
   labelAction?: ReactNode;
   labelSuffix?: ReactNode;
+  required?: boolean;
   action?: ReactNode;
   status?: ReactNode;
 };
-
-const styles = {
-  root: "space-y-2.5",
-  labelRow:
-    "flex flex-col gap-1.5 min-[480px]:flex-row min-[480px]:items-center min-[480px]:justify-between min-[480px]:gap-4",
-  label: "flex items-center gap-1 text-sm font-medium text-ink",
-  labelActionRow: "shrink-0 self-start min-[480px]:self-auto",
-  supportingRow:
-    "flex flex-col gap-1.5 min-[480px]:flex-row min-[480px]:items-start min-[480px]:justify-between min-[480px]:gap-4",
-  supportingCopy: "min-w-0 flex-1",
-  hint: "text-[0.8125rem] leading-5 text-muted",
-  supportingActionRow: "flex shrink-0 min-[480px]:justify-end",
-  error: "flex items-center gap-2 text-[0.8125rem] leading-5 text-danger-700",
-} as const;
 
 function FormField({
   action,
@@ -40,34 +27,40 @@ function FormField({
   label,
   labelAction,
   labelSuffix,
+  required = false,
   status,
 }: FormFieldProps) {
   return (
-    <div className={styles.root}>
-      <div className={styles.labelRow}>
-        <label className={styles.label} htmlFor={htmlFor}>
+    <div className="field">
+      <div className="field__label-row">
+        <label className="field__label" htmlFor={htmlFor}>
           {label}
+          {required ? (
+            <span className="required-mark" aria-hidden="true">
+              *
+            </span>
+          ) : null}
           {labelSuffix}
         </label>
         {labelAction ? (
-          <div className={styles.labelActionRow}>{labelAction}</div>
+          <div className="field__label-action">{labelAction}</div>
         ) : null}
       </div>
 
       {children}
 
       {hint || error || action ? (
-        <div className={styles.supportingRow}>
-          <div className={styles.supportingCopy}>
+        <div className="field__supporting-row">
+          <div className="field__supporting-copy">
             {hint ? (
-              <p id={hintId} className={error ? "sr-only" : styles.hint}>
+              <p id={hintId} className={error ? "sr-only" : "field__hint"}>
                 {hint}
               </p>
             ) : null}
             {error ? (
               <p
                 id={errorId}
-                className={styles.error}
+                className="field__error"
                 role="alert"
                 aria-atomic="true"
               >
@@ -77,7 +70,7 @@ function FormField({
             ) : null}
           </div>
           {action ? (
-            <div className={styles.supportingActionRow}>{action}</div>
+            <div className="field__supporting-action">{action}</div>
           ) : null}
         </div>
       ) : null}

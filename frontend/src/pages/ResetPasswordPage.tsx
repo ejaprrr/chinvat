@@ -1,14 +1,17 @@
 import useDocumentTitle from "../hooks/useDocumentTitle";
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { Eye, EyeOff, Mail, ShieldCheck } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { cx } from "../lib/cx";
 import { appRoutes } from "../router/paths";
 import { ActionButton, ActionLink } from "../components/ui/Action";
 import LanguageSwitcher from "../components/LanguageSwitcher";
-import AuthPageHeader from "../components/ui/AuthPageHeader";
-import FormField from "../components/ui/FormField";
+import AuthPage from "../components/ui/AuthPage";
+import { AuthStepForm, FormActions } from "../components/ui/AuthForm";
+import { AuthCompletion } from "../components/ui/AuthSupport";
+import PasswordField from "../components/ui/PasswordField";
+import Stepper from "../components/ui/Stepper";
+import TextInput from "../components/ui/TextInput";
 
 type Step = "email" | "code" | "password" | "done";
 
@@ -26,36 +29,6 @@ type StatusMessage = {
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordMinLength = 8;
-
-const styles = {
-  root: "flex flex-col gap-4.5",
-  progressText:
-    "text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-muted-soft",
-  form: "flex flex-col gap-3.5",
-  inputBase:
-    "block min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-60",
-  inputDefault:
-    "border-border-subtle focus:border-brand-500 focus:ring-3 focus:ring-brand-500/15",
-  inputError:
-    "border-danger-200 focus:border-danger-700 focus:ring-3 focus:ring-danger-700/10",
-  iconButton:
-    "absolute inset-y-0 right-0 inline-flex min-h-12 min-w-12 items-center justify-center rounded-r-xl px-3 text-muted transition hover:bg-surface-hover hover:text-ink focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
-  statusMessage: "rounded-2xl border px-4 py-3 text-[0.8125rem] leading-5",
-  statusMessageDefault: "border-border-subtle bg-surface-subtle text-muted",
-  statusMessageWarning:
-    "border-warning-border bg-warning-surface text-warning-ink",
-  completion: "flex items-start gap-2 text-[0.8125rem] leading-5 text-muted",
-  completionIcon: "mt-0.5 shrink-0 text-brand-600",
-  actions: "flex flex-col gap-2",
-} as const;
-
-function getInputClassName(hasError: boolean, hasTrailingButton = false) {
-  return cx(
-    styles.inputBase,
-    hasTrailingButton ? "pr-12" : "",
-    hasError ? styles.inputError : styles.inputDefault,
-  );
-}
 
 function ResetPasswordPage() {
   useDocumentTitle("meta.resetPasswordPageTitle");
@@ -211,8 +184,11 @@ function ResetPasswordPage() {
   };
 
   const stepOrder: Step[] = ["email", "code", "password", "done"];
-  const currentStepIndex = stepOrder.indexOf(currentStep);
-  const activeStepNumber = currentStep === "done" ? 3 : currentStepIndex + 1;
+  const visibleStepOrder = stepOrder.filter((step) => step !== "done");
+  const visibleStepIndex =
+    currentStep === "done"
+      ? visibleStepOrder.length - 1
+      : visibleStepOrder.indexOf(currentStep);
 
   const headerTitle =
     currentStep === "email"
@@ -242,313 +218,225 @@ function ResetPasswordPage() {
   }, [currentStep]);
 
   return (
-    <div className={styles.root} aria-labelledby="reset-password-title">
-      <p id={progressId} className={styles.progressText}>
-        {t("auth.resetPassword.progress.current", {
-          current: activeStepNumber,
-          total: 3,
-        })}
-      </p>
-
-      <AuthPageHeader
-        action={<LanguageSwitcher />}
-        id="reset-password-title"
-        introId={headerIntroId}
-        title={headerTitle}
-        titleRef={stepHeadingRef}
-        titleTabIndex={-1}
-        titleDescribedBy={`${progressId} ${headerIntroId}`}
-        intro={headerIntro}
-      />
-
-      <div
-        className={statusMessage ? "block" : "hidden"}
-        aria-hidden={statusMessage ? undefined : "true"}
-      >
-        {statusMessage ? (
-          <p
-            className={cx(
-              styles.statusMessage,
-              statusMessage.tone === "warning"
-                ? styles.statusMessageWarning
-                : styles.statusMessageDefault,
+    <AuthPage
+      aria-labelledby="reset-password-title"
+      progress={
+        <div id={progressId}>
+          <Stepper
+            steps={visibleStepOrder.map((step) =>
+              t(`auth.resetPassword.form.${step}StepTitle`),
             )}
-            role={statusMessage.tone === "warning" ? "alert" : "status"}
-            aria-live={
-              statusMessage.tone === "warning" ? "assertive" : "polite"
+            currentStep={visibleStepIndex}
+            totalSteps={visibleStepOrder.length}
+            className="mb-2"
+          />
+        </div>
+      }
+      status={
+        statusMessage
+          ? {
+              content: statusMessage.text,
+              tone: statusMessage.tone === "warning" ? "warning" : "default",
             }
-            aria-atomic="true"
+          : null
+      }
+      footer={
+        <FormActions>
+          <ActionLink
+            to={appRoutes.login}
+            variant={currentStep === "done" ? "primary" : "secondary"}
           >
-            {statusMessage.text}
-          </p>
-        ) : null}
-      </div>
-
+            {t("auth.actions.backToSignIn")}
+          </ActionLink>
+        </FormActions>
+      }
+      action={<LanguageSwitcher />}
+      titleId="reset-password-title"
+      introId={headerIntroId}
+      title={headerTitle}
+      titleRef={stepHeadingRef}
+      titleTabIndex={-1}
+      titleDescribedBy={`${progressId} ${headerIntroId}`}
+      intro={headerIntro}
+    >
       {currentStep === "email" ? (
-        <form className={styles.form} noValidate onSubmit={handleEmailSubmit}>
-          <FormField
+        <AuthStepForm
+          onSubmit={handleEmailSubmit}
+          actions={
+            <ActionButton type="submit">
+              {t("auth.resetPassword.form.email.submit")}
+            </ActionButton>
+          }
+        >
+          <TextInput
+            ref={emailInputRef}
+            id="reset-email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            enterKeyHint="send"
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value);
+              setFieldErrors((current) => ({
+                ...current,
+                email: undefined,
+              }));
+              clearStatus();
+            }}
+            error={Boolean(fieldErrors.email)}
+            aria-describedby={emailDescribedBy}
+            aria-errormessage={fieldErrors.email ? emailErrorId : undefined}
+            aria-invalid={fieldErrors.email ? "true" : "false"}
+            required
+            trailingIcon={<Mail aria-hidden="true" size={16} />}
             htmlFor="reset-email"
             label={t("auth.resetPassword.form.email.label")}
             hint={t("auth.resetPassword.form.email.hint")}
             hintId={emailHintId}
-            error={fieldErrors.email}
+            fieldError={fieldErrors.email}
             errorId={emailErrorId}
-          >
-            <div className="relative">
-              <input
-                ref={emailInputRef}
-                id="reset-email"
-                type="email"
-                name="email"
-                autoComplete="email"
-                inputMode="email"
-                enterKeyHint="send"
-                value={email}
-                onChange={(event) => {
-                  setEmail(event.target.value);
-                  setFieldErrors((current) => ({
-                    ...current,
-                    email: undefined,
-                  }));
-                  clearStatus();
-                }}
-                className={getInputClassName(Boolean(fieldErrors.email), true)}
-                aria-describedby={emailDescribedBy}
-                aria-errormessage={fieldErrors.email ? emailErrorId : undefined}
-                aria-invalid={fieldErrors.email ? "true" : "false"}
-                required
-              />
-              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted">
-                <Mail aria-hidden="true" size={16} />
-              </span>
-            </div>
-          </FormField>
-
-          <div className={styles.actions}>
-            <ActionButton type="submit">
-              {t("auth.resetPassword.form.email.submit")}
-            </ActionButton>
-          </div>
-        </form>
+          />
+        </AuthStepForm>
       ) : null}
 
       {currentStep === "code" ? (
-        <form className={styles.form} noValidate onSubmit={handleCodeSubmit}>
-          <FormField
+        <AuthStepForm
+          onSubmit={handleCodeSubmit}
+          actions={
+            <>
+              <ActionButton type="submit">
+                {t("auth.resetPassword.form.code.submit")}
+              </ActionButton>
+              <ActionButton
+                type="button"
+                variant="secondary"
+                onClick={goToEmailStep}
+              >
+                {t("auth.resetPassword.form.code.changeEmail")}
+              </ActionButton>
+            </>
+          }
+        >
+          <TextInput
+            ref={codeInputRef}
+            id="reset-code"
+            type="text"
+            name="code"
+            autoComplete="one-time-code"
+            inputMode="numeric"
+            enterKeyHint="next"
+            value={code}
+            onChange={(event) => {
+              setCode(event.target.value);
+              setFieldErrors((current) => ({
+                ...current,
+                code: undefined,
+              }));
+              clearStatus();
+            }}
+            error={Boolean(fieldErrors.code)}
+            aria-describedby={codeDescribedBy}
+            aria-errormessage={fieldErrors.code ? codeErrorId : undefined}
+            aria-invalid={fieldErrors.code ? "true" : "false"}
+            required
             htmlFor="reset-code"
             label={t("auth.resetPassword.form.code.label")}
             hint={t("auth.resetPassword.form.code.hint")}
             hintId={codeHintId}
-            error={fieldErrors.code}
+            fieldError={fieldErrors.code}
             errorId={codeErrorId}
-          >
-            <input
-              ref={codeInputRef}
-              id="reset-code"
-              type="text"
-              name="code"
-              autoComplete="one-time-code"
-              inputMode="numeric"
-              enterKeyHint="next"
-              value={code}
-              onChange={(event) => {
-                setCode(event.target.value);
-                setFieldErrors((current) => ({
-                  ...current,
-                  code: undefined,
-                }));
-                clearStatus();
-              }}
-              className={getInputClassName(Boolean(fieldErrors.code))}
-              aria-describedby={codeDescribedBy}
-              aria-errormessage={fieldErrors.code ? codeErrorId : undefined}
-              aria-invalid={fieldErrors.code ? "true" : "false"}
-              required
-            />
-          </FormField>
-
-          <div className={styles.actions}>
-            <ActionButton type="submit">
-              {t("auth.resetPassword.form.code.submit")}
-            </ActionButton>
-            <ActionButton
-              type="button"
-              variant="secondary"
-              onClick={goToEmailStep}
-            >
-              {t("auth.resetPassword.form.code.changeEmail")}
-            </ActionButton>
-          </div>
-        </form>
+          />
+        </AuthStepForm>
       ) : null}
 
       {currentStep === "password" ? (
-        <form
-          className={styles.form}
-          noValidate
+        <AuthStepForm
           onSubmit={handlePasswordSubmit}
+          actions={
+            <>
+              <ActionButton type="submit">
+                {t("auth.resetPassword.form.password.submit")}
+              </ActionButton>
+              <ActionButton
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  setFieldErrors({});
+                  clearStatus();
+                  setCurrentStep("code");
+                }}
+              >
+                {t("auth.resetPassword.form.password.back")}
+              </ActionButton>
+            </>
+          }
         >
-          <FormField
-            htmlFor="new-password"
+          <PasswordField
+            ref={passwordInputRef}
+            id="new-password"
+            name="newPassword"
             label={t("auth.resetPassword.form.password.label")}
+            value={password}
+            show={showPassword}
+            setShow={setShowPassword}
+            onChange={(value) => {
+              setPassword(value);
+              setFieldErrors((current) => ({
+                ...current,
+                password: undefined,
+              }));
+              clearStatus();
+            }}
+            autoComplete="new-password"
+            enterKeyHint="next"
+            aria-describedby={passwordDescribedBy}
+            required
             hint={t("auth.resetPassword.form.password.hint")}
             hintId={passwordHintId}
             error={fieldErrors.password}
             errorId={passwordErrorId}
-          >
-            <div className="relative">
-              <input
-                ref={passwordInputRef}
-                id="new-password"
-                type={showPassword ? "text" : "password"}
-                name="newPassword"
-                autoComplete="new-password"
-                enterKeyHint="next"
-                value={password}
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                  setFieldErrors((current) => ({
-                    ...current,
-                    password: undefined,
-                  }));
-                  clearStatus();
-                }}
-                className={getInputClassName(
-                  Boolean(fieldErrors.password),
-                  true,
-                )}
-                aria-describedby={passwordDescribedBy}
-                aria-errormessage={
-                  fieldErrors.password ? passwordErrorId : undefined
-                }
-                aria-invalid={fieldErrors.password ? "true" : "false"}
-                required
-              />
-              <button
-                type="button"
-                className={styles.iconButton}
-                onClick={() => setShowPassword((value) => !value)}
-                aria-pressed={showPassword}
-                aria-label={
-                  showPassword
-                    ? t("auth.fields.password.hide")
-                    : t("auth.fields.password.show")
-                }
-                aria-controls="new-password"
-              >
-                {showPassword ? (
-                  <EyeOff size={16} aria-hidden="true" />
-                ) : (
-                  <Eye size={16} aria-hidden="true" />
-                )}
-              </button>
-            </div>
-          </FormField>
+            ariaLabelHide={t("auth.fields.password.hide")}
+            ariaLabelShow={t("auth.fields.password.show")}
+          />
 
-          <FormField
-            htmlFor="confirm-password"
+          <PasswordField
+            ref={confirmPasswordInputRef}
+            id="confirm-password"
+            name="confirmPassword"
             label={t("auth.resetPassword.form.confirmPassword.label")}
+            value={confirmPassword}
+            show={showConfirmPassword}
+            setShow={setShowConfirmPassword}
+            onChange={(value) => {
+              setConfirmPassword(value);
+              setFieldErrors((current) => ({
+                ...current,
+                confirmPassword: undefined,
+              }));
+              clearStatus();
+            }}
+            autoComplete="new-password"
+            enterKeyHint="done"
+            aria-describedby={confirmPasswordDescribedBy}
+            required
             hint={t("auth.resetPassword.form.confirmPassword.hint")}
             hintId={confirmPasswordHintId}
             error={fieldErrors.confirmPassword}
             errorId={confirmPasswordErrorId}
-          >
-            <div className="relative">
-              <input
-                ref={confirmPasswordInputRef}
-                id="confirm-password"
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                autoComplete="new-password"
-                enterKeyHint="done"
-                value={confirmPassword}
-                onChange={(event) => {
-                  setConfirmPassword(event.target.value);
-                  setFieldErrors((current) => ({
-                    ...current,
-                    confirmPassword: undefined,
-                  }));
-                  clearStatus();
-                }}
-                className={getInputClassName(
-                  Boolean(fieldErrors.confirmPassword),
-                  true,
-                )}
-                aria-describedby={confirmPasswordDescribedBy}
-                aria-errormessage={
-                  fieldErrors.confirmPassword
-                    ? confirmPasswordErrorId
-                    : undefined
-                }
-                aria-invalid={fieldErrors.confirmPassword ? "true" : "false"}
-                required
-              />
-              <button
-                type="button"
-                className={styles.iconButton}
-                onClick={() => setShowConfirmPassword((value) => !value)}
-                aria-pressed={showConfirmPassword}
-                aria-label={
-                  showConfirmPassword
-                    ? t("auth.fields.password.hide")
-                    : t("auth.fields.password.show")
-                }
-                aria-controls="confirm-password"
-              >
-                {showConfirmPassword ? (
-                  <EyeOff size={16} aria-hidden="true" />
-                ) : (
-                  <Eye size={16} aria-hidden="true" />
-                )}
-              </button>
-            </div>
-          </FormField>
-
-          <div className={styles.actions}>
-            <ActionButton type="submit">
-              {t("auth.resetPassword.form.password.submit")}
-            </ActionButton>
-            <ActionButton
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                setFieldErrors({});
-                clearStatus();
-                setCurrentStep("code");
-              }}
-            >
-              {t("auth.resetPassword.form.password.back")}
-            </ActionButton>
-          </div>
-        </form>
+            ariaLabelHide={t("auth.fields.password.hide")}
+            ariaLabelShow={t("auth.fields.password.show")}
+          />
+        </AuthStepForm>
       ) : null}
 
       {currentStep === "done" ? (
-        <p
-          id="reset-complete-title"
-          className={styles.completion}
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          <ShieldCheck
-            aria-hidden="true"
-            size={16}
-            className={styles.completionIcon}
-          />
-          <span>{t("auth.resetPassword.form.doneBody")}</span>
-        </p>
+        <AuthCompletion id="reset-complete-title">
+          {t("auth.resetPassword.form.doneBody")}
+        </AuthCompletion>
       ) : null}
-
-      <div className={styles.actions}>
-        <ActionLink
-          to={appRoutes.login}
-          variant={currentStep === "done" ? "primary" : "secondary"}
-        >
-          {t("auth.actions.backToSignIn")}
-        </ActionLink>
-      </div>
-    </div>
+    </AuthPage>
   );
 }
 

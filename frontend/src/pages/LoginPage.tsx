@@ -10,14 +10,15 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useTranslation } from "react-i18next";
-import { Eye, EyeOff, TriangleAlert } from "lucide-react";
 import { handleCertificateLoginStart, loginWithCredentials } from "../api/auth";
-import { cx } from "../lib/cx";
 import { appRoutes } from "../router/paths";
 import { ActionButton, ActionLink } from "../components/ui/Action";
 import LanguageSwitcher from "../components/LanguageSwitcher";
-import AuthPageHeader from "../components/ui/AuthPageHeader";
-import FormField from "../components/ui/FormField";
+import AuthPage from "../components/ui/AuthPage";
+import { AuthStepForm } from "../components/ui/AuthForm";
+import { AuthDivider } from "../components/ui/AuthSupport";
+import PasswordField from "../components/ui/PasswordField";
+import TextInput from "../components/ui/TextInput";
 
 type FieldErrors = {
   username?: string;
@@ -42,44 +43,6 @@ type StatusMessage =
       translationKey: TranslationKey;
     }
   | null;
-
-const styles = {
-  form: {
-    root: "flex flex-col gap-4.5",
-    sectionStack: "flex flex-col gap-3.5",
-    requiredMark: "text-brand-600",
-    hint: "text-[0.8125rem] leading-5 text-muted",
-    warning: "text-[0.8125rem] leading-5 text-warning-ink",
-    divider: "flex items-center gap-3 text-[0.75rem] text-muted-soft",
-    dividerLine: "h-px flex-1 bg-border-subtle",
-    auxiliaryRegion: "flex flex-col gap-2.5",
-  },
-  status: {
-    base: "rounded-2xl border px-4 py-3 flex items-start gap-2 text-[0.8125rem] leading-5",
-    default: "text-muted",
-    critical: "border-danger-200 bg-danger-50 text-danger-700",
-    success: "border-border-subtle bg-surface-subtle text-muted",
-    icon: "mt-0.5 shrink-0",
-  },
-  control: {
-    inputBase:
-      "block min-h-12 w-full rounded-xl border bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition disabled:cursor-not-allowed disabled:opacity-60",
-    inputDefault:
-      "border-border-subtle focus:border-brand-500 focus:ring-3 focus:ring-brand-500/15",
-    inputError:
-      "border-danger-200 focus:border-danger-700 focus:ring-3 focus:ring-danger-700/10",
-    iconButton:
-      "absolute inset-y-0 right-0 inline-flex min-h-12 min-w-12 items-center justify-center rounded-r-xl px-3 text-muted transition hover:bg-surface-hover hover:text-ink focus-visible:z-10 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
-  },
-} as const;
-
-function getInputClassName(hasError: boolean, hasTrailingButton = false) {
-  return cx(
-    styles.control.inputBase,
-    hasTrailingButton ? "pr-12" : "",
-    hasError ? styles.control.inputError : styles.control.inputDefault,
-  );
-}
 
 function LoginPage() {
   useDocumentTitle("meta.pageTitle");
@@ -213,102 +176,97 @@ function LoginPage() {
     .join(" ");
 
   return (
-    <form
-      className={styles.form.root}
-      noValidate
-      onSubmit={handleSubmit}
+    <AuthPage
       aria-labelledby="login-title"
-      aria-busy={isSubmitting || certificateLaunching}
+      action={<LanguageSwitcher />}
+      titleId="login-title"
+      title={t("auth.title")}
+      intro={t("auth.intro")}
+      status={
+        statusMessage
+          ? {
+              content: resolvedStatusMessage,
+              tone: isErrorStatus ? "critical" : "default",
+            }
+          : null
+      }
     >
-      <AuthPageHeader
-        action={<LanguageSwitcher />}
-        id="login-title"
-        title={t("auth.title")}
-        intro={t("auth.intro")}
-      />
-
-      {/*
-       * Status region:
-       * role="alert" + aria-live="assertive" for errors — interrupts immediately.
-       * role="status" + aria-live="polite" for confirmations — waits for silence.
-       * aria-atomic="true" ensures the full message is read, not just the changed portion.
-       */}
-      <div
-        className={statusMessage ? "block" : "hidden"}
-        aria-hidden={statusMessage ? undefined : "true"}
-      >
-        {statusMessage ? (
-          <p
-            className={cx(
-              styles.status.base,
-              isErrorStatus ? styles.status.critical : styles.status.success,
-            )}
-            role={isErrorStatus ? "alert" : "status"}
-            aria-live={isErrorStatus ? "assertive" : "polite"}
-            aria-atomic="true"
+      <AuthStepForm
+        onSubmit={handleSubmit}
+        aria-labelledby="login-title"
+        aria-busy={isSubmitting || certificateLaunching}
+        actions={
+          <ActionButton
+            type="submit"
+            variant="primary"
+            aria-busy={isSubmitting}
+            disabled={isSubmitting}
           >
-            {isErrorStatus && (
-              <TriangleAlert
-                size={15}
-                aria-hidden="true"
-                className={styles.status.icon}
-              />
-            )}
-            {resolvedStatusMessage}
-          </p>
-        ) : null}
-      </div>
-
-      <div className={styles.form.sectionStack}>
-        {/* ── Username ── */}
-        <FormField
-          htmlFor="username"
+            {isSubmitting
+              ? t("auth.actions.submitting", {
+                  defaultValue: "Submitting…",
+                })
+              : t("auth.actions.continue")}
+          </ActionButton>
+        }
+      >
+        <TextInput
+          ref={usernameInputRef}
+          id="username"
+          type="text"
+          name="username"
+          autoComplete="username"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="next"
+          value={username}
+          onChange={(event) => {
+            setUsername(event.target.value);
+            setFieldErrors((current) => ({
+              ...current,
+              username: undefined,
+            }));
+            clearTransientFeedback();
+          }}
+          inputMode="text"
+          error={Boolean(fieldErrors.username)}
+          aria-describedby={usernameDescribedBy}
+          aria-errormessage={fieldErrors.username ? usernameErrorId : undefined}
+          aria-invalid={fieldErrors.username ? "true" : "false"}
+          aria-required="true"
+          required
           label={t("auth.fields.username.label")}
-          labelSuffix={
-            <span className={styles.form.requiredMark} aria-hidden="true">
-              *
-            </span>
-          }
           hint={t("auth.fields.username.hint")}
           hintId={usernameHintId}
-          error={fieldErrors.username ? t(fieldErrors.username) : undefined}
+          fieldError={fieldErrors.username ? t(fieldErrors.username) : undefined}
           errorId={usernameErrorId}
-        >
-          <input
-            ref={usernameInputRef}
-            id="username"
-            type="text"
-            name="username"
-            autoComplete="username"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            enterKeyHint="next"
-            value={username}
-            onChange={(event) => {
-              setUsername(event.target.value);
-              setFieldErrors((current) => ({
-                ...current,
-                username: undefined,
-              }));
-              clearTransientFeedback();
-            }}
-            inputMode="text"
-            className={getInputClassName(Boolean(fieldErrors.username))}
-            aria-describedby={usernameDescribedBy}
-            aria-errormessage={
-              fieldErrors.username ? usernameErrorId : undefined
-            }
-            aria-invalid={fieldErrors.username ? "true" : "false"}
-            aria-required="true"
-            required
-          />
-        </FormField>
+        />
 
-        {/* ── Password ── */}
-        <FormField
-          htmlFor="password"
+        <PasswordField
+          ref={passwordInputRef}
+          id="password"
+          name="password"
           label={t("auth.fields.password.label")}
+          value={password}
+          show={showPassword}
+          setShow={setShowPassword}
+          onChange={(value) => {
+            setPassword(value);
+            setFieldErrors((current) => ({
+              ...current,
+              password: undefined,
+            }));
+            clearTransientFeedback();
+          }}
+          autoComplete="current-password"
+          enterKeyHint="go"
+          onKeyUp={handleCapsLock}
+          onKeyDown={handleCapsLock}
+          onBlur={() => setCapsLockOn(false)}
+          aria-describedby={passwordDescribedBy}
+          aria-required="true"
+          required
           labelAction={
             <ActionLink
               to={appRoutes.resetPassword}
@@ -318,18 +276,13 @@ function LoginPage() {
               {t("auth.actions.resetPassword")}
             </ActionLink>
           }
-          labelSuffix={
-            <span className={styles.form.requiredMark} aria-hidden="true">
-              *
-            </span>
-          }
           hint={t("auth.fields.password.hint")}
           hintId={passwordHintId}
           status={
             capsLockOn ? (
               <p
                 id={capsLockWarningId}
-                className={styles.form.warning}
+                className="text-[0.8125rem] leading-5 text-warning-ink"
                 role="status"
                 aria-live="polite"
                 aria-atomic="true"
@@ -342,79 +295,14 @@ function LoginPage() {
           }
           error={fieldErrors.password ? t(fieldErrors.password) : undefined}
           errorId={passwordErrorId}
-        >
-          <div className="relative">
-            <input
-              ref={passwordInputRef}
-              id="password"
-              type={showPassword ? "text" : "password"}
-              name="password"
-              autoComplete="current-password"
-              enterKeyHint="go"
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value);
-                setFieldErrors((current) => ({
-                  ...current,
-                  password: undefined,
-                }));
-                clearTransientFeedback();
-              }}
-              onKeyUp={handleCapsLock}
-              onKeyDown={handleCapsLock}
-              onBlur={() => setCapsLockOn(false)}
-              className={getInputClassName(Boolean(fieldErrors.password), true)}
-              aria-describedby={passwordDescribedBy}
-              aria-errormessage={
-                fieldErrors.password ? passwordErrorId : undefined
-              }
-              aria-invalid={fieldErrors.password ? "true" : "false"}
-              aria-required="true"
-              required
-            />
-            <button
-              type="button"
-              className={styles.control.iconButton}
-              onClick={() => setShowPassword((v) => !v)}
-              aria-pressed={showPassword}
-              aria-label={
-                showPassword
-                  ? t("auth.fields.password.hide", {
-                      defaultValue: "Hide password",
-                    })
-                  : t("auth.fields.password.show", {
-                      defaultValue: "Show password",
-                    })
-              }
-              aria-controls="password"
-            >
-              {showPassword ? (
-                <EyeOff size={16} aria-hidden="true" />
-              ) : (
-                <Eye size={16} aria-hidden="true" />
-              )}
-            </button>
-          </div>
-        </FormField>
-      </div>
-
-      {/*
-       * aria-busy signals submission is in progress.
-       * We use disabled to block double-submission but preserve tab stop
-       * semantics. aria-busy additionally informs assistive tech.
-       */}
-      <ActionButton
-        type="submit"
-        variant="primary"
-        aria-busy={isSubmitting}
-        disabled={isSubmitting}
-      >
-        {isSubmitting
-          ? t("auth.actions.submitting", {
-              defaultValue: "Submitting…",
-            })
-          : t("auth.actions.continue")}
-      </ActionButton>
+          ariaLabelHide={t("auth.fields.password.hide", {
+            defaultValue: "Hide password",
+          })}
+          ariaLabelShow={t("auth.fields.password.show", {
+            defaultValue: "Show password",
+          })}
+        />
+      </AuthStepForm>
 
       <p className="text-center text-sm text-muted">
         {t("auth.register.loginPrompt")}{" "}
@@ -428,14 +316,10 @@ function LoginPage() {
       </p>
 
       <div
-        className={styles.form.auxiliaryRegion}
+        className="flex flex-col gap-2.5"
         aria-label={t("auth.certificate.action")}
       >
-        <p className={styles.form.divider} aria-hidden="true">
-          <span className={styles.form.dividerLine} />
-          <span>{t("auth.divider")}</span>
-          <span className={styles.form.dividerLine} />
-        </p>
+        <AuthDivider>{t("auth.divider")}</AuthDivider>
 
         {isDesktopPlatform ? (
           <>
@@ -452,7 +336,7 @@ function LoginPage() {
             </ActionButton>
             <p
               id={certificateHintId}
-              className={`${styles.form.hint} px-2 text-center leading-5`}
+              className="helper-text px-2 text-center leading-5"
             >
               {t("auth.certificate.hint")}
             </p>
@@ -460,7 +344,7 @@ function LoginPage() {
         ) : (
           <p
             id="certificate-option"
-            className={`${styles.form.hint} text-center`}
+            className="helper-text text-center"
             role="status"
             aria-live="polite"
           >
@@ -468,7 +352,7 @@ function LoginPage() {
           </p>
         )}
       </div>
-    </form>
+    </AuthPage>
   );
 }
 
