@@ -39,10 +39,10 @@ function LocationLookup({
     : statusMessage || resolvedText || "";
 
   return (
-    <div className="location-lookup">
+    <div className="space-y-2">
       <p
         id={statusId}
-        className="location-lookup__status"
+        className="text-[0.8125rem] leading-5 text-muted"
         role="status"
         aria-live="polite"
         aria-atomic="true"
@@ -51,7 +51,11 @@ function LocationLookup({
       </p>
 
       {suggestions.length > 0 ? (
-        <div id={listId} role="listbox" className="location-lookup__list">
+        <div
+          id={listId}
+          role="listbox"
+          className="overflow-hidden rounded-xl border border-border-subtle bg-white shadow-sm"
+        >
           {suggestions.map((suggestion, index) => (
             <div
               id={getSuggestionId(index)}
@@ -62,14 +66,14 @@ function LocationLookup({
               <button
                 type="button"
                 className={cx(
-                  "location-lookup__item",
+                  "block w-full border-b border-border-subtle px-4 py-3 text-left text-sm text-ink transition last:border-b-0 hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
                   index === activeSuggestionIndex &&
-                    "location-lookup__item--active",
+                    "bg-surface-subtle",
                 )}
                 onClick={() => onSuggestionSelect(suggestion)}
               >
                 <span>{suggestion.displayName}</span>
-                <span className="location-lookup__meta">
+                <span className="mt-0.5 block text-[0.8125rem] leading-5 text-muted">
                   {[
                     suggestion.address,
                     suggestion.postalCode,

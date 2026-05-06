@@ -412,8 +412,8 @@ function ProfilePage() {
   };
 
   return (
-    <main className="auth-popup-shell profile-page">
-      <section className="auth-popup profile-shell">
+    <main className="auth-popup-shell items-center bg-canvas py-6 lg:py-8">
+      <section className="auth-popup max-w-6xl p-4 sm:p-5 lg:p-6">
         <AuthPage
           aria-labelledby={fieldId("title")}
           action={
@@ -433,10 +433,13 @@ function ProfilePage() {
               : null
           }
         >
-          <div className="profile-workspace">
-            <AuthForm className="profile-panel" onSubmit={handleProfileSubmit}>
-              <AuthFormSection className="profile-account-fields">
-                <div className="profile-section-heading profile-field-full">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-stretch xl:grid-cols-[minmax(0,1fr)_21rem]">
+            <AuthForm
+              className="flex min-w-0 flex-col gap-4"
+              onSubmit={handleProfileSubmit}
+            >
+              <AuthFormSection className="grid gap-3.5 md:grid-cols-2">
+                <div className="flex flex-col gap-1 md:col-span-2">
                   <p className="auth-progress-text">Account details</p>
                 </div>
 
@@ -588,7 +591,7 @@ function ProfilePage() {
                           event.target.value as Locale,
                         )
                       }
-                      className="field-control field-control--trailing profile-select"
+                      className="field-control field-control--trailing appearance-none"
                     >
                       {languageOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -603,7 +606,7 @@ function ProfilePage() {
                 </FormField>
               </AuthFormSection>
 
-              <FormActions className="profile-actions profile-actions--account">
+              <FormActions className="mt-auto border-t border-border-subtle pt-4 sm:grid sm:grid-cols-2">
                 <ActionButton
                   type="submit"
                   className="gap-2"
@@ -625,11 +628,11 @@ function ProfilePage() {
             </AuthForm>
 
             <AuthForm
-              className="profile-panel profile-panel--security"
+              className="flex min-w-0 flex-col gap-4 border-t border-border-subtle pt-5 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0"
               onSubmit={handlePasswordSubmit}
             >
               <AuthFormSection>
-                <div className="profile-section-heading">
+                <div className="flex flex-col gap-1">
                   <p className="auth-progress-text">Change password</p>
                 </div>
 
@@ -705,7 +708,7 @@ function ProfilePage() {
                 />
               </AuthFormSection>
 
-              <FormActions className="profile-actions profile-actions--security">
+              <FormActions className="mt-auto border-t border-border-subtle pt-4">
                 <ActionButton type="submit" className="gap-2">
                   <ShieldCheck size={16} aria-hidden="true" />
                   Update password

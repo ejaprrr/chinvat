@@ -1,19 +1,6 @@
 import type { ReactNode } from "react";
 import { ShieldCheck } from "lucide-react";
 
-type AuthProgressProps = {
-  children: ReactNode;
-  id?: string;
-};
-
-function AuthProgress({ children, id }: AuthProgressProps) {
-  return (
-    <p id={id} className="auth-progress-text">
-      {children}
-    </p>
-  );
-}
-
 type AuthCompletionProps = {
   children: ReactNode;
   id?: string;
@@ -52,4 +39,4 @@ function AuthDivider({ children }: AuthDividerProps) {
   );
 }
 
-export { AuthCompletion, AuthDivider, AuthProgress };
+export { AuthCompletion, AuthDivider };
