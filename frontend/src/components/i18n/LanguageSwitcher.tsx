@@ -1,6 +1,6 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { languageLabels, type Locale } from "../i18n";
+import { languageLabels, type Locale } from "../../i18n";
 
 function LanguageSwitcher() {
   const { i18n, t } = useTranslation();

@@ -1,5 +1,6 @@
 import type { FormHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 import { cx } from "../../lib/cx";
+import ActionGroup from "../actions/ActionGroup";
 
 type AuthFormProps = FormHTMLAttributes<HTMLFormElement>;
 
@@ -16,7 +17,13 @@ function AuthFormSection({ className, ...props }: AuthFormSectionProps) {
 type FormActionsProps = HTMLAttributes<HTMLDivElement>;
 
 function FormActions({ className, ...props }: FormActionsProps) {
-  return <div {...props} className={cx("form-actions", className)} />;
+  return (
+    <ActionGroup
+      {...props}
+      className={cx("form-actions", className)}
+      direction="column"
+    />
+  );
 }
 
 type AuthStepFormProps = AuthFormProps & {

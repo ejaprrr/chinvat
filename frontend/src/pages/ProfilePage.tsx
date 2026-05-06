@@ -8,11 +8,8 @@ import {
 } from "react";
 import {
   Languages,
-  LogOut,
   Mail,
   MapPin,
-  Phone,
-  RotateCcw,
   Save,
   ShieldCheck,
   UserRound,
@@ -23,41 +20,37 @@ import {
   type CountryCode,
 } from "libphonenumber-js/min";
 import { languageLabels, type Locale } from "../i18n";
-import { appRoutes } from "../router/paths";
-import { ActionButton, ActionLink } from "../components/ui/Action";
-import AuthPage from "../components/ui/AuthPage";
-import FormField from "../components/ui/FormField";
-import LanguageSwitcher from "../components/LanguageSwitcher";
-import PasswordField from "../components/ui/PasswordField";
-import PhoneNumberField from "../components/ui/PhoneNumberField";
-import type { PhoneCountryOption } from "../components/ui/PhoneCountrySelect";
-import TextInput from "../components/ui/TextInput";
+import { ActionButton } from "../components/actions/Action";
+import AuthPage from "../components/auth/AuthPage";
+import {
+  AuthForm,
+  AuthFormSection,
+  FormActions,
+} from "../components/auth/AuthForm";
+import FormField from "../components/fields/FormField";
+import LocationLookup, {
+  type LocationSuggestion,
+} from "../components/fields/LocationLookup";
+import PasswordField from "../components/fields/PasswordField";
+import PhoneNumberField from "../components/fields/PhoneNumberField";
+import type { PhoneCountryOption } from "../components/fields/PhoneCountrySelect";
+import TextInput from "../components/fields/TextInput";
+import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
 
-type UserProfile = {
+type ProfileForm = {
   username: string;
   fullName: string;
   phoneNumber: string;
   email: string;
-  location: string;
   defaultLanguage: Locale;
+  locationQuery: string;
 };
 
-type ProfileErrors = Partial<
-  Record<"username" | "fullName" | "email" | "location", string>
->;
+type ProfileErrors = Partial<Record<keyof ProfileForm, string>>;
 
 type PasswordErrors = Partial<
   Record<"currentPassword" | "newPassword" | "confirmPassword", string>
 >;
-
-const initialProfile: UserProfile = {
-  username: "maria.garcia",
-  fullName: "Maria Garcia",
-  phoneNumber: "+34 600 123 456",
-  email: "maria.garcia@example.org",
-  location: "Barcelona, Spain",
-  defaultLanguage: "en",
-};
 
 type NormalizedLocation = {
   address?: string;
@@ -69,15 +62,53 @@ type NormalizedLocation = {
   isPrecise: boolean;
 };
 
-const styles = {
-  locationStatus: "text-[0.8125rem] leading-5 text-muted",
-  suggestions:
-    "mt-2 overflow-hidden rounded-xl border border-border-subtle bg-white shadow-sm",
-  suggestion:
-    "block w-full border-b border-border-subtle px-4 py-3 text-left text-sm text-ink transition last:border-b-0 hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
-  suggestionActive: "bg-surface-subtle",
-  suggestionMeta: "mt-0.5 block text-[0.8125rem] leading-5 text-muted",
-} as const;
+const locationCatalog: NormalizedLocation[] = [
+  {
+    displayName: "Barcelona, Spain",
+    address: "Placa de Catalunya",
+    postalCode: "08002",
+    city: "Barcelona",
+    country: "Spain",
+    countryCode: "ES",
+    isPrecise: true,
+  },
+  {
+    displayName: "Madrid, Spain",
+    address: "Gran Via 32",
+    postalCode: "28013",
+    city: "Madrid",
+    country: "Spain",
+    countryCode: "ES",
+    isPrecise: true,
+  },
+  {
+    displayName: "Valencia, Spain",
+    address: "Carrer de Colon 18",
+    postalCode: "46004",
+    city: "Valencia",
+    country: "Spain",
+    countryCode: "ES",
+    isPrecise: true,
+  },
+  {
+    displayName: "Lisbon, Portugal",
+    address: "Rua Augusta 122",
+    postalCode: "1100-053",
+    city: "Lisbon",
+    country: "Portugal",
+    countryCode: "PT",
+    isPrecise: true,
+  },
+];
+
+const initialProfile: ProfileForm = {
+  username: "maria.garcia",
+  fullName: "Maria Garcia",
+  phoneNumber: "+34 600 123 456",
+  email: "maria.garcia@example.org",
+  defaultLanguage: "en",
+  locationQuery: "Barcelona, Spain",
+};
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -121,8 +152,8 @@ function getDefaultPhoneCountry(language: string | undefined): CountryCode {
 
 function ProfilePage() {
   const uid = useId();
-  const [profile, setProfile] = useState<UserProfile>(initialProfile);
-  const [savedProfile, setSavedProfile] = useState<UserProfile>(initialProfile);
+  const [profile, setProfile] = useState<ProfileForm>(initialProfile);
+  const [savedProfile, setSavedProfile] = useState<ProfileForm>(initialProfile);
   const [profileErrors, setProfileErrors] = useState<ProfileErrors>({});
   const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
   const [statusMessage, setStatusMessage] = useState<{
@@ -139,14 +170,7 @@ function ProfilePage() {
     getDefaultPhoneCountry(initialProfile.defaultLanguage),
   );
   const [resolvedLocation, setResolvedLocation] =
-    useState<NormalizedLocation | null>(null);
-  const [locationSuggestions, setLocationSuggestions] = useState<
-    NormalizedLocation[]
-  >([]);
-  const [locationLookupMessage, setLocationLookupMessage] = useState<
-    string | null
-  >(null);
-  const [locationLookupLoading, setLocationLookupLoading] = useState(false);
+    useState<NormalizedLocation | null>(locationCatalog[0] ?? null);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
 
   const isDirty = useMemo(
@@ -180,13 +204,47 @@ function ProfilePage() {
     phoneCountryOptionsByCode[phoneCountryCode] ?? phoneCountryOptions[0];
 
   useEffect(() => {
-    document.title = "Profile management | chinvat";
+    document.title = "Profile | chinvat";
   }, []);
 
-  const fieldId = (name: string) => `${uid}-${name}`;
+  const locationSuggestions = useMemo(() => {
+    const query = profile.locationQuery.trim();
 
-  const titleId = fieldId("profile-title");
-  const headerIntroId = fieldId("profile-intro");
+    if (!query) {
+      return [];
+    }
+
+    if (resolvedLocation && resolvedLocation.displayName === query) {
+      return [];
+    }
+
+    const normalizedQuery = query.toLowerCase();
+    return locationCatalog
+      .filter((item) => {
+        return (
+          item.displayName.toLowerCase().includes(normalizedQuery) ||
+          item.city?.toLowerCase().includes(normalizedQuery) ||
+          item.country?.toLowerCase().includes(normalizedQuery)
+        );
+      })
+      .slice(0, 5);
+  }, [profile.locationQuery, resolvedLocation]);
+
+  const locationLookupMessage = useMemo(() => {
+    const query = profile.locationQuery.trim();
+
+    if (!query) {
+      return null;
+    }
+
+    if (resolvedLocation && resolvedLocation.displayName === query) {
+      return null;
+    }
+
+    return locationSuggestions.length ? null : "No locations found.";
+  }, [profile.locationQuery, resolvedLocation, locationSuggestions]);
+
+  const fieldId = (name: string) => `${uid}-${name}`;
 
   const locationHintId = fieldId("location-hint");
   const locationErrorId = fieldId("location-error");
@@ -197,9 +255,9 @@ function ProfilePage() {
   const getLocationSuggestionId = (index: number) =>
     `${locationListId}-option-${index}`;
 
-  const updateProfile = <Field extends keyof UserProfile>(
+  const updateProfileField = <Field extends keyof ProfileForm>(
     field: Field,
-    value: UserProfile[Field],
+    value: ProfileForm[Field],
   ) => {
     setProfile((current) => ({ ...current, [field]: value }));
     setProfileErrors((current) => ({ ...current, [field]: undefined }));
@@ -207,34 +265,48 @@ function ProfilePage() {
   };
 
   const validateProfile = () => {
-    const nextErrors: ProfileErrors = {};
+    const errors: ProfileErrors = {};
 
-    if (!profile.username.trim()) nextErrors.username = "Enter a username.";
-    if (!profile.fullName.trim()) nextErrors.fullName = "Enter a full name.";
+    if (!profile.username.trim()) errors.username = "Enter a username.";
+    if (!profile.fullName.trim()) errors.fullName = "Enter a full name.";
 
     if (!profile.email.trim()) {
-      nextErrors.email = "Enter an email address.";
+      errors.email = "Enter an email address.";
     } else if (!isValidEmail(profile.email)) {
-      nextErrors.email = "Enter a valid email address.";
+      errors.email = "Enter a valid email address.";
     }
 
-    return nextErrors;
+    if (!profile.locationQuery.trim()) {
+      errors.locationQuery = "Search for your location.";
+    }
+
+    return errors;
   };
 
   const handleLocationInputChange = (value: string) => {
-    updateProfile("location", value);
+    updateProfileField("locationQuery", value);
 
     if (resolvedLocation && value.trim() !== resolvedLocation.displayName) {
       setResolvedLocation(null);
     }
+
+    setActiveSuggestionIndex(-1);
   };
 
-  const handleLocationSuggestionSelect = (suggestion: NormalizedLocation) => {
-    updateProfile("location", suggestion.displayName);
-    setResolvedLocation(suggestion);
-    setLocationSuggestions([]);
-    setLocationLookupMessage(null);
-    setLocationLookupLoading(false);
+  const handleLocationSuggestionSelect = (suggestion: LocationSuggestion) => {
+    setProfile((current) => ({
+      ...current,
+      locationQuery: suggestion.displayName,
+    }));
+    setProfileErrors((current) => ({
+      ...current,
+      locationQuery: undefined,
+    }));
+    setStatusMessage(null);
+    setResolvedLocation({
+      ...suggestion,
+      isPrecise: suggestion.isPrecise ?? false,
+    });
     setActiveSuggestionIndex(-1);
   };
 
@@ -268,7 +340,6 @@ function ProfilePage() {
     }
 
     if (event.key === "Escape") {
-      setLocationSuggestions([]);
       setActiveSuggestionIndex(-1);
     }
   };
@@ -341,416 +412,308 @@ function ProfilePage() {
   };
 
   return (
-    <main className="min-h-screen min-h-dvh bg-canvas">
-      <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
-        <div className="rounded-[1.25rem] border border-border-subtle bg-panel p-5 shadow-panel motion-safe:animate-panel-in sm:p-6">
-          <AuthPage
-            aria-labelledby={titleId}
-            titleId={titleId}
-            title="Profile management"
-            introId={headerIntroId}
-            intro="Manage your chinvat profile details."
-            action={
-              <div className="flex items-center gap-2">
-                <LanguageSwitcher />
-                <ActionLink
-                  to={appRoutes.login}
-                  variant="secondary"
-                  className="w-auto gap-2"
-                >
-                  <LogOut size={16} aria-hidden="true" />
-                  Sign out
-                </ActionLink>
-              </div>
-            }
-            status={
-              statusMessage
-                ? {
-                    content: statusMessage.text,
-                    tone:
-                      statusMessage.tone === "warning"
-                        ? "warning"
-                        : statusMessage.tone === "critical"
-                          ? "critical"
-                          : "default",
-                  }
-                : null
-            }
-          >
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-              <form
-                className="auth-form rounded-lg border border-border-subtle bg-panel p-5 shadow-sm"
-                onSubmit={handleProfileSubmit}
-                noValidate
-              >
-                <div className="flex flex-col gap-3 border-b border-border-subtle pb-5 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <h2 className="text-base font-semibold text-ink">
-                      Profile details
-                    </h2>
-                    <p className="mt-1 text-sm leading-6 text-muted">
-                      Update the information shown on your profile.
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <ActionButton
-                      type="button"
-                      variant="secondary"
-                      className="gap-2 sm:w-auto"
-                      disabled={!isDirty}
-                      onClick={resetProfileChanges}
-                    >
-                      <RotateCcw size={16} aria-hidden="true" />
-                      Discard
-                    </ActionButton>
-                    <ActionButton
-                      type="submit"
-                      className="gap-2 sm:w-auto"
-                      disabled={!isDirty}
-                    >
-                      <Save size={16} aria-hidden="true" />
-                      Save profile
-                    </ActionButton>
-                  </div>
-                </div>
-
-                <div className="mt-5 auth-section-stack">
-                  <TextInput
-                    id={fieldId("username")}
-                    name="username"
-                    label="Username"
-                    value={profile.username}
-                    onChange={(event) =>
-                      updateProfile("username", event.target.value)
-                    }
-                    error={Boolean(profileErrors.username)}
-                    fieldError={profileErrors.username}
-                    errorId={fieldId("username-error")}
-                    required
-                    trailingIcon={<UserRound size={16} aria-hidden="true" />}
-                  />
-                  <TextInput
-                    id={fieldId("full-name")}
-                    name="fullName"
-                    label="Full name"
-                    value={profile.fullName}
-                    onChange={(event) =>
-                      updateProfile("fullName", event.target.value)
-                    }
-                    error={Boolean(profileErrors.fullName)}
-                    fieldError={profileErrors.fullName}
-                    errorId={fieldId("full-name-error")}
-                    required
-                  />
-                  <TextInput
-                    id={fieldId("email")}
-                    name="email"
-                    type="email"
-                    label="Email"
-                    value={profile.email}
-                    onChange={(event) =>
-                      updateProfile("email", event.target.value)
-                    }
-                    error={Boolean(profileErrors.email)}
-                    fieldError={profileErrors.email}
-                    errorId={fieldId("email-error")}
-                    required
-                    trailingIcon={<Mail size={16} aria-hidden="true" />}
-                  />
-                  <PhoneNumberField
-                    id={fieldId("phone")}
-                    name="phoneNumber"
-                    label="Phone number"
-                    hint="Use the number you can access right now."
-                    hintId={fieldId("phone-hint")}
-                    value={profile.phoneNumber}
-                    onNumberChange={(event) =>
-                      updateProfile("phoneNumber", event.target.value)
-                    }
-                    countryControlId={phoneCountryControlId}
-                    countryHintId={phoneCountryHintId}
-                    countryHint={`Selected dial code ${selectedPhoneCountry.dialCode}.`}
-                    selectedCountry={selectedPhoneCountry}
-                    options={phoneCountryOptions}
-                    onCountrySelect={handlePhoneCountrySelect}
-                  />
-                  <FormField
-                    htmlFor={fieldId("location")}
-                    label="Location"
-                    hint="Search for your city or address."
-                    hintId={locationHintId}
-                    error={profileErrors.location}
-                    errorId={locationErrorId}
-                    status={
-                      <div className="space-y-2">
-                        <p
-                          id={locationStatusId}
-                          className={styles.locationStatus}
-                          role="status"
-                          aria-live="polite"
-                          aria-atomic="true"
-                        >
-                          {locationLookupLoading
-                            ? "Searching locations..."
-                            : locationLookupMessage ||
-                              (resolvedLocation
-                                ? `Location set to ${resolvedLocation.displayName}.`
-                                : "Type to see suggestions.")}
-                        </p>
-
-                        {locationSuggestions.length > 0 ? (
-                          <div
-                            id={locationListId}
-                            role="listbox"
-                            className={styles.suggestions}
-                          >
-                            {locationSuggestions.map((suggestion, index) => (
-                              <div
-                                id={getLocationSuggestionId(index)}
-                                key={`${suggestion.displayName}-${index}`}
-                                role="option"
-                                aria-selected={index === activeSuggestionIndex}
-                              >
-                                <button
-                                  type="button"
-                                  className={
-                                    index === activeSuggestionIndex
-                                      ? `${styles.suggestion} ${styles.suggestionActive}`
-                                      : styles.suggestion
-                                  }
-                                  onClick={() =>
-                                    handleLocationSuggestionSelect(suggestion)
-                                  }
-                                >
-                                  <span>{suggestion.displayName}</span>
-                                  <span className={styles.suggestionMeta}>
-                                    {[
-                                      suggestion.address,
-                                      suggestion.postalCode,
-                                      suggestion.city,
-                                      suggestion.country,
-                                    ]
-                                      .filter(Boolean)
-                                      .join(" · ")}
-                                  </span>
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
-                    }
-                  >
-                    <div className="relative">
-                      <TextInput
-                        id={fieldId("location")}
-                        type="text"
-                        name="location"
-                        autoComplete="off"
-                        enterKeyHint="next"
-                        value={profile.location}
-                        onChange={(event) =>
-                          handleLocationInputChange(event.target.value)
-                        }
-                        onKeyDown={handleLocationKeyDown}
-                        trailingIcon={<MapPin aria-hidden="true" size={16} />}
-                        aria-describedby={[
-                          locationHintId,
-                          locationStatusId,
-                          profileErrors.location ? locationErrorId : "",
-                        ]
-                          .filter(Boolean)
-                          .join(" ")}
-                        aria-errormessage={
-                          profileErrors.location ? locationErrorId : undefined
-                        }
-                        aria-invalid={profileErrors.location ? "true" : "false"}
-                        aria-autocomplete="list"
-                        aria-controls={
-                          locationSuggestions.length > 0
-                            ? locationListId
-                            : undefined
-                        }
-                        aria-activedescendant={
-                          activeSuggestionIndex >= 0
-                            ? getLocationSuggestionId(activeSuggestionIndex)
-                            : undefined
-                        }
-                        aria-expanded={locationSuggestions.length > 0}
-                        role="combobox"
-                      />
-                    </div>
-                  </FormField>
-                  <FormField
-                    htmlFor={fieldId("default-language")}
-                    label="Default language"
-                  >
-                    <div className="relative">
-                      <select
-                        id={fieldId("default-language")}
-                        name="defaultLanguage"
-                        className="field-control field-control--trailing"
-                        value={profile.defaultLanguage}
-                        onChange={(event) =>
-                          updateProfile(
-                            "defaultLanguage",
-                            event.target.value as Locale,
-                          )
-                        }
-                      >
-                        {languageOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                      <span className="inline-trailing-icon">
-                        <Languages size={16} aria-hidden="true" />
-                      </span>
-                    </div>
-                  </FormField>
-                </div>
-              </form>
-
-              <div className="space-y-6">
-                <section className="rounded-lg border border-border-subtle bg-panel p-5 shadow-sm">
-                  <h2 className="text-base font-semibold text-ink">
-                    Profile summary
-                  </h2>
-                  <p className="mt-1 text-sm text-muted">
-                    {savedProfile.fullName} · @{savedProfile.username}
-                  </p>
-                  <div className="mt-4 space-y-3 text-sm">
-                    <div className="rounded-lg border border-border-subtle bg-surface-subtle p-3">
-                      <p className="text-[0.75rem] font-medium text-muted">
-                        Email
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-ink">
-                        {savedProfile.email}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-border-subtle bg-surface-subtle p-3">
-                      <p className="text-[0.75rem] font-medium text-muted">
-                        Phone
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-ink">
-                        {savedProfile.phoneNumber || "Not set"}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-border-subtle bg-surface-subtle p-3">
-                      <p className="text-[0.75rem] font-medium text-muted">
-                        Location
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-ink">
-                        {savedProfile.location || "Not set"}
-                      </p>
-                    </div>
-                    <div className="rounded-lg border border-border-subtle bg-surface-subtle p-3">
-                      <p className="text-[0.75rem] font-medium text-muted">
-                        Language
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-ink">
-                        {languageLabels[savedProfile.defaultLanguage]}
-                      </p>
-                    </div>
-                  </div>
-                </section>
-
-                <form
-                  className="auth-form rounded-lg border border-border-subtle bg-panel p-5 shadow-sm"
-                  onSubmit={handlePasswordSubmit}
-                  noValidate
-                >
-                  <div className="border-b border-border-subtle pb-5">
-                    <h2 className="text-base font-semibold text-ink">
-                      Password
-                    </h2>
-                    <p className="mt-1 text-sm leading-6 text-muted">
-                      Update your sign-in password.
-                    </p>
-                  </div>
-
-                  <div className="mt-5 auth-section-stack">
-                    <PasswordField
-                      id={fieldId("current-password")}
-                      name="currentPassword"
-                      label="Current password"
-                      value={currentPassword}
-                      show={showCurrentPassword}
-                      setShow={setShowCurrentPassword}
-                      onChange={(value) => {
-                        setCurrentPassword(value);
-                        setPasswordErrors((current) => ({
-                          ...current,
-                          currentPassword: undefined,
-                        }));
-                        setStatusMessage(null);
-                      }}
-                      autoComplete="current-password"
-                      error={passwordErrors.currentPassword}
-                      errorId={fieldId("current-password-error")}
-                      required
-                      ariaLabelHide="Hide current password"
-                      ariaLabelShow="Show current password"
-                    />
-                    <PasswordField
-                      id={fieldId("new-password")}
-                      name="newPassword"
-                      label="New password"
-                      hint="Use at least 8 characters."
-                      value={newPassword}
-                      show={showNewPassword}
-                      setShow={setShowNewPassword}
-                      onChange={(value) => {
-                        setNewPassword(value);
-                        setPasswordErrors((current) => ({
-                          ...current,
-                          newPassword: undefined,
-                        }));
-                        setStatusMessage(null);
-                      }}
-                      autoComplete="new-password"
-                      error={passwordErrors.newPassword}
-                      errorId={fieldId("new-password-error")}
-                      required
-                      ariaLabelHide="Hide new password"
-                      ariaLabelShow="Show new password"
-                    />
-                    <PasswordField
-                      id={fieldId("confirm-password")}
-                      name="confirmPassword"
-                      label="Confirm new password"
-                      value={confirmPassword}
-                      show={showConfirmPassword}
-                      setShow={setShowConfirmPassword}
-                      onChange={(value) => {
-                        setConfirmPassword(value);
-                        setPasswordErrors((current) => ({
-                          ...current,
-                          confirmPassword: undefined,
-                        }));
-                        setStatusMessage(null);
-                      }}
-                      autoComplete="new-password"
-                      error={passwordErrors.confirmPassword}
-                      errorId={fieldId("confirm-password-error")}
-                      required
-                      ariaLabelHide="Hide confirmation password"
-                      ariaLabelShow="Show confirmation password"
-                    />
-
-                    <div className="flex flex-col gap-2 border-t border-border-subtle pt-5 sm:flex-row sm:justify-end">
-                      <ActionButton type="submit" className="gap-2 sm:w-auto">
-                        <ShieldCheck size={16} aria-hidden="true" />
-                        Update password
-                      </ActionButton>
-                    </div>
-                  </div>
-                </form>
-              </div>
+    <main className="auth-popup-shell profile-page">
+      <section className="auth-popup profile-shell">
+        <AuthPage
+          aria-labelledby={fieldId("title")}
+          action={
+            <div className="auth-floating-language">
+              <LanguageSwitcher />
             </div>
-          </AuthPage>
-        </div>
+          }
+          titleId={fieldId("title")}
+          title="Profile"
+          intro="Update your account details and password."
+          status={
+            statusMessage
+              ? {
+                  content: statusMessage.text,
+                  tone: statusMessage.tone,
+                }
+              : null
+          }
+        >
+          <div className="profile-workspace">
+            <AuthForm className="profile-panel" onSubmit={handleProfileSubmit}>
+              <AuthFormSection className="profile-account-fields">
+                <div className="profile-section-heading profile-field-full">
+                  <p className="auth-progress-text">Account details</p>
+                </div>
+
+                <TextInput
+                  id={fieldId("username")}
+                  name="username"
+                  label="Username"
+                  value={profile.username}
+                  onChange={(event) =>
+                    updateProfileField("username", event.target.value)
+                  }
+                  error={Boolean(profileErrors.username)}
+                  fieldError={profileErrors.username}
+                  errorId={fieldId("username-error")}
+                  required
+                  trailingIcon={<UserRound size={16} aria-hidden="true" />}
+                />
+
+                <TextInput
+                  id={fieldId("full-name")}
+                  name="fullName"
+                  label="Full name"
+                  value={profile.fullName}
+                  onChange={(event) =>
+                    updateProfileField("fullName", event.target.value)
+                  }
+                  error={Boolean(profileErrors.fullName)}
+                  fieldError={profileErrors.fullName}
+                  errorId={fieldId("full-name-error")}
+                  required
+                />
+
+                <TextInput
+                  id={fieldId("email")}
+                  name="email"
+                  type="email"
+                  label="Email"
+                  value={profile.email}
+                  onChange={(event) =>
+                    updateProfileField("email", event.target.value)
+                  }
+                  error={Boolean(profileErrors.email)}
+                  fieldError={profileErrors.email}
+                  errorId={fieldId("email-error")}
+                  required
+                  trailingIcon={<Mail size={16} aria-hidden="true" />}
+                />
+
+                <PhoneNumberField
+                  id={fieldId("phone")}
+                  name="phoneNumber"
+                  label="Phone number"
+                  hint="Use the number you can access right now."
+                  hintId={fieldId("phone-hint")}
+                  value={profile.phoneNumber}
+                  onNumberChange={(event) =>
+                    updateProfileField("phoneNumber", event.target.value)
+                  }
+                  countryControlId={phoneCountryControlId}
+                  countryHintId={phoneCountryHintId}
+                  countryHint={`Selected dial code ${selectedPhoneCountry.dialCode}.`}
+                  selectedCountry={selectedPhoneCountry}
+                  options={phoneCountryOptions}
+                  onCountrySelect={handlePhoneCountrySelect}
+                />
+
+                <FormField
+                  htmlFor={fieldId("location")}
+                  label="Location"
+                  hint="Search and select a location to fill address details."
+                  hintId={locationHintId}
+                  error={profileErrors.locationQuery}
+                  errorId={locationErrorId}
+                  status={
+                    <LocationLookup
+                      statusId={locationStatusId}
+                      loadingText="Searching locations..."
+                      statusMessage={locationLookupMessage}
+                      resolvedText={
+                        resolvedLocation
+                          ? `Location set to ${resolvedLocation.displayName}.`
+                          : ""
+                      }
+                      listId={locationListId}
+                      suggestions={locationSuggestions}
+                      activeSuggestionIndex={activeSuggestionIndex}
+                      getSuggestionId={getLocationSuggestionId}
+                      onSuggestionSelect={handleLocationSuggestionSelect}
+                    />
+                  }
+                >
+                  <div className="relative">
+                    <TextInput
+                      id={fieldId("location")}
+                      type="text"
+                      name="location"
+                      autoComplete="off"
+                      enterKeyHint="next"
+                      value={profile.locationQuery}
+                      onChange={(event) =>
+                        handleLocationInputChange(event.target.value)
+                      }
+                      onKeyDown={handleLocationKeyDown}
+                      trailingIcon={<MapPin aria-hidden="true" size={16} />}
+                      aria-describedby={[
+                        locationHintId,
+                        locationStatusId,
+                        profileErrors.locationQuery ? locationErrorId : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      aria-errormessage={
+                        profileErrors.locationQuery
+                          ? locationErrorId
+                          : undefined
+                      }
+                      aria-invalid={
+                        profileErrors.locationQuery ? "true" : "false"
+                      }
+                      aria-autocomplete="list"
+                      aria-controls={
+                        locationSuggestions.length > 0
+                          ? locationListId
+                          : undefined
+                      }
+                      aria-activedescendant={
+                        activeSuggestionIndex >= 0
+                          ? getLocationSuggestionId(activeSuggestionIndex)
+                          : undefined
+                      }
+                      aria-expanded={locationSuggestions.length > 0}
+                      role="combobox"
+                    />
+                  </div>
+                </FormField>
+
+                <FormField
+                  htmlFor={fieldId("default-language")}
+                  label="Default language"
+                >
+                  <div className="relative">
+                    <select
+                      id={fieldId("default-language")}
+                      name="defaultLanguage"
+                      value={profile.defaultLanguage}
+                      onChange={(event) =>
+                        updateProfileField(
+                          "defaultLanguage",
+                          event.target.value as Locale,
+                        )
+                      }
+                      className="field-control field-control--trailing profile-select"
+                    >
+                      {languageOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="inline-trailing-icon">
+                      <Languages size={16} aria-hidden="true" />
+                    </span>
+                  </div>
+                </FormField>
+              </AuthFormSection>
+
+              <FormActions className="profile-actions profile-actions--account">
+                <ActionButton
+                  type="submit"
+                  className="gap-2"
+                  disabled={!isDirty}
+                >
+                  <Save size={16} aria-hidden="true" />
+                  Save changes
+                </ActionButton>
+                <ActionButton
+                  type="button"
+                  variant="secondary"
+                  className="gap-2"
+                  disabled={!isDirty}
+                  onClick={resetProfileChanges}
+                >
+                  Discard changes
+                </ActionButton>
+              </FormActions>
+            </AuthForm>
+
+            <AuthForm
+              className="profile-panel profile-panel--security"
+              onSubmit={handlePasswordSubmit}
+            >
+              <AuthFormSection>
+                <div className="profile-section-heading">
+                  <p className="auth-progress-text">Change password</p>
+                </div>
+
+                <PasswordField
+                  id={fieldId("current-password")}
+                  name="currentPassword"
+                  label="Current password"
+                  value={currentPassword}
+                  show={showCurrentPassword}
+                  setShow={setShowCurrentPassword}
+                  onChange={(value) => {
+                    setCurrentPassword(value);
+                    setPasswordErrors((current) => ({
+                      ...current,
+                      currentPassword: undefined,
+                    }));
+                    setStatusMessage(null);
+                  }}
+                  autoComplete="current-password"
+                  error={passwordErrors.currentPassword}
+                  errorId={fieldId("current-password-error")}
+                  required
+                  ariaLabelHide="Hide current password"
+                  ariaLabelShow="Show current password"
+                />
+
+                <PasswordField
+                  id={fieldId("new-password")}
+                  name="newPassword"
+                  label="New password"
+                  hint="Use at least 8 characters."
+                  hintId={fieldId("new-password-hint")}
+                  value={newPassword}
+                  show={showNewPassword}
+                  setShow={setShowNewPassword}
+                  onChange={(value) => {
+                    setNewPassword(value);
+                    setPasswordErrors((current) => ({
+                      ...current,
+                      newPassword: undefined,
+                    }));
+                    setStatusMessage(null);
+                  }}
+                  autoComplete="new-password"
+                  error={passwordErrors.newPassword}
+                  errorId={fieldId("new-password-error")}
+                  required
+                  ariaLabelHide="Hide new password"
+                  ariaLabelShow="Show new password"
+                />
+
+                <PasswordField
+                  id={fieldId("confirm-password")}
+                  name="confirmPassword"
+                  label="Confirm new password"
+                  value={confirmPassword}
+                  show={showConfirmPassword}
+                  setShow={setShowConfirmPassword}
+                  onChange={(value) => {
+                    setConfirmPassword(value);
+                    setPasswordErrors((current) => ({
+                      ...current,
+                      confirmPassword: undefined,
+                    }));
+                    setStatusMessage(null);
+                  }}
+                  autoComplete="new-password"
+                  error={passwordErrors.confirmPassword}
+                  errorId={fieldId("confirm-password-error")}
+                  required
+                  ariaLabelHide="Hide confirmation password"
+                  ariaLabelShow="Show confirmation password"
+                />
+              </AuthFormSection>
+
+              <FormActions className="profile-actions profile-actions--security">
+                <ActionButton type="submit" className="gap-2">
+                  <ShieldCheck size={16} aria-hidden="true" />
+                  Update password
+                </ActionButton>
+              </FormActions>
+            </AuthForm>
+          </div>
+        </AuthPage>
       </section>
     </main>
   );

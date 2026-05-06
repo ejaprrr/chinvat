@@ -166,7 +166,7 @@
   }
 
   .auth-popup-shell {
-    @apply flex min-h-screen min-h-dvh items-start justify-center px-3 py-5 sm:items-center sm:px-6;
+    @apply flex min-h-dvh items-start justify-center px-3 py-5 sm:items-center sm:px-6;
   }
 
   .auth-popup-shell--window {
@@ -174,11 +174,20 @@
   }
 
   .auth-popup {
-    @apply mx-auto w-full max-w-[28rem] rounded-2xl border border-border-subtle bg-panel p-4 sm:p-5;
+    @apply relative mx-auto w-full max-w-md rounded-2xl border border-border-subtle bg-panel p-4 sm:p-5;
   }
 
   .auth-popup--window {
     @apply max-w-[24rem] rounded-xl p-3 sm:p-4;
+  }
+
+  .auth-floating-language {
+    @apply absolute right-4 top-0 z-10;
+    transform: translateY(-50%);
+  }
+
+  .auth-popup--window .auth-floating-language {
+    @apply right-3;
   }
 
   .auth-popup .auth-flow {
@@ -210,7 +219,7 @@
   }
 
   .field__label-row {
-    @apply flex flex-wrap items-center justify-between gap-2;
+    @apply flex flex-wrap items-baseline justify-between gap-2;
   }
 
   .field__label {
@@ -218,7 +227,7 @@
   }
 
   .field__label-action {
-    @apply shrink-0;
+    @apply shrink-0 self-baseline;
   }
 
   .field__supporting-row {
@@ -283,11 +292,11 @@
   }
 
   .phone-country {
-    @apply min-h-12 w-[6.75rem] shrink-0 rounded-l-xl border-0 border-r border-border-subtle bg-surface-subtle px-3 text-sm font-medium text-ink outline-none transition hover:bg-surface-hover focus-visible:z-10 focus-visible:ring-4 focus-visible:ring-brand-500/15;
+    @apply min-h-12 w-27 shrink-0 rounded-l-xl border-0 border-r border-border-subtle bg-surface-subtle px-3 text-sm font-medium text-ink outline-none transition hover:bg-surface-hover focus-visible:z-10 focus-visible:ring-4 focus-visible:ring-brand-500/15;
   }
 
   .auth-popup--window .phone-country {
-    @apply min-h-11 w-[6.25rem] text-[0.8125rem];
+    @apply min-h-11 w-25 text-[0.8125rem];
   }
 
   .status-message {
@@ -312,6 +321,102 @@
 
   .form-actions {
     @apply flex flex-col gap-2;
+  }
+
+  .action-group {
+    @apply flex gap-2;
+  }
+
+  .action-group--column {
+    @apply flex-col;
+  }
+
+  .action-group--row {
+    @apply flex-col sm:flex-row;
+  }
+
+  .action-group--end {
+    @apply sm:justify-end;
+  }
+
+  .profile-page {
+    @apply items-center bg-canvas py-6 lg:py-8;
+  }
+
+  .profile-shell {
+    @apply max-w-6xl p-4 sm:p-5 lg:p-6;
+  }
+
+  .profile-shell .auth-flow {
+    @apply gap-5;
+  }
+
+  .profile-shell .auth-page-header__intro {
+    @apply max-w-[52ch];
+  }
+
+  .profile-workspace {
+    @apply grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_21rem] lg:items-stretch;
+  }
+
+  .profile-panel {
+    @apply flex min-w-0 flex-col gap-4;
+  }
+
+  .profile-panel--security {
+    @apply border-t border-border-subtle pt-5 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0;
+  }
+
+  .profile-account-fields {
+    @apply grid gap-3.5 md:grid-cols-2;
+  }
+
+  .profile-field-full {
+    @apply md:col-span-2;
+  }
+
+  .profile-actions {
+    @apply mt-auto border-t border-border-subtle pt-4;
+  }
+
+  .profile-actions--account {
+    @apply sm:grid sm:grid-cols-2;
+  }
+
+  .profile-actions--security {
+    @apply lg:max-w-none;
+  }
+
+  .profile-section-heading {
+    @apply flex flex-col gap-1;
+  }
+
+  .profile-select {
+    @apply appearance-none;
+  }
+
+  .location-lookup {
+    @apply space-y-2;
+  }
+
+  .location-lookup__status {
+    @apply text-[0.8125rem] leading-5 text-muted;
+  }
+
+  .location-lookup__list {
+    @apply overflow-hidden rounded-xl border border-border-subtle bg-white shadow-sm;
+  }
+
+  .location-lookup__item {
+    @apply block w-full border-b border-border-subtle px-4 py-3 text-left text-sm text-ink transition last:border-b-0 hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15;
+  }
+
+  .location-lookup__item--active {
+    @apply bg-surface-subtle;
+  }
+
+  .location-lookup__meta {
+    @apply mt-0.5 block text-[0.8125rem] leading-5 text-muted;
   }
 
   .completion-message {

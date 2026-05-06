@@ -4,14 +4,14 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { appRoutes } from "../router/paths";
-import { ActionButton, ActionLink } from "../components/ui/Action";
-import LanguageSwitcher from "../components/LanguageSwitcher";
-import AuthPage from "../components/ui/AuthPage";
-import { AuthStepForm, FormActions } from "../components/ui/AuthForm";
-import { AuthCompletion } from "../components/ui/AuthSupport";
-import PasswordField from "../components/ui/PasswordField";
-import Stepper from "../components/ui/Stepper";
-import TextInput from "../components/ui/TextInput";
+import { ActionButton, ActionLink } from "../components/actions/Action";
+import AuthPage from "../components/auth/AuthPage";
+import { AuthStepForm, FormActions } from "../components/auth/AuthForm";
+import { AuthCompletion } from "../components/auth/AuthSupport";
+import Stepper from "../components/auth/Stepper";
+import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
+import PasswordField from "../components/fields/PasswordField";
+import TextInput from "../components/fields/TextInput";
 
 type Step = "email" | "code" | "password" | "done";
 
@@ -250,7 +250,11 @@ function ResetPasswordPage() {
           </ActionLink>
         </FormActions>
       }
-      action={<LanguageSwitcher />}
+      action={
+        <div className="auth-floating-language">
+          <LanguageSwitcher />
+        </div>
+      }
       titleId="reset-password-title"
       introId={headerIntroId}
       title={headerTitle}

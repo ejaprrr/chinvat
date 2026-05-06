@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { AlertCircle } from "lucide-react";
+import { cx } from "../../lib/cx";
 
 type FormFieldProps = {
   children: ReactNode;
@@ -14,6 +15,7 @@ type FormFieldProps = {
   required?: boolean;
   action?: ReactNode;
   status?: ReactNode;
+  className?: string;
 };
 
 function FormField({
@@ -29,9 +31,10 @@ function FormField({
   labelSuffix,
   required = false,
   status,
+  className,
 }: FormFieldProps) {
   return (
-    <div className="field">
+    <div className={cx("field", className)}>
       <div className="field__label-row">
         <label className="field__label" htmlFor={htmlFor}>
           {label}

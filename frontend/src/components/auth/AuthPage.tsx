@@ -1,6 +1,6 @@
 import type { ReactNode, Ref } from "react";
 import AuthPageHeader from "./AuthPageHeader";
-import FormStatus from "./FormStatus";
+import StatusMessage from "../feedback/StatusMessage";
 
 type AuthStatus = {
   content: ReactNode;
@@ -58,7 +58,7 @@ function AuthPage({
         aria-hidden={status ? undefined : "true"}
       >
         {status ? (
-          <FormStatus tone={status.tone}>{status.content}</FormStatus>
+          <StatusMessage tone={status.tone}>{status.content}</StatusMessage>
         ) : null}
       </div>
 

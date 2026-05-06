@@ -18,22 +18,21 @@ import {
 import { useTranslation } from "react-i18next";
 // import { registerUser } from "../api/auth";
 import { languageLabels, type Locale } from "../i18n";
-import { cx } from "../lib/cx";
 import { appRoutes } from "../router/paths";
-import { ActionButton, ActionLink } from "../components/ui/Action";
-import {
-  AuthStepForm,
-  FormActions,
-} from "../components/ui/AuthForm";
-import AuthPage from "../components/ui/AuthPage";
-import { AuthCompletion } from "../components/ui/AuthSupport";
-import LanguageSwitcher from "../components/LanguageSwitcher";
-import PasswordField from "../components/ui/PasswordField";
-import PhoneNumberField from "../components/ui/PhoneNumberField";
-import type { PhoneCountryOption } from "../components/ui/PhoneCountrySelect";
-import Stepper from "../components/ui/Stepper";
-import FormField from "../components/ui/FormField";
-import TextInput from "../components/ui/TextInput";
+import { ActionButton, ActionLink } from "../components/actions/Action";
+import { AuthStepForm, FormActions } from "../components/auth/AuthForm";
+import AuthPage from "../components/auth/AuthPage";
+import { AuthCompletion } from "../components/auth/AuthSupport";
+import Stepper from "../components/auth/Stepper";
+import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
+import LocationLookup, {
+  type LocationSuggestion,
+} from "../components/fields/LocationLookup";
+import PasswordField from "../components/fields/PasswordField";
+import PhoneNumberField from "../components/fields/PhoneNumberField";
+import type { PhoneCountryOption } from "../components/fields/PhoneCountrySelect";
+import FormField from "../components/fields/FormField";
+import TextInput from "../components/fields/TextInput";
 
 type Step = "identity" | "contact" | "security" | "done";
 
@@ -63,16 +62,6 @@ type NormalizedLocation = {
   displayName: string;
   isPrecise: boolean;
 };
-
-const styles = {
-  locationStatus: "text-[0.8125rem] leading-5 text-muted",
-  suggestions:
-    "mt-2 overflow-hidden rounded-xl border border-border-subtle bg-white shadow-sm",
-  suggestion:
-    "block w-full border-b border-border-subtle px-4 py-3 text-left text-sm text-ink transition last:border-b-0 hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
-  suggestionActive: "bg-surface-subtle",
-  suggestionMeta: "mt-0.5 block text-[0.8125rem] leading-5 text-muted",
-} as const;
 
 const initialValues: FormValues = {
   username: "",
@@ -331,9 +320,12 @@ function RegisterPage() {
     }
   };
 
-  const handleLocationSuggestionSelect = (suggestion: NormalizedLocation) => {
+  const handleLocationSuggestionSelect = (suggestion: LocationSuggestion) => {
     setLocationQuery(suggestion.displayName);
-    setResolvedLocation(suggestion);
+    setResolvedLocation({
+      ...suggestion,
+      isPrecise: suggestion.isPrecise ?? false,
+    });
     setLocationSuggestions([]);
     setLocationLookupMessage(null);
     setLocationLookupLoading(false);
@@ -433,7 +425,11 @@ function RegisterPage() {
             }
           : null
       }
-      action={<LanguageSwitcher />}
+      action={
+        <div className="auth-floating-language">
+          <LanguageSwitcher />
+        </div>
+      }
       titleId="register-title"
       introId={headerIntroId}
       title={headerTitle}
@@ -442,7 +438,6 @@ function RegisterPage() {
       titleDescribedBy={`${progressId} ${headerIntroId}`}
       intro={headerIntro}
     >
-
       {currentStep === "identity" ? (
         <AuthStepForm
           onSubmit={handleIdentitySubmit}
@@ -459,9 +454,7 @@ function RegisterPage() {
             name="username"
             autoComplete="username"
             value={values.username}
-            onChange={(event) =>
-              setFieldValue("username", event.target.value)
-            }
+            onChange={(event) => setFieldValue("username", event.target.value)}
             error={Boolean(fieldErrors.username)}
             aria-describedby={getFieldDescribedBy(
               usernameHintId,
@@ -487,9 +480,7 @@ function RegisterPage() {
             name="fullName"
             autoComplete="name"
             value={values.fullName}
-            onChange={(event) =>
-              setFieldValue("fullName", event.target.value)
-            }
+            onChange={(event) => setFieldValue("fullName", event.target.value)}
             error={Boolean(fieldErrors.fullName)}
             aria-describedby={getFieldDescribedBy(
               fullNameHintId,
@@ -520,12 +511,9 @@ function RegisterPage() {
             }
             countryControlId={phoneCountryControlId}
             countryHintId={phoneCountryHintId}
-            countryHint={t(
-              "auth.register.fields.phoneNumber.countryCodeHint",
-              {
-                dialCode: selectedPhoneCountry.dialCode,
-              },
-            )}
+            countryHint={t("auth.register.fields.phoneNumber.countryCodeHint", {
+              dialCode: selectedPhoneCountry.dialCode,
+            })}
             selectedCountry={selectedPhoneCountry}
             options={phoneCountryOptions}
             onCountrySelect={handlePhoneCountrySelect}
@@ -551,163 +539,121 @@ function RegisterPage() {
             </>
           }
         >
-            <TextInput
-              ref={emailInputRef}
-              id="register-email"
-              type="email"
-              name="email"
-              autoComplete="email"
-              inputMode="email"
-              value={values.email}
-              onChange={(event) => setFieldValue("email", event.target.value)}
-              error={Boolean(fieldErrors.email)}
-              aria-describedby={getFieldDescribedBy(
-                emailHintId,
-                fieldErrors.email,
-                emailErrorId,
-              )}
-              aria-errormessage={fieldErrors.email ? emailErrorId : undefined}
-              aria-invalid={fieldErrors.email ? "true" : "false"}
-              required
-              label={t("auth.register.fields.email.label")}
-              hint={t("auth.register.fields.email.hint")}
-              hintId={emailHintId}
-              fieldError={fieldErrors.email}
-              errorId={emailErrorId}
-            />
+          <TextInput
+            ref={emailInputRef}
+            id="register-email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            inputMode="email"
+            value={values.email}
+            onChange={(event) => setFieldValue("email", event.target.value)}
+            error={Boolean(fieldErrors.email)}
+            aria-describedby={getFieldDescribedBy(
+              emailHintId,
+              fieldErrors.email,
+              emailErrorId,
+            )}
+            aria-errormessage={fieldErrors.email ? emailErrorId : undefined}
+            aria-invalid={fieldErrors.email ? "true" : "false"}
+            required
+            label={t("auth.register.fields.email.label")}
+            hint={t("auth.register.fields.email.hint")}
+            hintId={emailHintId}
+            fieldError={fieldErrors.email}
+            errorId={emailErrorId}
+          />
 
-            <FormField
-              htmlFor="register-location"
-              label={t("auth.register.fields.location.label")}
-              hint={t("auth.register.fields.location.hint")}
-              hintId={locationHintId}
-              error={fieldErrors.location}
-              errorId={locationErrorId}
-              status={
-                <div className="space-y-2">
-                  <p
-                    id={locationStatusId}
-                    className={styles.locationStatus}
-                    role="status"
-                    aria-live="polite"
-                    aria-atomic="true"
-                  >
-                    {locationLookupLoading
-                      ? t("auth.register.fields.location.lookupLoading")
-                      : locationLookupMessage ||
-                        (resolvedLocation
-                          ? t("auth.register.fields.location.lookupResolved", {
-                              location: resolvedLocation.displayName,
-                            })
-                          : "")}
-                  </p>
-
-                  {locationSuggestions.length > 0 ? (
-                    <div
-                      id={locationListId}
-                      role="listbox"
-                      className={styles.suggestions}
-                    >
-                      {locationSuggestions.map((suggestion, index) => (
-                        <div
-                          id={getLocationSuggestionId(index)}
-                          key={`${suggestion.displayName}-${index}`}
-                          role="option"
-                          aria-selected={index === activeSuggestionIndex}
-                        >
-                          <button
-                            type="button"
-                            className={cx(
-                              styles.suggestion,
-                              index === activeSuggestionIndex
-                                ? styles.suggestionActive
-                                : "",
-                            )}
-                            onClick={() =>
-                              handleLocationSuggestionSelect(suggestion)
-                            }
-                          >
-                            <span>{suggestion.displayName}</span>
-                            <span className={styles.suggestionMeta}>
-                              {[
-                                suggestion.address,
-                                suggestion.postalCode,
-                                suggestion.city,
-                                suggestion.country,
-                              ]
-                                .filter(Boolean)
-                                .join(" · ")}
-                            </span>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : null}
-                </div>
-              }
-            >
-              <div className="relative">
-                <TextInput
-                  id="register-location"
-                  type="text"
-                  name="location"
-                  autoComplete="off"
-                  enterKeyHint="next"
-                  value={locationQuery}
-                  onChange={(event) =>
-                    handleLocationInputChange(event.target.value)
-                  }
-                  onKeyDown={handleLocationKeyDown}
-                  trailingIcon={<MapPin aria-hidden="true" size={16} />}
-                  aria-describedby={[
-                    locationHintId,
-                    locationStatusId,
-                    fieldErrors.location ? locationErrorId : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  aria-errormessage={
-                    fieldErrors.location ? locationErrorId : undefined
-                  }
-                  aria-invalid={fieldErrors.location ? "true" : "false"}
-                  aria-autocomplete="list"
-                  aria-controls={
-                    locationSuggestions.length > 0 ? locationListId : undefined
-                  }
-                  aria-activedescendant={
-                    activeSuggestionIndex >= 0
-                      ? getLocationSuggestionId(activeSuggestionIndex)
-                      : undefined
-                  }
-                  aria-expanded={locationSuggestions.length > 0}
-                  role="combobox"
-                />
-              </div>
-            </FormField>
-
-            <FormField
-              htmlFor="register-default-language"
-              label={t("auth.register.fields.defaultLanguage.label")}
-              hint={t("auth.register.fields.defaultLanguage.hint")}
-              hintId={defaultLanguageHintId}
-            >
-              <select
-                id="register-default-language"
-                name="defaultLanguage"
-                value={values.defaultLanguage}
-                onChange={(event) =>
-                  setFieldValue("defaultLanguage", event.target.value as Locale)
+          <FormField
+            htmlFor="register-location"
+            label={t("auth.register.fields.location.label")}
+            hint={t("auth.register.fields.location.hint")}
+            hintId={locationHintId}
+            error={fieldErrors.location}
+            errorId={locationErrorId}
+            status={
+              <LocationLookup
+                statusId={locationStatusId}
+                loading={locationLookupLoading}
+                loadingText={t("auth.register.fields.location.lookupLoading")}
+                statusMessage={locationLookupMessage}
+                resolvedText={
+                  resolvedLocation
+                    ? t("auth.register.fields.location.lookupResolved", {
+                        location: resolvedLocation.displayName,
+                      })
+                    : ""
                 }
-                className="field-control"
-                aria-describedby={defaultLanguageHintId}
-              >
-                {languageOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </FormField>
+                listId={locationListId}
+                suggestions={locationSuggestions}
+                activeSuggestionIndex={activeSuggestionIndex}
+                getSuggestionId={getLocationSuggestionId}
+                onSuggestionSelect={handleLocationSuggestionSelect}
+              />
+            }
+          >
+            <div className="relative">
+              <TextInput
+                id="register-location"
+                type="text"
+                name="location"
+                autoComplete="off"
+                enterKeyHint="next"
+                value={locationQuery}
+                onChange={(event) =>
+                  handleLocationInputChange(event.target.value)
+                }
+                onKeyDown={handleLocationKeyDown}
+                trailingIcon={<MapPin aria-hidden="true" size={16} />}
+                aria-describedby={[
+                  locationHintId,
+                  locationStatusId,
+                  fieldErrors.location ? locationErrorId : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+                aria-errormessage={
+                  fieldErrors.location ? locationErrorId : undefined
+                }
+                aria-invalid={fieldErrors.location ? "true" : "false"}
+                aria-autocomplete="list"
+                aria-controls={
+                  locationSuggestions.length > 0 ? locationListId : undefined
+                }
+                aria-activedescendant={
+                  activeSuggestionIndex >= 0
+                    ? getLocationSuggestionId(activeSuggestionIndex)
+                    : undefined
+                }
+                aria-expanded={locationSuggestions.length > 0}
+                role="combobox"
+              />
+            </div>
+          </FormField>
+
+          <FormField
+            htmlFor="register-default-language"
+            label={t("auth.register.fields.defaultLanguage.label")}
+            hint={t("auth.register.fields.defaultLanguage.hint")}
+            hintId={defaultLanguageHintId}
+          >
+            <select
+              id="register-default-language"
+              name="defaultLanguage"
+              value={values.defaultLanguage}
+              onChange={(event) =>
+                setFieldValue("defaultLanguage", event.target.value as Locale)
+              }
+              className="field-control"
+              aria-describedby={defaultLanguageHintId}
+            >
+              {languageOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </FormField>
         </AuthStepForm>
       ) : null}
 

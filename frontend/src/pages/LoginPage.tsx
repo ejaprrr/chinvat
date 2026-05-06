@@ -12,13 +12,13 @@ import {
 import { useTranslation } from "react-i18next";
 import { handleCertificateLoginStart, loginWithCredentials } from "../api/auth";
 import { appRoutes } from "../router/paths";
-import { ActionButton, ActionLink } from "../components/ui/Action";
-import LanguageSwitcher from "../components/LanguageSwitcher";
-import AuthPage from "../components/ui/AuthPage";
-import { AuthStepForm } from "../components/ui/AuthForm";
-import { AuthDivider } from "../components/ui/AuthSupport";
-import PasswordField from "../components/ui/PasswordField";
-import TextInput from "../components/ui/TextInput";
+import { ActionButton, ActionLink } from "../components/actions/Action";
+import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
+import AuthPage from "../components/auth/AuthPage";
+import { AuthStepForm } from "../components/auth/AuthForm";
+import { AuthDivider } from "../components/auth/AuthSupport";
+import PasswordField from "../components/fields/PasswordField";
+import TextInput from "../components/fields/TextInput";
 
 type FieldErrors = {
   username?: string;
@@ -178,7 +178,11 @@ function LoginPage() {
   return (
     <AuthPage
       aria-labelledby="login-title"
-      action={<LanguageSwitcher />}
+      action={
+        <div className="auth-floating-language">
+          <LanguageSwitcher />
+        </div>
+      }
       titleId="login-title"
       title={t("auth.title")}
       intro={t("auth.intro")}
@@ -239,7 +243,9 @@ function LoginPage() {
           label={t("auth.fields.username.label")}
           hint={t("auth.fields.username.hint")}
           hintId={usernameHintId}
-          fieldError={fieldErrors.username ? t(fieldErrors.username) : undefined}
+          fieldError={
+            fieldErrors.username ? t(fieldErrors.username) : undefined
+          }
           errorId={usernameErrorId}
         />
 
@@ -271,7 +277,7 @@ function LoginPage() {
             <ActionLink
               to={appRoutes.resetPassword}
               variant="text"
-              className="w-auto px-0 py-0 text-[0.8125rem]"
+              className="w-auto px-0 py-0 text-sm"
             >
               {t("auth.actions.resetPassword")}
             </ActionLink>
