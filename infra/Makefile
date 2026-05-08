@@ -1,8 +1,9 @@
 .PHONY: help config-dev config-prod dev-up dev-down dev-logs prod-up prod-down prod-logs docker-build \
         db-migrate db-seed db-reset
 
-COMPOSE_DEV  = docker compose --env-file docker/.env.dev.example  -f docker/compose.dev.yml
-COMPOSE_PROD = docker compose --env-file docker/.env.prod.example -f docker/compose.prod.yml
+ENV_FILE     ?= ../.env
+COMPOSE_DEV  = docker compose --env-file $(ENV_FILE) -f docker/compose.dev.yml
+COMPOSE_PROD = docker compose --env-file $(ENV_FILE) -f docker/compose.prod.yml
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
