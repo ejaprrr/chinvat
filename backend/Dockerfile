@@ -18,7 +18,7 @@ COPY backend/modules/rbac/src modules/rbac/src
 COPY backend/modules/auth/src modules/auth/src
 COPY backend/app/src app/src
 # Run deterministic tests in image build; exclude infra-dependent integration suites.
-RUN --mount=type=cache,target=/root/.m2 ./mvnw test --no-transfer-progress -Dtest='!*IT,!*E2ETest'
+RUN --mount=type=cache,target=/root/.m2 ./mvnw test --no-transfer-progress -Dtest='*Test,!*IT,!*E2ETest'
 
 FROM test AS build
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -pl app -am package -DskipTests -q

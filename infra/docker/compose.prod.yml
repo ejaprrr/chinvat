@@ -80,6 +80,7 @@ services:
       JPA_SHOW_SQL: false
       APP_VERSION: ${APP_VERSION:-latest}
       APP_TIME_ZONE: ${APP_TIME_ZONE:-UTC}
+        CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://your-frontend-domain.example}
       FNMT_PROXY_SHARED_SECRET: ${FNMT_PROXY_SHARED_SECRET:-change-me-fnmt-secret}
     expose:
       - "8080"

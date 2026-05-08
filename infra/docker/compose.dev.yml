@@ -107,6 +107,7 @@ services:
       JPA_SHOW_SQL: true
       APP_VERSION: ${APP_VERSION:-0.0.1-SNAPSHOT}
       APP_TIME_ZONE: ${APP_TIME_ZONE:-UTC}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
       FNMT_PROXY_SHARED_SECRET: ${FNMT_PROXY_SHARED_SECRET:-dev-fnmt-proxy-secret}
     expose:
       - "8080"

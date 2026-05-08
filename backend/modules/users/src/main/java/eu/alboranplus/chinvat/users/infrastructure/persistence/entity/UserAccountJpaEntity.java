@@ -9,6 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "\"user\"")
@@ -31,10 +33,12 @@ public class UserAccountJpaEntity {
   private String email;
 
   @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(name = "user_type", nullable = false, length = 20)
   private eu.alboranplus.chinvat.users.domain.model.UserType userType;
 
   @Enumerated(EnumType.STRING)
+  @JdbcTypeCode(SqlTypes.NAMED_ENUM)
   @Column(name = "access_level", nullable = false, length = 20)
   private eu.alboranplus.chinvat.users.domain.model.AccessLevel accessLevel;
 
