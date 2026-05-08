@@ -67,12 +67,7 @@ export function handleRequestError<T>(
     messageKey?: string;
   },
 ): RequestHandlerResult<T> {
-  if (error instanceof Error && error.message) {
-    return {
-      ok: false,
-      message: error.message,
-    };
-  }
+  console.error("API request failed", error);
 
   return {
     ok: false,

@@ -48,7 +48,7 @@ function detectLanguage(): Locale {
 
   for (const value of candidates) {
     if (value.startsWith("ca")) return "ca";
-    if (value.startsWith("eu") || value.startsWith("ba")) return "eu";
+    if (value.startsWith("eu")) return "eu";
     if (value.startsWith("gl")) return "gl";
     if (value.startsWith("en")) return "en";
     if (value.startsWith("es")) return "es";

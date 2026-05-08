@@ -1,110 +1,62 @@
-import { getCertificateLoginUrl } from "../api/auth";
-import useDocumentTitle from "../hooks/useDocumentTitle";
-import useIsDesktopPlatform from "../hooks/useIsDesktopPlatform";
-
-import {
-  useId,
-  useRef,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
-} from "react";
+import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { handleCertificateLoginStart, loginWithCredentials } from "../api/auth";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useAuth } from "../auth/useAuth";
 import { appRoutes } from "../router/paths";
-import { ActionButton, ActionLink } from "../components/actions/Action";
+import { ActionButton, ActionLink } from "../components/forms/Action";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
 import AuthPage from "../components/auth/AuthPage";
 import { AuthStepForm } from "../components/auth/AuthForm";
-import { AuthDivider } from "../components/auth/AuthSupport";
-import PasswordField from "../components/fields/PasswordField";
-import TextInput from "../components/fields/TextInput";
+import PasswordField from "../components/forms/PasswordField";
+import TextInput from "../components/forms/TextInput";
 
 type FieldErrors = {
-  username?: string;
+  email?: string;
   password?: string;
 };
 
-type TranslationKey =
-  | "auth.fields.username.required"
-  | "auth.fields.password.required"
-  | "auth.status.certificateOpening"
-  | "auth.status.loginSuccess"
-  | "auth.status.loginError"
-  | "auth.status.networkError";
-
-type StatusMessage =
-  | {
-      tone: "default" | "critical";
-      text: string;
-    }
-  | {
-      tone: "default" | "critical";
-      translationKey: TranslationKey;
-    }
-  | null;
-
 function LoginPage() {
   useDocumentTitle("meta.pageTitle");
-  const isDesktopPlatform = useIsDesktopPlatform();
-
-  const startCertificateLogin = () => {
-    window.location.assign(getCertificateLoginUrl());
-  };
 
   const { t } = useTranslation();
-  const [username, setUsername] = useState("");
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [statusMessage, setStatusMessage] = useState<StatusMessage>(null);
-  const [certificateLaunching, setCertificateLaunching] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const usernameInputRef = useRef<HTMLInputElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
 
-  const usernameHintId = useId();
+  const emailHintId = useId();
   const passwordHintId = useId();
-  const certificateHintId = useId();
-  const usernameErrorId = useId();
+  const emailErrorId = useId();
   const passwordErrorId = useId();
   const capsLockWarningId = useId();
 
+  useEffect(() => {
+    // Avoid setting state synchronously in the effect body
+    Promise.resolve().then(() => setStatusMessage(null));
+  }, [email, password]);
+
   const handleCapsLock = (event: KeyboardEvent<HTMLInputElement>) => {
     setCapsLockOn(event.getModifierState("CapsLock"));
-  };
-
-  const toStatusMessage = (response: {
-    ok: boolean;
-    message?: string;
-    messageKey?: string;
-  }): StatusMessage => {
-    if (response.messageKey) {
-      return {
-        tone: response.ok ? "default" : "critical",
-        translationKey: response.messageKey as TranslationKey,
-      };
-    }
-
-    if (response.message) {
-      return {
-        tone: response.ok ? "default" : "critical",
-        text: response.message,
-      };
-    }
-
-    return null;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const nextErrors: FieldErrors = {};
+    const trimmedEmail = email.trim();
 
-    if (!username.trim()) {
-      nextErrors.username = "auth.fields.username.required";
+    if (!trimmedEmail) {
+      nextErrors.email = "auth.fields.email.required";
     }
 
     if (!password) {
@@ -112,58 +64,31 @@ function LoginPage() {
     }
 
     setFieldErrors(nextErrors);
-    const hasErrors = Object.keys(nextErrors).length > 0;
 
-    if (!hasErrors) {
-      setIsSubmitting(true);
-    }
-
-    if (nextErrors.username) {
-      setStatusMessage(null);
-      usernameInputRef.current?.focus();
+    if (nextErrors.email) {
+      emailInputRef.current?.focus();
       return;
     }
 
     if (nextErrors.password) {
-      setStatusMessage(null);
       passwordInputRef.current?.focus();
       return;
     }
 
-    const response = await loginWithCredentials({
-      username: username.trim(),
-      password,
-    });
-
-    setStatusMessage(toStatusMessage(response));
-    setIsSubmitting(false);
+    try {
+      setIsSubmitting(true);
+      await login(trimmedEmail, password);
+      navigate(appRoutes.profile, { replace: true });
+    } catch (error) {
+      setStatusMessage(
+        error instanceof Error ? error.message : t("auth.status.loginError"),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const clearTransientFeedback = () => {
-    setStatusMessage(null);
-  };
-
-  const handleCertificateLogin = () => {
-    const response = handleCertificateLoginStart();
-
-    setCertificateLaunching(true);
-    setStatusMessage(toStatusMessage(response));
-    startCertificateLogin();
-  };
-
-  const isErrorStatus = statusMessage?.tone === "critical";
-
-  const resolvedStatusMessage = statusMessage
-    ? "translationKey" in statusMessage
-      ? t(statusMessage.translationKey)
-      : statusMessage.text
-    : "";
-
-  // Build aria-describedby lists per field
-  const usernameDescribedBy = [
-    usernameHintId,
-    fieldErrors.username ? usernameErrorId : "",
-  ]
+  const emailDescribedBy = [emailHintId, fieldErrors.email ? emailErrorId : ""]
     .filter(Boolean)
     .join(" ");
 
@@ -185,12 +110,14 @@ function LoginPage() {
       }
       titleId="login-title"
       title={t("auth.title")}
-      intro={t("auth.intro")}
+      intro={t("auth.intro", {
+        defaultValue: "Use your email and password to sign in.",
+      })}
       status={
         statusMessage
           ? {
-              content: resolvedStatusMessage,
-              tone: isErrorStatus ? "critical" : "default",
+              content: statusMessage,
+              tone: "critical",
             }
           : null
       }
@@ -198,7 +125,7 @@ function LoginPage() {
       <AuthStepForm
         onSubmit={handleSubmit}
         aria-labelledby="login-title"
-        aria-busy={isSubmitting || certificateLaunching}
+        aria-busy={isSubmitting}
         actions={
           <ActionButton
             type="submit"
@@ -208,45 +135,43 @@ function LoginPage() {
           >
             {isSubmitting
               ? t("auth.actions.submitting", {
-                  defaultValue: "Submitting…",
+                  defaultValue: "Signing in...",
                 })
               : t("auth.actions.continue")}
           </ActionButton>
         }
       >
         <TextInput
-          ref={usernameInputRef}
-          id="username"
-          type="text"
-          name="username"
-          autoComplete="username"
-          autoCapitalize="none"
-          autoCorrect="off"
-          spellCheck={false}
+          ref={emailInputRef}
+          id="email"
+          type="email"
+          name="email"
+          autoComplete="email"
+          inputMode="email"
           enterKeyHint="next"
-          value={username}
+          value={email}
           onChange={(event) => {
-            setUsername(event.target.value);
+            setEmail(event.target.value);
             setFieldErrors((current) => ({
               ...current,
-              username: undefined,
+              email: undefined,
             }));
-            clearTransientFeedback();
           }}
-          inputMode="text"
-          error={Boolean(fieldErrors.username)}
-          aria-describedby={usernameDescribedBy}
-          aria-errormessage={fieldErrors.username ? usernameErrorId : undefined}
-          aria-invalid={fieldErrors.username ? "true" : "false"}
+          error={Boolean(fieldErrors.email)}
+          aria-describedby={emailDescribedBy}
+          aria-errormessage={fieldErrors.email ? emailErrorId : undefined}
+          aria-invalid={fieldErrors.email ? "true" : "false"}
           aria-required="true"
           required
-          label={t("auth.fields.username.label")}
-          hint={t("auth.fields.username.hint")}
-          hintId={usernameHintId}
-          fieldError={
-            fieldErrors.username ? t(fieldErrors.username) : undefined
-          }
-          errorId={usernameErrorId}
+          label={t("auth.fields.email.label", {
+            defaultValue: "Email address",
+          })}
+          hint={t("auth.fields.email.hint", {
+            defaultValue: "Use the email address associated with your account.",
+          })}
+          hintId={emailHintId}
+          fieldError={fieldErrors.email ? t(fieldErrors.email) : undefined}
+          errorId={emailErrorId}
         />
 
         <PasswordField
@@ -263,7 +188,6 @@ function LoginPage() {
               ...current,
               password: undefined,
             }));
-            clearTransientFeedback();
           }}
           autoComplete="current-password"
           enterKeyHint="go"
@@ -320,44 +244,6 @@ function LoginPage() {
           {t("auth.register.actions.open")}
         </ActionLink>
       </p>
-
-      <div
-        className="flex flex-col gap-2.5"
-        aria-label={t("auth.certificate.action")}
-      >
-        <AuthDivider>{t("auth.divider")}</AuthDivider>
-
-        {isDesktopPlatform ? (
-          <>
-            <ActionButton
-              id="certificate-option"
-              type="button"
-              variant="secondary"
-              onClick={handleCertificateLogin}
-              aria-describedby={certificateHintId}
-              aria-busy={certificateLaunching}
-              disabled={certificateLaunching || isSubmitting}
-            >
-              {t("auth.certificate.action")}
-            </ActionButton>
-            <p
-              id={certificateHintId}
-              className="helper-text px-2 text-center leading-5"
-            >
-              {t("auth.certificate.hint")}
-            </p>
-          </>
-        ) : (
-          <p
-            id="certificate-option"
-            className="helper-text text-center"
-            role="status"
-            aria-live="polite"
-          >
-            {t("auth.certificate.unavailable")}
-          </p>
-        )}
-      </div>
     </AuthPage>
   );
 }

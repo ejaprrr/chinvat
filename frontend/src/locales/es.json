@@ -2,7 +2,8 @@
   "meta": {
     "pageTitle": "Acceder a chinvat",
     "registerPageTitle": "Crear cuenta | chinvat",
-    "resetPasswordPageTitle": "Restablecer contraseña | chinvat"
+    "resetPasswordPageTitle": "Restablecer contraseña | chinvat",
+    "profilePageTitle": "Perfil | chinvat"
   },
   "accessibility": {
     "skipToContent": "Saltar al contenido principal",
@@ -117,14 +118,25 @@
         },
         "location": {
           "label": "Ubicación",
-          "hint": "Opcional. Empieza a escribir la dirección completa, incluido el número, y elige una sugerencia exacta.",
+          "hint": "Empieza a escribir la dirección (incluye el número) y selecciona una sugerencia.",
           "lookupLoading": "Buscando sugerencias de ubicación...",
-          "lookupResolved": "Normalizado a partir de: {{location}}",
+          "lookupResolved": "Seleccionado: {{location}}",
           "lookupError": "Ahora mismo no hemos podido cargar sugerencias de ubicación. Puedes continuar igualmente.",
           "selectExact": "Elige una de las sugerencias exactas que incluya número.",
           "needsHouseNumber": "Incluye el número en la búsqueda antes de que podamos sugerir direcciones.",
           "noExactResults": "No hemos encontrado una dirección exacta con número.",
           "requiredExact": "Elige una dirección exacta que incluya el número."
+        },
+
+        "errors": {
+          "usernameRequired": "Introduce un nombre de usuario.",
+          "fullNameRequired": "Introduce el nombre completo.",
+          "phoneRequired": "Introduce un número de teléfono con el prefijo del país.",
+          "emailRequired": "Introduce un correo electrónico.",
+          "emailInvalid": "Introduce un correo electrónico válido.",
+          "locationRequired": "Elige una ubicación de las sugerencias.",
+          "passwordRequired": "Introduce una contraseña.",
+          "passwordMismatch": "Las contraseñas no coinciden."
         },
         "defaultLanguage": {
           "label": "Idioma predeterminado",
@@ -199,6 +211,80 @@
           "required": "Confirma tu nueva contraseña.",
           "mismatch": "Las contraseñas no coinciden."
         }
+      }
+    }
+  },
+  "profile": {
+    "title": "Tu perfil",
+    "intro": "Actualiza los datos de tu cuenta y preferencias.",
+    "actions": {
+      "save": "Guardar cambios",
+      "saving": "Guardando...",
+      "changePassword": "Cambiar contraseña",
+      "changingPassword": "Cambiando contraseña...",
+      "discard": "Descartar cambios",
+      "updatePassword": "Actualizar contraseña"
+    },
+    "status": {
+      "saveSuccess": "Perfil actualizado correctamente.",
+      "saveError": "No se pudo actualizar el perfil. Inténtalo de nuevo.",
+      "passwordChangeSuccess": "Contraseña cambiada correctamente.",
+      "passwordChangeError": "No se pudo cambiar la contraseña. Inténtalo de nuevo.",
+      "networkError": "No se pudo conectar con el servicio. Revisa la conexión e inténtalo de nuevo.",
+      "reviewFields": "Revisa los campos destacados del perfil.",
+      "previewSave": "Perfil guardado en la previsualización de la IU. Conecta esta acción a tu backend cuando esté listo.",
+      "changesDiscarded": "Los cambios no guardados del perfil fueron descartados.",
+      "reviewPasswordFields": "Revisa los campos destacados de contraseña."
+    },
+    "fields": {
+      "username": {
+        "label": "Usuario",
+        "hint": "Tu identificador de inicio de sesión.",
+        "required": "Introduce un nombre de usuario."
+      },
+      "fullName": {
+        "label": "Nombre completo",
+        "hint": "Tu nombre de visualización.",
+        "required": "Introduce el nombre completo."
+      },
+      "phoneNumber": {
+        "label": "Número de teléfono",
+        "hint": "Opcional. Tu número de contacto.",
+        "countryHint": "Código de marcado seleccionado {{dialCode}}."
+      },
+      "email": {
+        "label": "Dirección de correo electrónico",
+        "hint": "Tu correo principal para notificaciones.",
+        "required": "Introduce una dirección de correo electrónico.",
+        "invalid": "Introduce una dirección de correo electrónico válida."
+      },
+      "location": {
+        "label": "Ubicación",
+        "hint": "Opcional. Tu dirección.",
+        "required": "Busca tu ubicación.",
+        "loading": "Buscando ubicaciones...",
+        "resolved": "Ubicación establecida en {{location}}."
+      },
+      "defaultLanguage": {
+        "label": "Idioma por defecto",
+        "hint": "Tu idioma preferido para la interfaz."
+      },
+      "currentPassword": {
+        "label": "Contraseña actual",
+        "hint": "Introduce tu contraseña actual para confirmar.",
+        "required": "Introduce tu contraseña actual."
+      },
+      "newPassword": {
+        "label": "Nueva contraseña",
+        "hint": "Elige una nueva contraseña.",
+        "required": "Introduce una nueva contraseña.",
+        "length": "Utiliza al menos 8 caracteres."
+      },
+      "confirmPassword": {
+        "label": "Confirma la nueva contraseña",
+        "hint": "Vuelve a introducir la nueva contraseña.",
+        "required": "Confirma tu nueva contraseña.",
+        "mismatch": "Las contraseñas no coinciden."
       }
     }
   }

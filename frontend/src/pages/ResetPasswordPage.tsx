@@ -3,15 +3,16 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { confirmPasswordReset, requestPasswordReset } from "../api/auth";
 import { appRoutes } from "../router/paths";
-import { ActionButton, ActionLink } from "../components/actions/Action";
+import { ActionButton, ActionLink } from "../components/forms/Action";
 import AuthPage from "../components/auth/AuthPage";
 import { AuthStepForm, FormActions } from "../components/auth/AuthForm";
 import { AuthCompletion } from "../components/auth/AuthSupport";
 import Stepper from "../components/auth/Stepper";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
-import PasswordField from "../components/fields/PasswordField";
-import TextInput from "../components/fields/TextInput";
+import PasswordField from "../components/forms/PasswordField";
+import TextInput from "../components/forms/TextInput";
 
 type Step = "email" | "code" | "password" | "done";
 
@@ -111,12 +112,26 @@ function ResetPasswordPage() {
       return;
     }
 
-    setFieldErrors({});
-    setStatusMessage({
-      tone: "default",
-      text: t("auth.resetPassword.form.codeSent", { email: trimmedEmail }),
-    });
-    setCurrentStep("code");
+    void (async () => {
+      try {
+        await requestPasswordReset({ email: trimmedEmail });
+        setFieldErrors({});
+        setStatusMessage({
+          tone: "default",
+          text: t("auth.resetPassword.form.codeSent", { email: trimmedEmail }),
+        });
+        setCurrentStep("code");
+      } catch (error) {
+        setFieldErrors({
+          email: error instanceof Error ? error.message : t("auth.resetPassword.form.email.invalid"),
+        });
+        setStatusMessage({
+          tone: "warning",
+          text: t("auth.resetPassword.form.email.invalid"),
+        });
+        emailInputRef.current?.focus();
+      }
+    })();
   };
 
   const handleCodeSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -131,9 +146,15 @@ function ResetPasswordPage() {
       return;
     }
 
-    setFieldErrors({});
-    clearStatus();
-    setCurrentStep("password");
+    void (async () => {
+      try {
+        setFieldErrors({});
+        clearStatus();
+        setCurrentStep("password");
+      } catch {
+        // no-op
+      }
+    })();
   };
 
   const handlePasswordSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -173,8 +194,25 @@ function ResetPasswordPage() {
       return;
     }
 
-    clearStatus();
-    setCurrentStep("done");
+    void (async () => {
+      try {
+        await confirmPasswordReset({
+          email: email.trim(),
+          resetCode: code.trim(),
+          newPassword: password,
+        });
+        clearStatus();
+        setCurrentStep("done");
+      } catch (error) {
+        setStatusMessage({
+          tone: "warning",
+          text:
+            error instanceof Error
+              ? error.message
+              : t("auth.resetPassword.form.code.required"),
+        });
+      }
+    })();
   };
 
   const goToEmailStep = () => {
@@ -345,7 +383,6 @@ function ResetPasswordPage() {
             aria-errormessage={fieldErrors.code ? codeErrorId : undefined}
             aria-invalid={fieldErrors.code ? "true" : "false"}
             required
-            htmlFor="reset-code"
             label={t("auth.resetPassword.form.code.label")}
             hint={t("auth.resetPassword.form.code.hint")}
             hintId={codeHintId}

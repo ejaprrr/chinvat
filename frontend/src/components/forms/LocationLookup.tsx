@@ -1,13 +1,7 @@
 import { cx } from "../../lib/cx";
+import type { LocationResult } from "../../lib/geocoding";
 
-type LocationSuggestion = {
-  address?: string;
-  city?: string;
-  country?: string;
-  displayName: string;
-  postalCode?: string;
-  isPrecise?: boolean;
-};
+type LocationSuggestion = LocationResult;
 
 type LocationLookupProps = {
   activeSuggestionIndex: number;
@@ -67,8 +61,7 @@ function LocationLookup({
                 type="button"
                 className={cx(
                   "block w-full border-b border-border-subtle px-4 py-3 text-left text-sm text-ink transition last:border-b-0 hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
-                  index === activeSuggestionIndex &&
-                    "bg-surface-subtle",
+                  index === activeSuggestionIndex && "bg-surface-subtle",
                 )}
                 onClick={() => onSuggestionSelect(suggestion)}
               >

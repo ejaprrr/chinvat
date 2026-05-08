@@ -2,7 +2,8 @@
   "meta": {
     "pageTitle": "Sign in to chinvat",
     "registerPageTitle": "Create account | chinvat",
-    "resetPasswordPageTitle": "Reset password | chinvat"
+    "resetPasswordPageTitle": "Reset password | chinvat",
+    "profilePageTitle": "Profile | chinvat"
   },
   "accessibility": {
     "skipToContent": "Skip to main content",
@@ -117,14 +118,25 @@
         },
         "location": {
           "label": "Location",
-          "hint": "Optional. Start typing the full street address including the house number and choose an exact suggestion.",
+          "hint": "Start typing the street address (include house number) and select a suggestion.",
           "lookupLoading": "Looking up location suggestions...",
-          "lookupResolved": "Normalized from: {{location}}",
+          "lookupResolved": "Selected: {{location}}",
           "lookupError": "We couldn't load location suggestions right now. You can still continue.",
           "selectExact": "Choose one of the exact address suggestions with a house number.",
           "needsHouseNumber": "Include the house number in the search before we can suggest addresses.",
           "noExactResults": "No exact address with a house number was found.",
           "requiredExact": "Choose an exact address that includes the house number."
+        },
+
+        "errors": {
+          "usernameRequired": "Enter a username.",
+          "fullNameRequired": "Enter the full name.",
+          "phoneRequired": "Enter a phone number including the country prefix.",
+          "emailRequired": "Enter an email address.",
+          "emailInvalid": "Enter a valid email address.",
+          "locationRequired": "Choose a location from the suggestions.",
+          "passwordRequired": "Enter a password.",
+          "passwordMismatch": "The passwords do not match."
         },
         "defaultLanguage": {
           "label": "Default language",
@@ -199,6 +211,87 @@
           "required": "Confirm your new password.",
           "mismatch": "The passwords do not match."
         }
+      }
+    }
+  },
+  "profile": {
+    "title": "Your profile",
+    "intro": "Update your account details and preferences.",
+    "actions": {
+      "save": "Save changes",
+      "saving": "Saving...",
+      "changePassword": "Change password",
+      "changingPassword": "Changing password...",
+      "discard": "Discard changes",
+      "updatePassword": "Update password"
+    },
+    "status": {
+      "saveSuccess": "Profile updated successfully.",
+      "saveError": "We couldn't update your profile. Try again.",
+      "passwordChangeSuccess": "Password changed successfully.",
+      "passwordChangeError": "We couldn't change your password. Try again.",
+      "networkError": "We couldn't reach the service. Check your connection and try again.",
+      "reviewFields": "Review the highlighted profile fields.",
+      "previewSave": "Profile saved in the UI preview. Connect this action to your backend when ready.",
+      "changesDiscarded": "Unsaved profile changes were discarded.",
+      "reviewPasswordFields": "Review the highlighted password fields."
+    },
+    "fields": {
+      "username": {
+        "label": "Username",
+        "hint": "Your sign-in identifier.",
+        "required": "Enter a username."
+      },
+      "fullName": {
+        "label": "Full name",
+        "hint": "Your display name.",
+        "required": "Enter a full name."
+      },
+      "phoneNumber": {
+        "label": "Phone number",
+        "hint": "Optional. Your contact number.",
+        "countryHint": "Selected dial code {{dialCode}}."
+      },
+      "email": {
+        "label": "Email address",
+        "hint": "Your primary email for notifications.",
+        "required": "Enter an email address.",
+        "invalid": "Enter a valid email address."
+      },
+      "location": {
+        "label": "Location",
+        "hint": "Optional. Your address.",
+        "required": "Search for your location.",
+        "loading": "Searching locations...",
+        "resolved": "Location set to {{location}}.",
+        "noResults": "No locations found."
+      },
+      "defaultLanguage": {
+        "label": "Default language",
+        "hint": "Your preferred interface language."
+      },
+      "currentPassword": {
+        "label": "Current password",
+        "hint": "Enter your current password to confirm.",
+        "required": "Enter your current password.",
+        "hide": "Hide current password",
+        "show": "Show current password"
+      },
+      "newPassword": {
+        "label": "New password",
+        "hint": "Choose a new password.",
+        "required": "Enter a new password.",
+        "length": "Use at least 8 characters.",
+        "hide": "Hide new password",
+        "show": "Show new password"
+      },
+      "confirmPassword": {
+        "label": "Confirm new password",
+        "hint": "Re-enter the new password.",
+        "required": "Confirm your new password.",
+        "mismatch": "The passwords do not match.",
+        "hide": "Hide confirm password",
+        "show": "Show confirm password"
       }
     }
   }

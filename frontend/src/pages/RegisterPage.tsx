@@ -9,6 +9,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from "react";
+import { useNavigate } from "react-router";
 import { MapPin, UserRound } from "lucide-react";
 import {
   getCountries,
@@ -16,10 +17,9 @@ import {
   type CountryCode,
 } from "libphonenumber-js/min";
 import { useTranslation } from "react-i18next";
-// import { registerUser } from "../api/auth";
 import { languageLabels, type Locale } from "../i18n";
 import { appRoutes } from "../router/paths";
-import { ActionButton, ActionLink } from "../components/actions/Action";
+import { ActionButton, ActionLink } from "../components/forms/Action";
 import { AuthStepForm, FormActions } from "../components/auth/AuthForm";
 import AuthPage from "../components/auth/AuthPage";
 import { AuthCompletion } from "../components/auth/AuthSupport";
@@ -27,12 +27,14 @@ import Stepper from "../components/auth/Stepper";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
 import LocationLookup, {
   type LocationSuggestion,
-} from "../components/fields/LocationLookup";
-import PasswordField from "../components/fields/PasswordField";
-import PhoneNumberField from "../components/fields/PhoneNumberField";
-import type { PhoneCountryOption } from "../components/fields/PhoneCountrySelect";
-import FormField from "../components/fields/FormField";
-import TextInput from "../components/fields/TextInput";
+} from "../components/forms/LocationLookup";
+import PasswordField from "../components/forms/PasswordField";
+import PhoneNumberField from "../components/forms/PhoneNumberField";
+import type { PhoneCountryOption } from "../components/forms/PhoneCountrySelect";
+import FormField from "../components/forms/FormField";
+import TextInput from "../components/forms/TextInput";
+import { useAuth } from "../auth/useAuth";
+import { useGeocoding } from "../hooks/useGeocoding";
 
 type Step = "identity" | "contact" | "security" | "done";
 
@@ -53,16 +55,6 @@ type StatusMessage = {
   tone: "default" | "critical";
 } | null;
 
-type NormalizedLocation = {
-  address?: string;
-  postalCode?: string;
-  city?: string;
-  country?: string;
-  countryCode?: string;
-  displayName: string;
-  isPrecise: boolean;
-};
-
 const initialValues: FormValues = {
   username: "",
   fullName: "",
@@ -72,6 +64,7 @@ const initialValues: FormValues = {
   password: "",
   confirmPassword: "",
 };
+
 
 function countryCodeToFlag(countryCode: CountryCode) {
   return countryCode.replace(/./g, (char) =>
@@ -117,6 +110,8 @@ function RegisterPage() {
   useDocumentTitle("meta.registerPageTitle");
 
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { register } = useAuth();
   const uid = useId();
 
   // ── IDs for accessibility ──────────────────────────────────────────────────
@@ -159,18 +154,12 @@ function RegisterPage() {
   }));
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [statusMessage, setStatusMessage] = useState<StatusMessage>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Location
   const [locationQuery, setLocationQuery] = useState("");
   const [resolvedLocation, setResolvedLocation] =
-    useState<NormalizedLocation | null>(null);
-  const [locationSuggestions, setLocationSuggestions] = useState<
-    NormalizedLocation[]
-  >([]);
-  const [locationLookupMessage, setLocationLookupMessage] = useState<
-    string | null
-  >(null);
-  const [locationLookupLoading, setLocationLookupLoading] = useState(false);
+    useState<LocationSuggestion | null>(null);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
 
   // Password visibility
@@ -212,8 +201,28 @@ function RegisterPage() {
   const selectedPhoneCountry =
     phoneCountryOptionsByCode[phoneCountryCode] ?? phoneCountryOptions[0];
 
+  const geocodingQuery =
+    resolvedLocation && locationQuery.trim() === resolvedLocation.displayName
+      ? ""
+      : locationQuery;
+
+  const {
+    data: locationSuggestions,
+    error: locationLookupError,
+    loading: locationLookupLoading,
+  } = useGeocoding(geocodingQuery);
+
   // ── Helpers ────────────────────────────────────────────────────────────────
   const clearStatus = () => setStatusMessage(null);
+
+  const formatLocationPreview = (loc: LocationSuggestion) => {
+    if (!loc) return "";
+    const parts: string[] = [];
+    if (loc.address) parts.push(loc.address);
+    if (loc.city && !parts.includes(loc.city)) parts.push(loc.city);
+    if (loc.country) parts.push(loc.country);
+    return parts.join(", ");
+  };
 
   const setFieldValue = (field: keyof FormValues, value: string) => {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -245,6 +254,9 @@ function RegisterPage() {
     if (!values.fullName.trim()) {
       errors.fullName = t("auth.register.errors.fullNameRequired");
     }
+    if (!values.phoneNumber.trim()) {
+      errors.phoneNumber = t("auth.register.errors.phoneRequired");
+    }
     return errors;
   };
 
@@ -254,6 +266,9 @@ function RegisterPage() {
       errors.email = t("auth.register.errors.emailRequired");
     } else if (!isValidEmail(values.email)) {
       errors.email = t("auth.register.errors.emailInvalid");
+    }
+    if (!resolvedLocation) {
+      errors.location = t("auth.register.errors.locationRequired");
     }
     return errors;
   };
@@ -296,7 +311,7 @@ function RegisterPage() {
     goToStep("security");
   };
 
-  const handleSecuritySubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSecuritySubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextErrors = validateSecurityStep();
     setFieldErrors(nextErrors);
@@ -306,7 +321,47 @@ function RegisterPage() {
       return;
     }
 
-    goToStep("done");
+    setIsSubmitting(true);
+
+    try {
+      // Normalize phone: ensure international prefix present
+      let phone = values.phoneNumber.trim();
+      if (phone && !phone.startsWith("+")) {
+        const dial = selectedPhoneCountry?.dialCode || "";
+        // strip leading zeros and spaces
+        phone = `${dial}${phone.replace(/^0+/, "")}`;
+      }
+
+      await register({
+        username: values.username.trim(),
+        fullName: values.fullName.trim(),
+        phoneNumber: phone,
+        email: values.email.trim(),
+        userType: "INDIVIDUAL",
+        addressLine: resolvedLocation?.address || undefined,
+        postalCode: resolvedLocation?.postalCode || undefined,
+        city: resolvedLocation?.city || undefined,
+        country: resolvedLocation?.countryCode || resolvedLocation?.country,
+        defaultLanguage: values.defaultLanguage,
+        password: values.password,
+      });
+
+      setStatusMessage({
+        tone: "default",
+        text: t("auth.register.status.success"),
+      });
+      navigate(appRoutes.profile, { replace: true });
+    } catch (error) {
+      setStatusMessage({
+        tone: "critical",
+        text:
+          error instanceof Error
+            ? error.message
+            : t("auth.register.status.error"),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // ── Location handlers ──────────────────────────────────────────────────────
@@ -326,9 +381,6 @@ function RegisterPage() {
       ...suggestion,
       isPrecise: suggestion.isPrecise ?? false,
     });
-    setLocationSuggestions([]);
-    setLocationLookupMessage(null);
-    setLocationLookupLoading(false);
     setActiveSuggestionIndex(-1);
   };
 
@@ -362,7 +414,6 @@ function RegisterPage() {
     }
 
     if (event.key === "Escape") {
-      setLocationSuggestions([]);
       setActiveSuggestionIndex(-1);
     }
   };
@@ -568,6 +619,7 @@ function RegisterPage() {
             htmlFor="register-location"
             label={t("auth.register.fields.location.label")}
             hint={t("auth.register.fields.location.hint")}
+            required
             hintId={locationHintId}
             error={fieldErrors.location}
             errorId={locationErrorId}
@@ -576,14 +628,8 @@ function RegisterPage() {
                 statusId={locationStatusId}
                 loading={locationLookupLoading}
                 loadingText={t("auth.register.fields.location.lookupLoading")}
-                statusMessage={locationLookupMessage}
-                resolvedText={
-                  resolvedLocation
-                    ? t("auth.register.fields.location.lookupResolved", {
-                        location: resolvedLocation.displayName,
-                      })
-                    : ""
-                }
+                statusMessage={locationLookupError?.message || null}
+                resolvedText={resolvedLocation ? formatLocationPreview(resolvedLocation) : ""}
                 listId={locationListId}
                 suggestions={locationSuggestions}
                 activeSuggestionIndex={activeSuggestionIndex}
@@ -627,6 +673,7 @@ function RegisterPage() {
                 }
                 aria-expanded={locationSuggestions.length > 0}
                 role="combobox"
+                required
               />
             </div>
           </FormField>
@@ -662,13 +709,20 @@ function RegisterPage() {
           onSubmit={handleSecuritySubmit}
           actions={
             <>
-              <ActionButton type="submit">
-                {t("auth.register.actions.next")}
+              <ActionButton
+                type="submit"
+                disabled={isSubmitting}
+                aria-busy={isSubmitting}
+              >
+                {isSubmitting
+                  ? t("auth.register.actions.submitting")
+                  : t("auth.register.actions.next")}
               </ActionButton>
               <ActionButton
                 type="button"
                 variant="secondary"
                 onClick={() => goToStep("contact")}
+                disabled={isSubmitting}
               >
                 {t("auth.register.actions.back")}
               </ActionButton>

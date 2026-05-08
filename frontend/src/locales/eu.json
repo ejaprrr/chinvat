@@ -1,7 +1,9 @@
 {
   "meta": {
     "pageTitle": "Hasi saioa chinvat-en",
-    "resetPasswordPageTitle": "Berrezarri pasahitza | chinvat"
+    "registerPageTitle": "Sortu kontu bat | chinvat",
+    "resetPasswordPageTitle": "Berrezarri pasahitza | chinvat",
+    "profilePageTitle": "Profila | chinvat"
   },
   "accessibility": {
     "skipToContent": "Joan eduki nagusira",
@@ -97,6 +99,80 @@
           "required": "Berretsi pasahitz berria.",
           "mismatch": "Pasahitzak ez datoz bat."
         }
+      }
+    }
+  },
+  "profile": {
+    "title": "Zure profila",
+    "intro": "Eguneratu zure kontuaren datuak eta hobespenak.",
+    "actions": {
+      "save": "Gorde aldaketak",
+      "saving": "Gordetzen...",
+      "changePassword": "Aldatu pasahitza",
+      "changingPassword": "Pasahitza aldatzen...",
+      "discard": "Aldaketak baztertu",
+      "updatePassword": "Pasahitza eguneratu"
+    },
+    "status": {
+      "saveSuccess": "Profila behar bezala eguneratu da.",
+      "saveError": "Ezin izan da profila eguneratu. Saiatu berriro.",
+      "passwordChangeSuccess": "Pasahitza behar bezala aldatu da.",
+      "passwordChangeError": "Ezin izan da pasahitza aldatu. Saiatu berriro.",
+      "networkError": "Ezin izan da zerbitzuarekin konektatu. Egiaztatu konexioa eta saiatu berriro.",
+      "reviewFields": "Berrikusi profil-eko eremu nabarmendutakoak.",
+      "previewSave": "Profila IUaren aurrebistan gorde da. Konektatu ekintza hau zure backend-era prest dagoenean.",
+      "changesDiscarded": "Gorde gabeko profil-aldaketak baztertu egin dira.",
+      "reviewPasswordFields": "Berrikusi pasahitz-eko eremu nabarmendutakoak."
+    },
+    "fields": {
+      "username": {
+        "label": "Erabiltzailea",
+        "hint": "Zure saio-hasierako identifikatzailea.",
+        "required": "Sartu erabiltzaile-izen bat."
+      },
+      "fullName": {
+        "label": "Izen osoa",
+        "hint": "Zure bistaratzeko izena.",
+        "required": "Sartu izen osoa."
+      },
+      "phoneNumber": {
+        "label": "Telefono-zenbakia",
+        "hint": "Aukerakoa. Zure kontaktuko zenbakia.",
+        "countryHint": "Hautatutako markatze-kodea {{dialCode}}."
+      },
+      "email": {
+        "label": "Helbide elektronikoa",
+        "hint": "Zure jakinarazpenetarako helbide nagusia.",
+        "required": "Sartu helbide elektroniko bat.",
+        "invalid": "Sartu baliozko helbide elektroniko bat."
+      },
+      "location": {
+        "label": "Kokapena",
+        "hint": "Aukerakoa. Zure helbidea.",
+        "required": "Bilatu zure kokapena.",
+        "loading": "Kokapenak bilatzen...",
+        "resolved": "Kokapena {{location}} ezarrita."
+      },
+      "defaultLanguage": {
+        "label": "Hizkuntza lehenetsia",
+        "hint": "Interfazearen hizkuntza hobetsia."
+      },
+      "currentPassword": {
+        "label": "Uneko pasahitza",
+        "hint": "Sartu zure uneko pasahitza berresteko.",
+        "required": "Sartu zure uneko pasahitza."
+      },
+      "newPassword": {
+        "label": "Pasahitz berria",
+        "hint": "Aukeratu pasahitz berri bat.",
+        "required": "Sartu pasahitz berri bat.",
+        "length": "Erabili gutxienez 8 karaktere."
+      },
+      "confirmPassword": {
+        "label": "Berretsi pasahitz berria",
+        "hint": "Sartu berriro pasahitz berria.",
+        "required": "Berretsi zure pasahitz berria.",
+        "mismatch": "Pasahitzak ez datoz bat."
       }
     }
   }

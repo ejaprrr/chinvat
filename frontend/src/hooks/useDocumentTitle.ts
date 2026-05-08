@@ -4,7 +4,8 @@ import { useTranslation } from "react-i18next";
 type DocumentTitleKey =
   | "meta.pageTitle"
   | "meta.registerPageTitle"
-  | "meta.resetPasswordPageTitle";
+  | "meta.resetPasswordPageTitle"
+  | "meta.profilePageTitle";
 
 function useDocumentTitle(titleKey: DocumentTitleKey) {
   const { i18n, t } = useTranslation();

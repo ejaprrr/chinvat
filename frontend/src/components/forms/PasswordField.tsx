@@ -6,7 +6,7 @@ import {
   type SetStateAction,
 } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import FormField from "../forms/FormField";
+import FormField from "./FormField";
 import { cx } from "../../lib/cx";
 
 type PasswordFieldProps = Omit<

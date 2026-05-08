@@ -19,23 +19,28 @@ import {
   getCountryCallingCode,
   type CountryCode,
 } from "libphonenumber-js/min";
+import { useTranslation } from "react-i18next";
+import { useAuth } from "../auth/useAuth";
 import { languageLabels, type Locale } from "../i18n";
-import { ActionButton } from "../components/actions/Action";
+import { ActionButton } from "../components/forms/Action";
 import AuthPage from "../components/auth/AuthPage";
 import {
   AuthForm,
   AuthFormSection,
   FormActions,
 } from "../components/auth/AuthForm";
-import FormField from "../components/fields/FormField";
+import FormField from "../components/forms/FormField";
 import LocationLookup, {
   type LocationSuggestion,
-} from "../components/fields/LocationLookup";
-import PasswordField from "../components/fields/PasswordField";
-import PhoneNumberField from "../components/fields/PhoneNumberField";
-import type { PhoneCountryOption } from "../components/fields/PhoneCountrySelect";
-import TextInput from "../components/fields/TextInput";
+} from "../components/forms/LocationLookup";
+import PasswordField from "../components/forms/PasswordField";
+import PhoneNumberField from "../components/forms/PhoneNumberField";
+import type { PhoneCountryOption } from "../components/forms/PhoneCountrySelect";
+import TextInput from "../components/forms/TextInput";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useGeocoding } from "../hooks/useGeocoding";
+import { useProfile } from "../hooks/useProfile";
 
 type ProfileForm = {
   username: string;
@@ -52,62 +57,13 @@ type PasswordErrors = Partial<
   Record<"currentPassword" | "newPassword" | "confirmPassword", string>
 >;
 
-type NormalizedLocation = {
-  address?: string;
-  postalCode?: string;
-  city?: string;
-  country?: string;
-  countryCode?: string;
-  displayName: string;
-  isPrecise: boolean;
-};
-
-const locationCatalog: NormalizedLocation[] = [
-  {
-    displayName: "Barcelona, Spain",
-    address: "Placa de Catalunya",
-    postalCode: "08002",
-    city: "Barcelona",
-    country: "Spain",
-    countryCode: "ES",
-    isPrecise: true,
-  },
-  {
-    displayName: "Madrid, Spain",
-    address: "Gran Via 32",
-    postalCode: "28013",
-    city: "Madrid",
-    country: "Spain",
-    countryCode: "ES",
-    isPrecise: true,
-  },
-  {
-    displayName: "Valencia, Spain",
-    address: "Carrer de Colon 18",
-    postalCode: "46004",
-    city: "Valencia",
-    country: "Spain",
-    countryCode: "ES",
-    isPrecise: true,
-  },
-  {
-    displayName: "Lisbon, Portugal",
-    address: "Rua Augusta 122",
-    postalCode: "1100-053",
-    city: "Lisbon",
-    country: "Portugal",
-    countryCode: "PT",
-    isPrecise: true,
-  },
-];
-
 const initialProfile: ProfileForm = {
-  username: "maria.garcia",
-  fullName: "Maria Garcia",
-  phoneNumber: "+34 600 123 456",
-  email: "maria.garcia@example.org",
+  username: "",
+  fullName: "",
+  phoneNumber: "",
+  email: "",
   defaultLanguage: "en",
-  locationQuery: "Barcelona, Spain",
+  locationQuery: "",
 };
 
 function isValidEmail(value: string) {
@@ -151,6 +107,9 @@ function getDefaultPhoneCountry(language: string | undefined): CountryCode {
 }
 
 function ProfilePage() {
+  const { t } = useTranslation();
+  const { user, changePassword } = useAuth();
+  const { profile: backendProfile, saveProfile } = useProfile(user?.id);
   const uid = useId();
   const [profile, setProfile] = useState<ProfileForm>(initialProfile);
   const [savedProfile, setSavedProfile] = useState<ProfileForm>(initialProfile);
@@ -170,8 +129,49 @@ function ProfilePage() {
     getDefaultPhoneCountry(initialProfile.defaultLanguage),
   );
   const [resolvedLocation, setResolvedLocation] =
-    useState<NormalizedLocation | null>(locationCatalog[0] ?? null);
+    useState<LocationSuggestion | null>(null);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
+
+  useEffect(() => {
+    if (!backendProfile) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const nextProfile: ProfileForm = {
+        username: backendProfile.username ?? "",
+        fullName: backendProfile.fullName ?? "",
+        phoneNumber: backendProfile.phoneNumber ?? "",
+        email: backendProfile.email ?? "",
+        defaultLanguage: (backendProfile.defaultLanguage as Locale) ?? "en",
+        locationQuery: [
+          backendProfile.addressLine,
+          backendProfile.city,
+          backendProfile.country,
+        ]
+          .filter(Boolean)
+          .join(", "),
+      };
+
+      setProfile(nextProfile);
+      setSavedProfile(nextProfile);
+      setResolvedLocation(
+        backendProfile.addressLine || backendProfile.city || backendProfile.country
+          ? {
+              displayName: nextProfile.locationQuery,
+              address: backendProfile.addressLine,
+              postalCode: backendProfile.postalCode,
+              city: backendProfile.city,
+              country: backendProfile.country,
+              countryCode: undefined,
+              isPrecise: true,
+            }
+          : null,
+      );
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [backendProfile]);
 
   const isDirty = useMemo(
     () => JSON.stringify(profile) !== JSON.stringify(savedProfile),
@@ -203,37 +203,27 @@ function ProfilePage() {
   const selectedPhoneCountry =
     phoneCountryOptionsByCode[phoneCountryCode] ?? phoneCountryOptions[0];
 
-  useEffect(() => {
-    document.title = "Profile | chinvat";
-  }, []);
+  useDocumentTitle("meta.profilePageTitle");
 
-  const locationSuggestions = useMemo(() => {
-    const query = profile.locationQuery.trim();
+  const geocodingQuery =
+    resolvedLocation && profile.locationQuery.trim() === resolvedLocation.displayName
+      ? ""
+      : profile.locationQuery;
 
-    if (!query) {
-      return [];
-    }
-
-    if (resolvedLocation && resolvedLocation.displayName === query) {
-      return [];
-    }
-
-    const normalizedQuery = query.toLowerCase();
-    return locationCatalog
-      .filter((item) => {
-        return (
-          item.displayName.toLowerCase().includes(normalizedQuery) ||
-          item.city?.toLowerCase().includes(normalizedQuery) ||
-          item.country?.toLowerCase().includes(normalizedQuery)
-        );
-      })
-      .slice(0, 5);
-  }, [profile.locationQuery, resolvedLocation]);
+  const {
+    data: locationSuggestions,
+    error: locationLookupError,
+    loading: locationLookupLoading,
+  } = useGeocoding(geocodingQuery);
 
   const locationLookupMessage = useMemo(() => {
+    if (locationLookupError) {
+      return locationLookupError.message;
+    }
+
     const query = profile.locationQuery.trim();
 
-    if (!query) {
+    if (!query || query.length < 3) {
       return null;
     }
 
@@ -241,8 +231,8 @@ function ProfilePage() {
       return null;
     }
 
-    return locationSuggestions.length ? null : "No locations found.";
-  }, [profile.locationQuery, resolvedLocation, locationSuggestions]);
+    return locationSuggestions.length ? null : t("profile.fields.location.noResults");
+  }, [locationLookupError, locationSuggestions.length, profile.locationQuery, resolvedLocation, t]);
 
   const fieldId = (name: string) => `${uid}-${name}`;
 
@@ -267,17 +257,19 @@ function ProfilePage() {
   const validateProfile = () => {
     const errors: ProfileErrors = {};
 
-    if (!profile.username.trim()) errors.username = "Enter a username.";
-    if (!profile.fullName.trim()) errors.fullName = "Enter a full name.";
+    if (!profile.username.trim())
+      errors.username = t("profile.fields.username.required");
+    if (!profile.fullName.trim())
+      errors.fullName = t("profile.fields.fullName.required");
 
     if (!profile.email.trim()) {
-      errors.email = "Enter an email address.";
+      errors.email = t("profile.fields.email.required");
     } else if (!isValidEmail(profile.email)) {
-      errors.email = "Enter a valid email address.";
+      errors.email = t("profile.fields.email.invalid");
     }
 
     if (!profile.locationQuery.trim()) {
-      errors.locationQuery = "Search for your location.";
+      errors.locationQuery = t("profile.fields.location.required");
     }
 
     return errors;
@@ -356,16 +348,57 @@ function ProfilePage() {
     if (Object.keys(nextErrors).length > 0) {
       setStatusMessage({
         tone: "critical",
-        text: "Review the highlighted profile fields.",
+        text: t("profile.status.reviewFields"),
       });
       return;
     }
 
-    setSavedProfile(profile);
-    setStatusMessage({
-      tone: "default",
-      text: "Profile saved in the UI preview. Connect this action to your backend when ready.",
-    });
+    void (async () => {
+      try {
+        if (!user?.id) {
+          throw new Error("User not authenticated");
+        }
+
+        const updated = await saveProfile({
+          username: profile.username.trim(),
+          fullName: profile.fullName.trim(),
+          phoneNumber: profile.phoneNumber.trim() || undefined,
+          userType: "INDIVIDUAL",
+          accessLevel: "NORMAL",
+          addressLine: resolvedLocation?.address,
+          postalCode: resolvedLocation?.postalCode,
+          city: resolvedLocation?.city,
+          country: resolvedLocation?.country,
+          defaultLanguage: profile.defaultLanguage,
+        });
+
+        const nextProfile: ProfileForm = {
+          username: updated.username,
+          fullName: updated.fullName,
+          phoneNumber: updated.phoneNumber ?? "",
+          email: updated.email,
+          defaultLanguage: updated.defaultLanguage as Locale,
+          locationQuery: [updated.addressLine, updated.city, updated.country]
+            .filter(Boolean)
+            .join(", "),
+        };
+
+        setProfile(nextProfile);
+        setSavedProfile(nextProfile);
+        setStatusMessage({
+          tone: "default",
+          text: t("profile.status.saveSuccess"),
+        });
+      } catch (error) {
+        setStatusMessage({
+          tone: "critical",
+          text:
+            error instanceof Error
+              ? error.message
+              : t("profile.status.saveError"),
+        });
+      }
+    })();
   };
 
   const resetProfileChanges = () => {
@@ -373,7 +406,7 @@ function ProfilePage() {
     setProfileErrors({});
     setStatusMessage({
       tone: "warning",
-      text: "Unsaved profile changes were discarded.",
+      text: t("profile.status.changesDiscarded"),
     });
   };
 
@@ -382,14 +415,14 @@ function ProfilePage() {
     const nextErrors: PasswordErrors = {};
 
     if (!currentPassword)
-      nextErrors.currentPassword = "Enter the current password.";
+      nextErrors.currentPassword = t("profile.fields.currentPassword.required");
     if (!newPassword) {
-      nextErrors.newPassword = "Enter a new password.";
+      nextErrors.newPassword = t("profile.fields.newPassword.required");
     } else if (newPassword.length < 8) {
-      nextErrors.newPassword = "Use at least 8 characters.";
+      nextErrors.newPassword = t("profile.fields.newPassword.length");
     }
     if (newPassword !== confirmPassword) {
-      nextErrors.confirmPassword = "The passwords do not match.";
+      nextErrors.confirmPassword = t("profile.fields.confirmPassword.mismatch");
     }
 
     setPasswordErrors(nextErrors);
@@ -397,18 +430,31 @@ function ProfilePage() {
     if (Object.keys(nextErrors).length > 0) {
       setStatusMessage({
         tone: "critical",
-        text: "Review the highlighted password fields.",
+        text: t("profile.status.reviewPasswordFields"),
       });
       return;
     }
 
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setStatusMessage({
-      tone: "default",
-      text: "Password updated in the UI preview. Connect this action to your backend when ready.",
-    });
+    void (async () => {
+      try {
+        await changePassword(currentPassword, newPassword);
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        setStatusMessage({
+          tone: "default",
+          text: t("profile.status.passwordChangeSuccess"),
+        });
+      } catch (error) {
+        setStatusMessage({
+          tone: "critical",
+          text:
+            error instanceof Error
+              ? error.message
+              : t("profile.status.passwordChangeError"),
+        });
+      }
+    })();
   };
 
   return (
@@ -422,8 +468,8 @@ function ProfilePage() {
             </div>
           }
           titleId={fieldId("title")}
-          title="Profile"
-          intro="Update your account details and password."
+          title={t("profile.title")}
+          intro={t("profile.intro")}
           status={
             statusMessage
               ? {
@@ -446,7 +492,7 @@ function ProfilePage() {
                 <TextInput
                   id={fieldId("username")}
                   name="username"
-                  label="Username"
+                  label={t("profile.fields.username.label")}
                   value={profile.username}
                   onChange={(event) =>
                     updateProfileField("username", event.target.value)
@@ -461,7 +507,7 @@ function ProfilePage() {
                 <TextInput
                   id={fieldId("full-name")}
                   name="fullName"
-                  label="Full name"
+                  label={t("profile.fields.fullName.label")}
                   value={profile.fullName}
                   onChange={(event) =>
                     updateProfileField("fullName", event.target.value)
@@ -476,7 +522,7 @@ function ProfilePage() {
                   id={fieldId("email")}
                   name="email"
                   type="email"
-                  label="Email"
+                  label={t("profile.fields.email.label")}
                   value={profile.email}
                   onChange={(event) =>
                     updateProfileField("email", event.target.value)
@@ -491,8 +537,8 @@ function ProfilePage() {
                 <PhoneNumberField
                   id={fieldId("phone")}
                   name="phoneNumber"
-                  label="Phone number"
-                  hint="Use the number you can access right now."
+                  label={t("profile.fields.phoneNumber.label")}
+                  hint={t("profile.fields.phoneNumber.hint")}
                   hintId={fieldId("phone-hint")}
                   value={profile.phoneNumber}
                   onNumberChange={(event) =>
@@ -500,7 +546,9 @@ function ProfilePage() {
                   }
                   countryControlId={phoneCountryControlId}
                   countryHintId={phoneCountryHintId}
-                  countryHint={`Selected dial code ${selectedPhoneCountry.dialCode}.`}
+                  countryHint={t("profile.fields.phoneNumber.countryHint", {
+                    dialCode: selectedPhoneCountry.dialCode,
+                  })}
                   selectedCountry={selectedPhoneCountry}
                   options={phoneCountryOptions}
                   onCountrySelect={handlePhoneCountrySelect}
@@ -508,19 +556,22 @@ function ProfilePage() {
 
                 <FormField
                   htmlFor={fieldId("location")}
-                  label="Location"
-                  hint="Search and select a location to fill address details."
+                  label={t("profile.fields.location.label")}
+                  hint={t("profile.fields.location.hint")}
                   hintId={locationHintId}
                   error={profileErrors.locationQuery}
                   errorId={locationErrorId}
                   status={
                     <LocationLookup
                       statusId={locationStatusId}
-                      loadingText="Searching locations..."
+                      loading={locationLookupLoading}
+                      loadingText={t("profile.fields.location.loading")}
                       statusMessage={locationLookupMessage}
                       resolvedText={
                         resolvedLocation
-                          ? `Location set to ${resolvedLocation.displayName}.`
+                          ? t("profile.fields.location.resolved", {
+                              location: resolvedLocation.displayName,
+                            })
                           : ""
                       }
                       listId={locationListId}
@@ -578,7 +629,7 @@ function ProfilePage() {
 
                 <FormField
                   htmlFor={fieldId("default-language")}
-                  label="Default language"
+                  label={t("profile.fields.defaultLanguage.label")}
                 >
                   <div className="relative">
                     <select
@@ -613,7 +664,7 @@ function ProfilePage() {
                   disabled={!isDirty}
                 >
                   <Save size={16} aria-hidden="true" />
-                  Save changes
+                  {t("profile.actions.save")}
                 </ActionButton>
                 <ActionButton
                   type="button"
@@ -622,7 +673,7 @@ function ProfilePage() {
                   disabled={!isDirty}
                   onClick={resetProfileChanges}
                 >
-                  Discard changes
+                  {t("profile.actions.discard")}
                 </ActionButton>
               </FormActions>
             </AuthForm>
@@ -633,13 +684,15 @@ function ProfilePage() {
             >
               <AuthFormSection>
                 <div className="flex flex-col gap-1">
-                  <p className="auth-progress-text">Change password</p>
+                  <p className="auth-progress-text">
+                    {t("profile.actions.changePassword")}
+                  </p>
                 </div>
 
                 <PasswordField
                   id={fieldId("current-password")}
                   name="currentPassword"
-                  label="Current password"
+                  label={t("profile.fields.currentPassword.label")}
                   value={currentPassword}
                   show={showCurrentPassword}
                   setShow={setShowCurrentPassword}
@@ -655,15 +708,19 @@ function ProfilePage() {
                   error={passwordErrors.currentPassword}
                   errorId={fieldId("current-password-error")}
                   required
-                  ariaLabelHide="Hide current password"
-                  ariaLabelShow="Show current password"
+                  ariaLabelHide={t("profile.fields.currentPassword.hide", {
+                    defaultValue: "Hide current password",
+                  })}
+                  ariaLabelShow={t("profile.fields.currentPassword.show", {
+                    defaultValue: "Show current password",
+                  })}
                 />
 
                 <PasswordField
                   id={fieldId("new-password")}
                   name="newPassword"
-                  label="New password"
-                  hint="Use at least 8 characters."
+                  label={t("profile.fields.newPassword.label")}
+                  hint={t("profile.fields.newPassword.hint")}
                   hintId={fieldId("new-password-hint")}
                   value={newPassword}
                   show={showNewPassword}
@@ -680,14 +737,18 @@ function ProfilePage() {
                   error={passwordErrors.newPassword}
                   errorId={fieldId("new-password-error")}
                   required
-                  ariaLabelHide="Hide new password"
-                  ariaLabelShow="Show new password"
+                  ariaLabelHide={t("profile.fields.newPassword.hide", {
+                    defaultValue: "Hide new password",
+                  })}
+                  ariaLabelShow={t("profile.fields.newPassword.show", {
+                    defaultValue: "Show new password",
+                  })}
                 />
 
                 <PasswordField
                   id={fieldId("confirm-password")}
                   name="confirmPassword"
-                  label="Confirm new password"
+                  label={t("profile.fields.confirmPassword.label")}
                   value={confirmPassword}
                   show={showConfirmPassword}
                   setShow={setShowConfirmPassword}
@@ -711,7 +772,7 @@ function ProfilePage() {
               <FormActions className="mt-auto border-t border-border-subtle pt-4">
                 <ActionButton type="submit" className="gap-2">
                   <ShieldCheck size={16} aria-hidden="true" />
-                  Update password
+                  {t("profile.actions.updatePassword")}
                 </ActionButton>
               </FormActions>
             </AuthForm>

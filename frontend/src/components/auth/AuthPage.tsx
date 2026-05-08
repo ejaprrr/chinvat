@@ -1,6 +1,6 @@
 import type { ReactNode, Ref } from "react";
 import AuthPageHeader from "./AuthPageHeader";
-import FormStatus from "../feedback/FormStatus";
+import FormStatus from "../forms/FormStatus";
 
 type AuthStatus = {
   content: ReactNode;

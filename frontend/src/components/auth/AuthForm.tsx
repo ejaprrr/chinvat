@@ -1,6 +1,6 @@
 import type { FormHTMLAttributes, HTMLAttributes, ReactNode } from "react";
 import { cx } from "../../lib/cx";
-import ActionGroup from "../actions/ActionGroup";
+import ActionGroup from "../forms/ActionGroup";
 
 type AuthFormProps = FormHTMLAttributes<HTMLFormElement>;
 
