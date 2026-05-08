@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
-import type { AuthSessionResponse } from '../types/auth';
-import { listSessions, revokeAllSessions, revokeSession } from '../api/auth';
+import { useCallback, useEffect, useState } from "react";
+import type { AuthSessionResponse } from "../types/auth";
+import { listSessions, revokeAllSessions, revokeSession } from "../api/auth";
 
 export function useSessions() {
   const [sessions, setSessions] = useState<AuthSessionResponse[]>([]);
@@ -14,7 +14,11 @@ export function useSessions() {
       const nextSessions = await listSessions();
       setSessions(nextSessions);
     } catch (sessionError) {
-      setError(sessionError instanceof Error ? sessionError.message : 'Unable to load sessions');
+      setError(
+        sessionError instanceof Error
+          ? sessionError.message
+          : "Unable to load sessions",
+      );
     } finally {
       setLoading(false);
     }
@@ -25,10 +29,13 @@ export function useSessions() {
     Promise.resolve().then(() => void refreshSessions());
   }, [refreshSessions]);
 
-  const revokeOne = useCallback(async (sessionId: string) => {
-    await revokeSession(sessionId);
-    await refreshSessions();
-  }, [refreshSessions]);
+  const revokeOne = useCallback(
+    async (sessionId: string) => {
+      await revokeSession(sessionId);
+      await refreshSessions();
+    },
+    [refreshSessions],
+  );
 
   const revokeAll = useCallback(async () => {
     await revokeAllSessions();

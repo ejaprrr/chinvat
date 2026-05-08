@@ -123,7 +123,10 @@ function ResetPasswordPage() {
         setCurrentStep("code");
       } catch (error) {
         setFieldErrors({
-          email: error instanceof Error ? error.message : t("auth.resetPassword.form.email.invalid"),
+          email:
+            error instanceof Error
+              ? error.message
+              : t("auth.resetPassword.form.email.invalid"),
         });
         setStatusMessage({
           tone: "warning",

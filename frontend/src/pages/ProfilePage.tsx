@@ -156,7 +156,9 @@ function ProfilePage() {
       setProfile(nextProfile);
       setSavedProfile(nextProfile);
       setResolvedLocation(
-        backendProfile.addressLine || backendProfile.city || backendProfile.country
+        backendProfile.addressLine ||
+          backendProfile.city ||
+          backendProfile.country
           ? {
               displayName: nextProfile.locationQuery,
               address: backendProfile.addressLine,
@@ -206,7 +208,8 @@ function ProfilePage() {
   useDocumentTitle("meta.profilePageTitle");
 
   const geocodingQuery =
-    resolvedLocation && profile.locationQuery.trim() === resolvedLocation.displayName
+    resolvedLocation &&
+    profile.locationQuery.trim() === resolvedLocation.displayName
       ? ""
       : profile.locationQuery;
 
@@ -231,8 +234,16 @@ function ProfilePage() {
       return null;
     }
 
-    return locationSuggestions.length ? null : t("profile.fields.location.noResults");
-  }, [locationLookupError, locationSuggestions.length, profile.locationQuery, resolvedLocation, t]);
+    return locationSuggestions.length
+      ? null
+      : t("profile.fields.location.noResults");
+  }, [
+    locationLookupError,
+    locationSuggestions.length,
+    profile.locationQuery,
+    resolvedLocation,
+    t,
+  ]);
 
   const fieldId = (name: string) => `${uid}-${name}`;
 

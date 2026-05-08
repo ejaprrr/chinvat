@@ -65,7 +65,6 @@ const initialValues: FormValues = {
   confirmPassword: "",
 };
 
-
 function countryCodeToFlag(countryCode: CountryCode) {
   return countryCode.replace(/./g, (char) =>
     String.fromCodePoint(127397 + char.charCodeAt(0)),
@@ -629,7 +628,11 @@ function RegisterPage() {
                 loading={locationLookupLoading}
                 loadingText={t("auth.register.fields.location.lookupLoading")}
                 statusMessage={locationLookupError?.message || null}
-                resolvedText={resolvedLocation ? formatLocationPreview(resolvedLocation) : ""}
+                resolvedText={
+                  resolvedLocation
+                    ? formatLocationPreview(resolvedLocation)
+                    : ""
+                }
                 listId={locationListId}
                 suggestions={locationSuggestions}
                 activeSuggestionIndex={activeSuggestionIndex}

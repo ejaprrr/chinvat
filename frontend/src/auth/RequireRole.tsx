@@ -1,6 +1,6 @@
-import type { ReactNode } from 'react';
-import { Navigate } from 'react-router';
-import { useAuth } from './useAuth';
+import type { ReactNode } from "react";
+import { Navigate } from "react-router";
+import { useAuth } from "./useAuth";
 
 type RequireRoleProps = {
   role: string;

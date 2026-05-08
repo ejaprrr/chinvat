@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
-import { getCurrentUser } from '../api/auth';
-import { getUserById, updateUser } from '../api/users';
-import type { AuthMeResponse } from '../types/auth';
-import type { UpdateUserRequest, UserResponse } from '../types/user';
+import { useCallback, useEffect, useState } from "react";
+import { getCurrentUser } from "../api/auth";
+import { getUserById, updateUser } from "../api/users";
+import type { AuthMeResponse } from "../types/auth";
+import type { UpdateUserRequest, UserResponse } from "../types/user";
 
 export function useProfile(userId?: number) {
   const [me, setMe] = useState<AuthMeResponse | null>(null);
@@ -23,7 +23,11 @@ export function useProfile(userId?: number) {
         setProfile(userProfile);
       }
     } catch (profileError) {
-      setError(profileError instanceof Error ? profileError.message : 'Unable to load profile');
+      setError(
+        profileError instanceof Error
+          ? profileError.message
+          : "Unable to load profile",
+      );
       setMe(null);
       setProfile(null);
     } finally {
@@ -36,20 +40,23 @@ export function useProfile(userId?: number) {
     Promise.resolve().then(() => void refreshProfile());
   }, [refreshProfile]);
 
-  const saveProfile = useCallback(async (data: UpdateUserRequest) => {
-    if (!profile?.id && !userId && !me?.id) {
-      throw new Error('User id is not available');
-    }
+  const saveProfile = useCallback(
+    async (data: UpdateUserRequest) => {
+      if (!profile?.id && !userId && !me?.id) {
+        throw new Error("User id is not available");
+      }
 
-    const resolvedId = profile?.id ?? userId ?? me?.id;
-    if (!resolvedId) {
-      throw new Error('User id is not available');
-    }
+      const resolvedId = profile?.id ?? userId ?? me?.id;
+      if (!resolvedId) {
+        throw new Error("User id is not available");
+      }
 
-    const updated = await updateUser(resolvedId, data);
-    setProfile(updated);
-    return updated;
-  }, [me?.id, profile?.id, userId]);
+      const updated = await updateUser(resolvedId, data);
+      setProfile(updated);
+      return updated;
+    },
+    [me?.id, profile?.id, userId],
+  );
 
   return {
     me,

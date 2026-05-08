@@ -127,7 +127,6 @@
           "noExactResults": "No exact address with a house number was found.",
           "requiredExact": "Choose an exact address that includes the house number."
         },
-
         "errors": {
           "usernameRequired": "Enter a username.",
           "fullNameRequired": "Enter the full name.",

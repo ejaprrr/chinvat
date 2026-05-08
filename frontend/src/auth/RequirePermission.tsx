@@ -1,13 +1,16 @@
-import type { ReactNode } from 'react';
-import { Navigate } from 'react-router';
-import { useAuth } from './useAuth';
+import type { ReactNode } from "react";
+import { Navigate } from "react-router";
+import { useAuth } from "./useAuth";
 
 type RequirePermissionProps = {
   permission: string;
   children: ReactNode;
 };
 
-export function RequirePermission({ permission, children }: RequirePermissionProps) {
+export function RequirePermission({
+  permission,
+  children,
+}: RequirePermissionProps) {
   const { loading, hasPermission } = useAuth();
 
   if (loading) {

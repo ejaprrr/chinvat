@@ -11,10 +11,10 @@ const DEFAULT_DEBOUNCE_MS = 750;
 
 function isAbortError(error: unknown) {
   return (
-    error instanceof GeocodingError && error.code === "aborted"
-  ) ||
+    (error instanceof GeocodingError && error.code === "aborted") ||
     (error instanceof DOMException && error.name === "AbortError") ||
-    (error instanceof Error && error.name === "AbortError");
+    (error instanceof Error && error.name === "AbortError")
+  );
 }
 
 export function useGeocoding(

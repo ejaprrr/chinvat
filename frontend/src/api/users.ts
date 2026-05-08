@@ -1,5 +1,10 @@
-import api from './client';
-import type { UserResponse, UpdateUserRequest, UserRolesResponse, RoleResponse } from '../types/user';
+import api from "./client";
+import type {
+  UserResponse,
+  UpdateUserRequest,
+  UserRolesResponse,
+  RoleResponse,
+} from "../types/user";
 
 /**
  * GET /api/v1/users/{id}
@@ -16,7 +21,10 @@ export async function getUserById(id: number): Promise<UserResponse> {
  * Update user profile
  * Requires bearer token
  */
-export async function updateUser(id: number, payload: UpdateUserRequest): Promise<UserResponse> {
+export async function updateUser(
+  id: number,
+  payload: UpdateUserRequest,
+): Promise<UserResponse> {
   const response = await api.put<UserResponse>(`/users/${id}`, payload);
   return response.data;
 }
@@ -36,7 +44,7 @@ export async function deleteUser(id: number): Promise<void> {
  * Requires bearer token
  */
 export async function getAllUsers(): Promise<UserResponse[]> {
-  const response = await api.get<UserResponse[]>('/users');
+  const response = await api.get<UserResponse[]>("/users");
   return response.data;
 }
 
@@ -46,7 +54,9 @@ export async function getAllUsers(): Promise<UserResponse[]> {
  * Requires bearer token
  */
 export async function getUserRoles(userId: number): Promise<UserRolesResponse> {
-  const response = await api.get<UserRolesResponse>(`/rbac/users/${userId}/roles`);
+  const response = await api.get<UserRolesResponse>(
+    `/rbac/users/${userId}/roles`,
+  );
   return response.data;
 }
 
@@ -55,7 +65,10 @@ export async function getUserRoles(userId: number): Promise<UserRolesResponse> {
  * Assign a role to a user
  * Requires bearer token + USERS:MANAGE permission
  */
-export async function assignRoleToUser(userId: number, roleName: string): Promise<void> {
+export async function assignRoleToUser(
+  userId: number,
+  roleName: string,
+): Promise<void> {
   await api.post(`/rbac/users/${userId}/roles/${roleName}`, {});
 }
 
@@ -64,7 +77,10 @@ export async function assignRoleToUser(userId: number, roleName: string): Promis
  * Remove a role from a user
  * Requires bearer token + USERS:MANAGE permission
  */
-export async function removeRoleFromUser(userId: number, roleName: string): Promise<void> {
+export async function removeRoleFromUser(
+  userId: number,
+  roleName: string,
+): Promise<void> {
   await api.delete(`/rbac/users/${userId}/roles/${roleName}`);
 }
 
@@ -77,4 +93,3 @@ export async function getRole(roleName: string): Promise<RoleResponse> {
   const response = await api.get<RoleResponse>(`/rbac/roles/${roleName}`);
   return response.data;
 }
-

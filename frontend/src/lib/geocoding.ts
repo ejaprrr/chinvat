@@ -128,11 +128,7 @@ function normalizePostcode(postcode?: string) {
   return postcode?.replace(/\s+/g, "").toUpperCase();
 }
 
-function buildDisplayName(
-  address?: string,
-  city?: string,
-  country?: string,
-) {
+function buildDisplayName(address?: string, city?: string, country?: string) {
   return [address, city, country].filter(Boolean).join(", ");
 }
 
@@ -148,8 +144,14 @@ function mapResult(item: NominatimResult): LocationResult {
     address.village ??
     address.town;
   const house = address.house_number ?? address.house_no ?? address.housenumber;
-  const addressLine = [road, house].filter(Boolean).join(" ") || item.display_name || "";
-  const city = address.city ?? address.town ?? address.village ?? address.hamlet ?? address.county;
+  const addressLine =
+    [road, house].filter(Boolean).join(" ") || item.display_name || "";
+  const city =
+    address.city ??
+    address.town ??
+    address.village ??
+    address.hamlet ??
+    address.county;
   const country = address.country;
 
   return {
@@ -157,7 +159,8 @@ function mapResult(item: NominatimResult): LocationResult {
     city,
     country,
     countryCode: address.country_code?.toUpperCase(),
-    displayName: buildDisplayName(addressLine, city, country) || item.display_name || "",
+    displayName:
+      buildDisplayName(addressLine, city, country) || item.display_name || "",
     isPrecise: Boolean(house || road),
     lat: item.lat,
     lon: item.lon,
@@ -210,7 +213,9 @@ async function executeGeocode(
   }
 
   const payload = (await response.json()) as NominatimResult[];
-  const results = Array.isArray(payload) ? payload.map(mapResult).slice(0, 5) : [];
+  const results = Array.isArray(payload)
+    ? payload.map(mapResult).slice(0, 5)
+    : [];
 
   cache.set(cacheKey(normalizedQuery), results);
   return results;
@@ -237,11 +242,11 @@ export async function geocode(
     return existing;
   }
 
-  const request = queueTask(() => executeGeocode(normalizedQuery, options.signal)).finally(
-    () => {
-      inFlight.delete(key);
-    },
-  );
+  const request = queueTask(() =>
+    executeGeocode(normalizedQuery, options.signal),
+  ).finally(() => {
+    inFlight.delete(key);
+  });
 
   inFlight.set(key, request);
   return request;

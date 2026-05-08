@@ -127,7 +127,6 @@
           "noExactResults": "No hemos encontrado una dirección exacta con número.",
           "requiredExact": "Elige una dirección exacta que incluya el número."
         },
-
         "errors": {
           "usernameRequired": "Introduce un nombre de usuario.",
           "fullNameRequired": "Introduce el nombre completo.",
