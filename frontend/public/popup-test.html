@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chinvat Popup Test</title>
+    <link rel="stylesheet" href="/src/index.css" />
+    <style>
+      body {
+        margin: 0;
+      }
+
+      .page-shell {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+
+      .note {
+        max-width: 32rem;
+        text-align: center;
+        margin-top: 16px;
+        color: #4b5563;
+        font-size: 0.875rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <div>
+        <button id="open-popup" class="action action--primary">
+          Login with chinvat
+        </button>
+        <p class="note">
+          This opens the login page in a new popup window (module style).
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const openButton = document.getElementById("open-popup");
+      const popupUrl = "/";
+
+      openButton?.addEventListener("click", () => {
+        const width = 420;
+        const height = 640;
+        const left = Math.max(
+          0,
+          Math.round(window.screenX + (window.outerWidth - width) / 2),
+        );
+        const top = Math.max(
+          0,
+          Math.round(window.screenY + (window.outerHeight - height) / 2),
+        );
+
+        window.open(
+          popupUrl,
+          "chinvat-login",
+          `popup=yes,width=${width},height=${height},left=${left},top=${top}`,
+        );
+      });
+    </script>
+  </body>
+</html>
