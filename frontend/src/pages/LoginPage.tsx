@@ -8,9 +8,9 @@ import {
 } from "react";
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useDocumentTitle } from "../lib/documentTitle";
 import { useAuth } from "../contexts/auth";
-import { appRoutes } from "../router";
+import { appRoutes } from "../router/routes.ts";
 import { ActionButton, ActionLink } from "../components/forms/Action";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
 import AuthPage from "../components/auth/AuthPage";

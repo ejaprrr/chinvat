@@ -1,10 +1,10 @@
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useDocumentTitle } from "../lib/documentTitle";
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { confirmPasswordReset, requestPasswordReset } from "../lib/api";
-import { appRoutes } from "../router";
+import { appRoutes } from "../router/routes.ts";
 import { ActionButton, ActionLink } from "../components/forms/Action";
 import AuthPage from "../components/auth/AuthPage";
 import { AuthStepForm, FormActions } from "../components/auth/AuthForm";

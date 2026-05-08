@@ -38,7 +38,7 @@ import PhoneNumberField from "../components/forms/PhoneNumberField";
 import type { PhoneCountryOption } from "../components/forms/PhoneCountrySelect";
 import TextInput from "../components/forms/TextInput";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useDocumentTitle } from "../lib/documentTitle";
 import { useGeocoding } from "../hooks/useGeocoding";
 import { useProfile } from "../hooks/useProfile";
 

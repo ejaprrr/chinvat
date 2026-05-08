@@ -1,4 +1,4 @@
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useDocumentTitle } from "../lib/documentTitle";
 
 import {
   useEffect,
@@ -18,7 +18,7 @@ import {
 } from "libphonenumber-js/min";
 import { useTranslation } from "react-i18next";
 import { languageLabels, type Locale } from "../lib/i18n";
-import { appRoutes } from "../router";
+import { appRoutes } from "../router/routes.ts";
 import { ActionButton, ActionLink } from "../components/forms/Action";
 import { AuthStepForm, FormActions } from "../components/auth/AuthForm";
 import AuthPage from "../components/auth/AuthPage";
