@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 # Chinvat
 
 ## Požadavky
@@ -69,5 +67,3 @@ You can copy `.env.example` into `.env` inside the `frontend/` folder to configu
 ## License
 
 See [LICENSE](LICENSE).
-
-> > > > > > > frontend
