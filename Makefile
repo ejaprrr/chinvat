@@ -1,5 +1,5 @@
 .PHONY: help backend-build backend-test backend-fmt backend-fmt-check backend-run-local backend-run-dev \
-        infra-config-dev infra-config-prod infra-dev-up infra-dev-down infra-dev-logs \
+        infra-config-dev infra-config-prod dev-up dev-down infra-dev-logs \
         infra-prod-up infra-prod-down infra-prod-logs infra-docker-build \
         db-migrate db-seed db-reset
 
@@ -31,10 +31,10 @@ infra-config-dev: ## Render development infrastructure config
 infra-config-prod: ## Render production infrastructure config
 	$(MAKE) -C infra config-prod
 
-infra-dev-up: ## Start development infrastructure stack
+dev-up: ## Start development infrastructure stack
 	$(MAKE) -C infra dev-up
 
-infra-dev-down: ## Stop development infrastructure stack
+dev-down: ## Stop development infrastructure stack
 	$(MAKE) -C infra dev-down
 
 infra-dev-logs: ## Tail development infrastructure logs
