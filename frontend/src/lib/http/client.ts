@@ -1,5 +1,5 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { API_BASE_URL } from "../config";
+import { API_BASE_URL } from "../../config";
 import {
   clearTokens,
   getAccessToken,

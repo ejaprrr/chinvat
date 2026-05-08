@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import * as authApi from "../api/auth";
-import * as usersApi from "../api/users";
-import { clearTokens, getAccessToken, setTokens } from "./tokenStorage";
+import * as authApi from "../../lib/api";
+import * as usersApi from "../../lib/api";
+import { clearTokens, getAccessToken, setTokens } from "../../lib/auth/tokenStorage";
 import { AuthContext, type AuthContextType } from "./AuthContext";
-import type { AuthUser, RegisterRequest } from "../types/auth";
-import type { UpdateUserRequest } from "../types/user";
+import type { AuthUser, RegisterRequest } from "../../types/auth";
+import type { UpdateUserRequest } from "../../types/user";
 
 interface AuthProviderProps {
   children: ReactNode;

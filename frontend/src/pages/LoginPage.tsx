@@ -9,8 +9,8 @@ import {
 import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import useDocumentTitle from "../hooks/useDocumentTitle";
-import { useAuth } from "../auth/useAuth";
-import { appRoutes } from "../router/paths";
+import { useAuth } from "../contexts/auth";
+import { appRoutes } from "../router";
 import { ActionButton, ActionLink } from "../components/forms/Action";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
 import AuthPage from "../components/auth/AuthPage";

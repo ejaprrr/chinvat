@@ -20,8 +20,8 @@ import {
   type CountryCode,
 } from "libphonenumber-js/min";
 import { useTranslation } from "react-i18next";
-import { useAuth } from "../auth/useAuth";
-import { languageLabels, type Locale } from "../i18n";
+import { useAuth } from "../contexts/auth";
+import { languageLabels, type Locale } from "../lib/i18n";
 import { ActionButton } from "../components/forms/Action";
 import AuthPage from "../components/auth/AuthPage";
 import {

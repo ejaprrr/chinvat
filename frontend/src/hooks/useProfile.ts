@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getCurrentUser } from "../api/auth";
-import { getUserById, updateUser } from "../api/users";
+import { getCurrentUser, getUserById, updateUser } from "../lib/api";
 import type { AuthMeResponse } from "../types/auth";
 import type { UpdateUserRequest, UserResponse } from "../types/user";
 
