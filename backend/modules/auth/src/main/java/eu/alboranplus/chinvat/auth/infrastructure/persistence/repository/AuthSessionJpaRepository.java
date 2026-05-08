@@ -1,6 +1,7 @@
 package eu.alboranplus.chinvat.auth.infrastructure.persistence.repository;
 
 import eu.alboranplus.chinvat.auth.infrastructure.persistence.entity.AuthSessionJpaEntity;
+import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +58,6 @@ public interface AuthSessionJpaRepository extends JpaRepository<AuthSessionJpaEn
           + "AND s.revokedAt IS NULL")
   void revokeActiveByUserIdAndTokenKind(
       @Param("userId") Long userId,
-      @Param("tokenKind") String tokenKind,
+      @Param("tokenKind") AuthSessionTokenKind tokenKind,
       @Param("now") Instant now);
 }

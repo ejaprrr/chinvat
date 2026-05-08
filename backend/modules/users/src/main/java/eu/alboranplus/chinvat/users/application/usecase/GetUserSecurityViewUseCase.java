@@ -5,6 +5,7 @@ import eu.alboranplus.chinvat.users.application.port.out.UsersRepositoryPort;
 import eu.alboranplus.chinvat.users.application.port.out.UsersRoleRepositoryPort;
 import eu.alboranplus.chinvat.users.domain.model.UserAccount;
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -28,6 +29,11 @@ public class GetUserSecurityViewUseCase {
 
   public Optional<UserSecurityView> executeById(Long id) {
     return usersRepositoryPort.findById(id).map(this::toSecurityView);
+  }
+
+  public Optional<UserSecurityView> executeByCertificateThumbprint(
+      String thumbprintSha256, Instant now) {
+    return usersRepositoryPort.findByCertificateThumbprint(thumbprintSha256, now).map(this::toSecurityView);
   }
 
   private UserSecurityView toSecurityView(UserAccount user) {

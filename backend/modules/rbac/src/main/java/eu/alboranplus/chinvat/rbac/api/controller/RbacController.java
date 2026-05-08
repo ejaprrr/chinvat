@@ -21,6 +21,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -75,6 +77,22 @@ public class RbacController {
   }
 
   @GetMapping("/permissions")
+    @Operation(
+      summary = "List all permissions",
+      description = "Returns all defined permissions. Requires authentication.")
+    @ApiResponses({
+    @ApiResponse(
+      responseCode = "200",
+      description = "Permissions returned",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = PermissionResponse.class))),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true)))
+    })
   public ResponseEntity<List<PermissionResponse>> listPermissions() {
     List<PermissionResponse> permissions =
         rbacFacade.listPermissions().stream().map(rbacApiMapper::toResponse).toList();
@@ -82,40 +100,195 @@ public class RbacController {
   }
 
   @PostMapping("/permissions")
+  @PreAuthorize("hasAuthority('RBAC:MANAGE')")
+    @Operation(
+      summary = "Create permission",
+      description = "Creates a new permission. Requires RBAC:MANAGE authority.")
+    @ApiResponses({
+    @ApiResponse(
+      responseCode = "200",
+      description = "Permission created",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = PermissionResponse.class))),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden — RBAC:MANAGE authority is required",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "409",
+      description = "Permission already exists",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = RbacErrorResponse.class)))
+    })
   public ResponseEntity<PermissionResponse> createPermission(
-      @Valid @RequestBody CreatePermissionRequest request) {
-    PermissionView created = rbacFacade.createPermission(request.code(), request.description());
+      @Valid @RequestBody CreatePermissionRequest request, Authentication authentication) {
+    PermissionView created =
+        rbacFacade.createPermission(request.code(), request.description(), actor(authentication));
     return ResponseEntity.ok(rbacApiMapper.toResponse(created));
   }
 
   @PutMapping("/permissions/{code}")
+  @PreAuthorize("hasAuthority('RBAC:MANAGE')")
+    @Operation(
+      summary = "Update permission",
+      description = "Updates an existing permission. Requires RBAC:MANAGE authority.")
+    @ApiResponses({
+    @ApiResponse(
+      responseCode = "200",
+      description = "Permission updated",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = PermissionResponse.class))),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden — RBAC:MANAGE authority is required",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "404",
+      description = "Permission not found",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = RbacErrorResponse.class)))
+    })
   public ResponseEntity<PermissionResponse> updatePermission(
-      @PathVariable String code, @Valid @RequestBody UpdatePermissionRequest request) {
-    PermissionView updated = rbacFacade.updatePermission(code, request.description());
+      @PathVariable String code,
+      @Valid @RequestBody UpdatePermissionRequest request,
+      Authentication authentication) {
+    PermissionView updated =
+        rbacFacade.updatePermission(code, request.description(), actor(authentication));
     return ResponseEntity.ok(rbacApiMapper.toResponse(updated));
   }
 
   @DeleteMapping("/permissions/{code}")
-  public ResponseEntity<Void> deletePermission(@PathVariable String code) {
-    rbacFacade.deletePermission(code);
+  @PreAuthorize("hasAuthority('RBAC:MANAGE')")
+    @Operation(
+      summary = "Delete permission",
+      description = "Deletes a permission by code. Requires RBAC:MANAGE authority.")
+    @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "Permission deleted"),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden — RBAC:MANAGE authority is required",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "404",
+      description = "Permission not found",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = RbacErrorResponse.class)))
+    })
+  public ResponseEntity<Void> deletePermission(@PathVariable String code, Authentication authentication) {
+    rbacFacade.deletePermission(code, actor(authentication));
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/users/{userId}/roles")
+    @Operation(
+      summary = "Get user roles",
+      description = "Returns all assigned roles for the given user. Requires authentication.")
+    @ApiResponses({
+    @ApiResponse(
+      responseCode = "200",
+      description = "User roles returned",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = UserRolesResponse.class))),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "404",
+      description = "User not found",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = RbacErrorResponse.class)))
+    })
   public ResponseEntity<UserRolesResponse> getUserRoles(@PathVariable Long userId) {
     UserRolesView rolesView = rbacFacade.getUserRoles(userId);
     return ResponseEntity.ok(rbacApiMapper.toResponse(rolesView));
   }
 
   @PostMapping("/users/{userId}/roles/{roleName}")
-  public ResponseEntity<Void> assignRoleToUser(@PathVariable Long userId, @PathVariable String roleName) {
-    rbacFacade.assignRoleToUser(userId, roleName, "api");
+  @PreAuthorize("hasAuthority('USERS:MANAGE')")
+    @Operation(
+      summary = "Assign role to user",
+      description = "Assigns a role to a user. Requires USERS:MANAGE authority.")
+    @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "Role assigned"),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden — USERS:MANAGE authority is required",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "404",
+      description = "User or role not found",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = RbacErrorResponse.class)))
+    })
+  public ResponseEntity<Void> assignRoleToUser(
+      @PathVariable Long userId, @PathVariable String roleName, Authentication authentication) {
+    rbacFacade.assignRoleToUser(userId, roleName, actor(authentication));
     return ResponseEntity.noContent().build();
   }
 
   @DeleteMapping("/users/{userId}/roles/{roleName}")
-  public ResponseEntity<Void> removeRoleFromUser(@PathVariable Long userId, @PathVariable String roleName) {
-    rbacFacade.removeRoleFromUser(userId, roleName);
+  @PreAuthorize("hasAuthority('USERS:MANAGE')")
+    @Operation(
+      summary = "Remove role from user",
+      description = "Removes a role from a user. Requires USERS:MANAGE authority.")
+    @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "Role removed"),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "403",
+      description = "Forbidden — USERS:MANAGE authority is required",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+      responseCode = "404",
+      description = "User or role not found",
+      content =
+        @Content(
+          mediaType = "application/json",
+          schema = @Schema(implementation = RbacErrorResponse.class)))
+    })
+  public ResponseEntity<Void> removeRoleFromUser(
+      @PathVariable Long userId, @PathVariable String roleName, Authentication authentication) {
+    rbacFacade.removeRoleFromUser(userId, roleName, actor(authentication));
     return ResponseEntity.noContent().build();
+  }
+
+  private static String actor(Authentication authentication) {
+    return authentication.getName();
   }
 }

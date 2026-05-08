@@ -18,9 +18,6 @@ public class RoleJpaEntity {
   @Column(name = "role_name", nullable = false, unique = true, length = 80)
   private String roleName;
 
-  @Column(name = "permissions_csv", nullable = false, length = 2000)
-  private String permissionsCsv;
-
   public Long getId() {
     return id;
   }
@@ -35,13 +32,5 @@ public class RoleJpaEntity {
 
   public void setRoleName(String roleName) {
     this.roleName = roleName;
-  }
-
-  public String getPermissionsCsv() {
-    return permissionsCsv;
-  }
-
-  public void setPermissionsCsv(String permissionsCsv) {
-    this.permissionsCsv = permissionsCsv;
   }
 }

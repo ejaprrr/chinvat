@@ -2,11 +2,10 @@ package eu.alboranplus.chinvat.auth.application.usecase;
 
 import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthClockPort;
-import eu.alboranplus.chinvat.auth.application.port.out.AuthRbacPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
+import eu.alboranplus.chinvat.auth.application.service.AuthPermissionService;
 import java.util.Optional;
-import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,17 +14,17 @@ public class ValidateTokenUseCase {
 
   private final AuthSessionPort authSessionPort;
   private final AuthUsersPort authUsersPort;
-  private final AuthRbacPort authRbacPort;
+  private final AuthPermissionService authPermissionService;
   private final AuthClockPort authClockPort;
 
   public ValidateTokenUseCase(
       AuthSessionPort authSessionPort,
       AuthUsersPort authUsersPort,
-      AuthRbacPort authRbacPort,
+      AuthPermissionService authPermissionService,
       AuthClockPort authClockPort) {
     this.authSessionPort = authSessionPort;
     this.authUsersPort = authUsersPort;
-    this.authRbacPort = authRbacPort;
+    this.authPermissionService = authPermissionService;
     this.authClockPort = authClockPort;
   }
 
@@ -37,7 +36,7 @@ public class ValidateTokenUseCase {
         .flatMap(userId -> authUsersPort.findById(userId).filter(u -> u.active()))
         .map(
             user -> {
-              Set<String> permissions = authRbacPort.resolvePermissions(user.roles());
+              var permissions = authPermissionService.resolvePermissions(user.userId(), user.roles());
               return new TokenPrincipal(user.userId(), user.email(), user.roles(), permissions);
             });
   }

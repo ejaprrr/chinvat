@@ -10,11 +10,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import eu.alboranplus.chinvat.auth.application.command.LoginCommand;
+import eu.alboranplus.chinvat.auth.application.service.AuthPermissionService;
 import eu.alboranplus.chinvat.auth.application.dto.AuthResult;
 import eu.alboranplus.chinvat.auth.application.dto.AuthUserProjection;
 import eu.alboranplus.chinvat.auth.application.dto.IssuedTokenPair;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthClockPort;
-import eu.alboranplus.chinvat.auth.application.port.out.AuthRbacPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthTokenIssuerPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
@@ -37,7 +37,7 @@ class LoginUseCaseTest {
   private static final Instant REFRESH_EXP = NOW.plusSeconds(1_209_600);
 
   @Mock private AuthUsersPort authUsersPort;
-  @Mock private AuthRbacPort authRbacPort;
+  @Mock private AuthPermissionService authPermissionService;
   @Mock private AuthTokenIssuerPort authTokenIssuerPort;
   @Mock private AuthSessionPort authSessionPort;
   @Mock private AuthClockPort authClockPort;
@@ -55,7 +55,8 @@ class LoginUseCaseTest {
     LoginCommand cmd = new LoginCommand("alice@example.com", "secret", "127.0.0.1", "TestAgent");
     given(authUsersPort.findByEmail("alice@example.com")).willReturn(Optional.of(activeUser));
     given(authUsersPort.verifyPassword("alice@example.com", "secret")).willReturn(true);
-    given(authRbacPort.resolvePermissions(Set.of("USER"))).willReturn(Set.of("PROFILE:READ"));
+    given(authPermissionService.resolvePermissions(1L, Set.of("USER")))
+      .willReturn(Set.of("PROFILE:READ"));
     given(authClockPort.now()).willReturn(NOW);
     given(authTokenIssuerPort.issue(1L, "alice@example.com", NOW)).willReturn(tokens);
 
@@ -73,7 +74,7 @@ class LoginUseCaseTest {
     LoginCommand cmd = new LoginCommand("alice@example.com", "secret", "127.0.0.1", "TestAgent");
     given(authUsersPort.findByEmail("alice@example.com")).willReturn(Optional.of(activeUser));
     given(authUsersPort.verifyPassword("alice@example.com", "secret")).willReturn(true);
-    given(authRbacPort.resolvePermissions(any())).willReturn(Set.of());
+    given(authPermissionService.resolvePermissions(1L, Set.of("USER"))).willReturn(Set.of());
     given(authClockPort.now()).willReturn(NOW);
     given(authTokenIssuerPort.issue(1L, "alice@example.com", NOW)).willReturn(tokens);
 

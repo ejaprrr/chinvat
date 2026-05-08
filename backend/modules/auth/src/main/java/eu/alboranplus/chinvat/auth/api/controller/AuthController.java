@@ -8,11 +8,13 @@ import eu.alboranplus.chinvat.auth.api.dto.PasswordChangeRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetConfirmRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetRequestResponse;
+import eu.alboranplus.chinvat.auth.api.security.MtlsClientCertificateResolver;
 import eu.alboranplus.chinvat.auth.api.dto.RegisterRequest;
 import eu.alboranplus.chinvat.auth.api.dto.LoginRequest;
 import eu.alboranplus.chinvat.auth.api.dto.LogoutRequest;
 import eu.alboranplus.chinvat.auth.api.dto.RefreshRequest;
 import eu.alboranplus.chinvat.auth.api.mapper.AuthApiMapper;
+import eu.alboranplus.chinvat.auth.application.command.CertificateLoginCommand;
 import eu.alboranplus.chinvat.auth.application.dto.AuthResult;
 import eu.alboranplus.chinvat.auth.application.dto.PasswordResetRequestResult;
 import eu.alboranplus.chinvat.auth.application.facade.AuthFacade;
@@ -39,17 +41,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
-@Tag(name = "Auth", description = "Authentication: login, token refresh and logout")
+@Tag(name = "Authentication", description = "Authentication: login, register, token refresh, password management, logout, and user profile")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
 
   private final AuthFacade authFacade;
   private final AuthApiMapper authApiMapper;
+    private final MtlsClientCertificateResolver mtlsClientCertificateResolver;
 
-  public AuthController(AuthFacade authFacade, AuthApiMapper authApiMapper) {
+    public AuthController(
+            AuthFacade authFacade,
+            AuthApiMapper authApiMapper,
+            MtlsClientCertificateResolver mtlsClientCertificateResolver) {
     this.authFacade = authFacade;
     this.authApiMapper = authApiMapper;
+        this.mtlsClientCertificateResolver = mtlsClientCertificateResolver;
   }
 
   @Operation(
@@ -89,6 +96,39 @@ public class AuthController {
     AuthResult result = authFacade.login(authApiMapper.toCommand(request, clientIp, userAgent));
     return ResponseEntity.ok(authApiMapper.toResponse(result));
   }
+
+    @Operation(
+            summary = "FNMT / client certificate login",
+            description =
+                    "Authenticates the caller using a client certificate already validated by the mTLS gateway."
+                            + " No request body is required; the gateway forwards the verified certificate.",
+            security = {})
+    @ApiResponses({
+        @ApiResponse(
+                responseCode = "200",
+                description = "Authenticated successfully with client certificate",
+                content =
+                        @Content(
+                                mediaType = "application/json",
+                                schema = @Schema(implementation = AuthResponse.class))),
+        @ApiResponse(
+                responseCode = "401",
+                description = "Client certificate missing, invalid, or not registered",
+                content =
+                        @Content(
+                                mediaType = "application/json",
+                                schema = @Schema(implementation = AuthApiErrorResponse.class)))
+    })
+    @PostMapping("/fnmt/login")
+    public ResponseEntity<AuthResponse> loginWithCertificate(HttpServletRequest httpRequest) {
+        String clientIp = resolveClientIp(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+        String thumbprintSha256 = mtlsClientCertificateResolver.resolveThumbprintSha256(httpRequest);
+        AuthResult result =
+                authFacade.loginWithCertificate(
+                        new CertificateLoginCommand(thumbprintSha256, clientIp, userAgent));
+        return ResponseEntity.ok(authApiMapper.toResponse(result));
+    }
 
   @Operation(
       summary = "Register",

@@ -10,11 +10,13 @@ COPY backend/app/pom.xml app/pom.xml
 RUN ./mvnw dependency:go-offline -q
 
 FROM base AS test
+COPY backend/common/src common/src
 COPY backend/modules/users/src modules/users/src
 COPY backend/modules/rbac/src modules/rbac/src
 COPY backend/modules/auth/src modules/auth/src
 COPY backend/app/src app/src
-RUN ./mvnw test --no-transfer-progress
+# Run deterministic tests in image build; exclude infra-dependent integration suites.
+RUN ./mvnw test --no-transfer-progress -Dtest='!*IT,!*E2ETest'
 
 FROM test AS build
 RUN ./mvnw -pl app -am package -DskipTests -q

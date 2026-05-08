@@ -13,15 +13,15 @@ public interface RbacFacade {
 
   List<PermissionView> listPermissions();
 
-  PermissionView createPermission(String code, String description);
+  PermissionView createPermission(String code, String description, String actor);
 
-  PermissionView updatePermission(String code, String description);
+  PermissionView updatePermission(String code, String description, String actor);
 
-  void deletePermission(String code);
+  void deletePermission(String code, String actor);
 
   UserRolesView getUserRoles(Long userId);
 
   void assignRoleToUser(Long userId, String roleName, String assignedBy);
 
-  void removeRoleFromUser(Long userId, String roleName);
+  void removeRoleFromUser(Long userId, String roleName, String actor);
 }

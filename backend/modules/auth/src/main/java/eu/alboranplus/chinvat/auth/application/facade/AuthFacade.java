@@ -1,5 +1,6 @@
 package eu.alboranplus.chinvat.auth.application.facade;
 
+import eu.alboranplus.chinvat.auth.application.command.CertificateLoginCommand;
 import eu.alboranplus.chinvat.auth.application.command.LoginCommand;
 import eu.alboranplus.chinvat.auth.application.command.LogoutCommand;
 import eu.alboranplus.chinvat.auth.application.command.ChangePasswordCommand;
@@ -18,6 +19,8 @@ import java.util.UUID;
 
 public interface AuthFacade {
   AuthResult login(LoginCommand command);
+
+  AuthResult loginWithCertificate(CertificateLoginCommand command);
 
   AuthResult refresh(RefreshCommand command);
 

@@ -2,11 +2,13 @@ package eu.alboranplus.chinvat.auth.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
+import eu.alboranplus.chinvat.auth.application.service.AuthPermissionService;
 import eu.alboranplus.chinvat.auth.application.dto.AuthUserProjection;
 import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthClockPort;
-import eu.alboranplus.chinvat.auth.application.port.out.AuthRbacPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import java.time.Instant;
@@ -25,7 +27,7 @@ class ValidateTokenUseCaseTest {
 
   @Mock private AuthSessionPort authSessionPort;
   @Mock private AuthUsersPort authUsersPort;
-  @Mock private AuthRbacPort authRbacPort;
+  @Mock private AuthPermissionService authPermissionService;
   @Mock private AuthClockPort authClockPort;
 
   @InjectMocks private ValidateTokenUseCase sut;
@@ -38,7 +40,8 @@ class ValidateTokenUseCaseTest {
     given(authClockPort.now()).willReturn(NOW);
     given(authSessionPort.findActiveUserId("valid-token", NOW)).willReturn(Optional.of(1L));
     given(authUsersPort.findById(1L)).willReturn(Optional.of(activeUser));
-    given(authRbacPort.resolvePermissions(Set.of("USER"))).willReturn(Set.of("PROFILE:READ"));
+    given(authPermissionService.resolvePermissions(1L, Set.of("USER")))
+      .willReturn(Set.of("PROFILE:READ"));
 
     Optional<TokenPrincipal> result = sut.execute("valid-token");
 
@@ -76,5 +79,6 @@ class ValidateTokenUseCaseTest {
     given(authUsersPort.findById(99L)).willReturn(Optional.empty());
 
     assertThat(sut.execute("orphan-token")).isEmpty();
+    verify(authPermissionService, never()).resolvePermissions(99L, Set.of("USER"));
   }
 }

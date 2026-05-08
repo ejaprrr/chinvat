@@ -4,7 +4,6 @@ import eu.alboranplus.chinvat.rbac.application.port.out.RbacRepositoryPort;
 import eu.alboranplus.chinvat.rbac.domain.model.PermissionDefinition;
 import eu.alboranplus.chinvat.rbac.domain.model.RoleDefinition;
 import eu.alboranplus.chinvat.rbac.infrastructure.persistence.jpa.RoleJpaRepository;
-import eu.alboranplus.chinvat.rbac.infrastructure.persistence.mapper.RoleJpaMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -24,20 +23,18 @@ import org.springframework.stereotype.Repository;
 public class RbacRepositoryAdapter implements RbacRepositoryPort {
 
   private final RoleJpaRepository roleJpaRepository;
-  private final RoleJpaMapper roleJpaMapper;
   private final JdbcTemplate jdbcTemplate;
 
   public RbacRepositoryAdapter(
-      RoleJpaRepository roleJpaRepository, RoleJpaMapper roleJpaMapper, JdbcTemplate jdbcTemplate) {
+      RoleJpaRepository roleJpaRepository, JdbcTemplate jdbcTemplate) {
     this.roleJpaRepository = roleJpaRepository;
-    this.roleJpaMapper = roleJpaMapper;
     this.jdbcTemplate = jdbcTemplate;
   }
 
   @Override
   public Optional<RoleDefinition> findByRoleName(String roleName) {
     return roleJpaRepository.findByRoleNameIgnoreCase(roleName)
-        .map(roleJpaMapper::toDomain)
+        .map(entity -> new RoleDefinition(entity.getRoleName(), Set.of()))
         .map(this::mergeWithNormalizedPermissions);
   }
 
@@ -47,7 +44,7 @@ public class RbacRepositoryAdapter implements RbacRepositoryPort {
         findNormalizedPermissionsByRoleNames(roleNames);
 
     return roleJpaRepository.findByRoleNameIn(roleNames).stream()
-        .map(roleJpaMapper::toDomain)
+        .map(entity -> new RoleDefinition(entity.getRoleName(), Set.of()))
         .map(
             role -> {
               Set<String> normalized = normalizedPermissionsByRole.get(role.roleName());

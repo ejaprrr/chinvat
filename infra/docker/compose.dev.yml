@@ -19,6 +19,18 @@ services:
     networks:
       - chinvat
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_EXPOSED_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - chinvat
+
   # DEV ONLY: drops and recreates the public schema before migrations run.
   # Controlled by ALLOW_DB_RESET=true – never set this in production.
   db-reset:
@@ -89,10 +101,13 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-chinvat}
       DB_USERNAME: ${POSTGRES_USER:-chinvat}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-chinvat}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       JPA_DDL_AUTO: validate
       JPA_SHOW_SQL: true
       APP_VERSION: ${APP_VERSION:-0.0.1-SNAPSHOT}
       APP_TIME_ZONE: ${APP_TIME_ZONE:-UTC}
+      FNMT_PROXY_SHARED_SECRET: ${FNMT_PROXY_SHARED_SECRET:-dev-fnmt-proxy-secret}
     expose:
       - "8080"
     ports:
@@ -100,6 +115,8 @@ services:
     depends_on:
       db-seed:
         condition: service_completed_successfully
+      redis:
+        condition: service_healthy
     networks:
       - chinvat
 
@@ -112,6 +129,7 @@ services:
       UPSTREAM_PORT: 8080
       HTTPS_REDIRECT_PORT: ${NGINX_HTTPS_PORT:-8443}
       MTLS_VERIFY_MODE: optional
+      MTLS_PROXY_SHARED_SECRET: ${FNMT_PROXY_SHARED_SECRET:-dev-fnmt-proxy-secret}
       TLS_CERT_PATH: /etc/nginx/tls/server.crt
       TLS_KEY_PATH: /etc/nginx/tls/server.key
       MTLS_CA_PATH: /etc/nginx/mtls/ca.crt

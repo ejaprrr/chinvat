@@ -1,5 +1,8 @@
 package eu.alboranplus.chinvat.users.application.facade;
 
+import eu.alboranplus.chinvat.common.audit.AuditDetails;
+import eu.alboranplus.chinvat.common.audit.AuditFacade;
+import eu.alboranplus.chinvat.common.cache.PermissionCacheFacade;
 import eu.alboranplus.chinvat.users.application.command.CreateUserCommand;
 import eu.alboranplus.chinvat.users.application.command.UpdateUserCommand;
 import eu.alboranplus.chinvat.users.application.command.ChangePasswordCommand;
@@ -14,6 +17,7 @@ import eu.alboranplus.chinvat.users.application.usecase.GetUserSecurityViewUseCa
 import eu.alboranplus.chinvat.users.application.usecase.UpdateUserUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.VerifyUserPasswordUseCase;
 import eu.alboranplus.chinvat.users.domain.model.UserAccount;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -29,6 +33,8 @@ public class UsersFacadeService implements UsersFacade {
   private final GetUserSecurityViewUseCase getUserSecurityViewUseCase;
   private final VerifyUserPasswordUseCase verifyUserPasswordUseCase;
   private final ChangePasswordUseCase changePasswordUseCase;
+  private final AuditFacade auditFacade;
+  private final PermissionCacheFacade permissionCacheFacade;
 
   public UsersFacadeService(
       CreateUserUseCase createUserUseCase,
@@ -38,7 +44,9 @@ public class UsersFacadeService implements UsersFacade {
       DeleteUserUseCase deleteUserUseCase,
       GetUserSecurityViewUseCase getUserSecurityViewUseCase,
       VerifyUserPasswordUseCase verifyUserPasswordUseCase,
-      ChangePasswordUseCase changePasswordUseCase) {
+      ChangePasswordUseCase changePasswordUseCase,
+      AuditFacade auditFacade,
+      PermissionCacheFacade permissionCacheFacade) {
     this.createUserUseCase = createUserUseCase;
     this.getUserByIdUseCase = getUserByIdUseCase;
     this.getAllUsersUseCase = getAllUsersUseCase;
@@ -47,11 +55,23 @@ public class UsersFacadeService implements UsersFacade {
     this.getUserSecurityViewUseCase = getUserSecurityViewUseCase;
     this.verifyUserPasswordUseCase = verifyUserPasswordUseCase;
     this.changePasswordUseCase = changePasswordUseCase;
+    this.auditFacade = auditFacade;
+    this.permissionCacheFacade = permissionCacheFacade;
   }
 
   @Override
   public UserView createUser(CreateUserCommand command) {
-    return toView(createUserUseCase.execute(command));
+    UserView created = toView(createUserUseCase.execute(command));
+    auditFacade.log(
+        "USER_CREATED",
+        command.email(),
+        created.id(),
+        AuditDetails.builder()
+            .add("email", created.email())
+            .add("username", created.username())
+            .add("accessLevel", created.accessLevel())
+            .build());
+    return created;
   }
 
   @Override
@@ -65,13 +85,27 @@ public class UsersFacadeService implements UsersFacade {
   }
 
   @Override
-  public UserView updateUser(Long id, UpdateUserCommand command) {
-    return toView(updateUserUseCase.execute(id, command));
+  public UserView updateUser(Long id, UpdateUserCommand command, String actor) {
+    UserView updated = toView(updateUserUseCase.execute(id, command));
+    permissionCacheFacade.evictUserPermissions(id);
+    auditFacade.log(
+        "USER_UPDATED",
+        actor,
+        updated.id(),
+        AuditDetails.builder()
+            .add("email", updated.email())
+            .add("username", updated.username())
+            .add("accessLevel", updated.accessLevel())
+            .build());
+    return updated;
   }
 
   @Override
-  public void deleteUser(Long id) {
+  public void deleteUser(Long id, String actor) {
     deleteUserUseCase.execute(id);
+    permissionCacheFacade.evictUserPermissions(id);
+    auditFacade.log(
+        "USER_DELETED", actor, id, AuditDetails.builder().add("userId", id).build());
   }
 
   @Override
@@ -82,6 +116,12 @@ public class UsersFacadeService implements UsersFacade {
   @Override
   public Optional<UserSecurityView> findSecurityViewById(Long id) {
     return getUserSecurityViewUseCase.executeById(id);
+  }
+
+  @Override
+  public Optional<UserSecurityView> findSecurityViewByCertificateThumbprint(
+      String thumbprintSha256, Instant now) {
+    return getUserSecurityViewUseCase.executeByCertificateThumbprint(thumbprintSha256, now);
   }
 
   @Override

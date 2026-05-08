@@ -43,10 +43,12 @@ class CleanArchitectureTest {
               "..application..",
               "..domain..",
               "..contracts..",
+              "..common..",
               "java..",
               "jakarta..",
               "org.springframework..")
-          .because("Application code should stay independent from API and infrastructure details.");
+          .because("Application code should stay independent from API and infrastructure details. "
+              + "Common module exceptions: AuditFacade and PermissionCacheFacade are cross-cutting concerns needed by all modules.");
 
   @ArchTest
   static final ArchRule contracts_should_not_depend_on_spring_or_other_layers =
@@ -77,4 +79,17 @@ class CleanArchitectureTest {
           .should()
           .dependOnClassesThat()
           .resideInAnyPackage("..infrastructure..");
+
+  @ArchTest
+  static final ArchRule common_should_not_depend_on_modules =
+      noClasses()
+          .that()
+          .resideInAPackage("..common..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAnyPackage(
+              "..auth..",
+              "..rbac..",
+              "..users..")
+          .because("Common module should be independent of feature modules to prevent cyclic dependencies.");
 }

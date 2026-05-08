@@ -5,14 +5,13 @@ import eu.alboranplus.chinvat.auth.application.dto.AuthResult;
 import eu.alboranplus.chinvat.auth.application.dto.AuthUserProjection;
 import eu.alboranplus.chinvat.auth.application.dto.IssuedTokenPair;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthClockPort;
-import eu.alboranplus.chinvat.auth.application.port.out.AuthRbacPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthTokenIssuerPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
+import eu.alboranplus.chinvat.auth.application.service.AuthPermissionService;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
 import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 import java.time.Instant;
-import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,19 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class LoginUseCase {
 
   private final AuthUsersPort authUsersPort;
-  private final AuthRbacPort authRbacPort;
+  private final AuthPermissionService authPermissionService;
   private final AuthTokenIssuerPort authTokenIssuerPort;
   private final AuthSessionPort authSessionPort;
   private final AuthClockPort authClockPort;
 
   public LoginUseCase(
       AuthUsersPort authUsersPort,
-      AuthRbacPort authRbacPort,
+      AuthPermissionService authPermissionService,
       AuthTokenIssuerPort authTokenIssuerPort,
       AuthSessionPort authSessionPort,
       AuthClockPort authClockPort) {
     this.authUsersPort = authUsersPort;
-    this.authRbacPort = authRbacPort;
+    this.authPermissionService = authPermissionService;
     this.authTokenIssuerPort = authTokenIssuerPort;
     this.authSessionPort = authSessionPort;
     this.authClockPort = authClockPort;
@@ -51,7 +50,7 @@ public class LoginUseCase {
       throw new InvalidAuthenticationException("Invalid email or password");
     }
 
-    Set<String> permissions = authRbacPort.resolvePermissions(user.roles());
+    var permissions = authPermissionService.resolvePermissions(user.userId(), user.roles());
     Instant now = authClockPort.now();
     IssuedTokenPair tokens = authTokenIssuerPort.issue(user.userId(), user.email(), now);
 

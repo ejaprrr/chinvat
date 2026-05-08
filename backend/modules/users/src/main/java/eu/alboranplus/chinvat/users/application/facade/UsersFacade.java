@@ -4,6 +4,7 @@ import eu.alboranplus.chinvat.users.application.command.CreateUserCommand;
 import eu.alboranplus.chinvat.users.application.command.UpdateUserCommand;
 import eu.alboranplus.chinvat.users.application.dto.UserSecurityView;
 import eu.alboranplus.chinvat.users.application.dto.UserView;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,13 +15,15 @@ public interface UsersFacade {
 
   List<UserView> getAllUsers();
 
-  UserView updateUser(Long id, UpdateUserCommand command);
+  UserView updateUser(Long id, UpdateUserCommand command, String actor);
 
-  void deleteUser(Long id);
+  void deleteUser(Long id, String actor);
 
   Optional<UserSecurityView> findSecurityViewByEmail(String email);
 
   Optional<UserSecurityView> findSecurityViewById(Long id);
+
+  Optional<UserSecurityView> findSecurityViewByCertificateThumbprint(String thumbprintSha256, Instant now);
 
   boolean verifyPassword(String email, String rawPassword);
 

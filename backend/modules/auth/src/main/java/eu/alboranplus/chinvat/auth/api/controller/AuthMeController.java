@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Auth", description = "Authentication (me)")
+@Tag(name = "Authentication", description = "Authentication: login, register, token refresh, password management, logout, and user profile")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthMeController {

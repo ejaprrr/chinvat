@@ -5,4 +5,6 @@ infra/docker/nginx/certs/*/tls/*.crt
 infra/docker/nginx/certs/*/tls/*.key
 infra/docker/nginx/certs/*/mtls/*.crt
 infra/docker/nginx/certs/*/mtls/*.key
+infra/docker/nginx/certs/*/mtls/*.csr
+infra/docker/nginx/certs/*/mtls/*.srl
 

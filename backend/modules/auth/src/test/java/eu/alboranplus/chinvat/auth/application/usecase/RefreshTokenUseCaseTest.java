@@ -9,11 +9,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import eu.alboranplus.chinvat.auth.application.command.RefreshCommand;
+import eu.alboranplus.chinvat.auth.application.service.AuthPermissionService;
 import eu.alboranplus.chinvat.auth.application.dto.AuthResult;
 import eu.alboranplus.chinvat.auth.application.dto.AuthUserProjection;
 import eu.alboranplus.chinvat.auth.application.dto.IssuedTokenPair;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthClockPort;
-import eu.alboranplus.chinvat.auth.application.port.out.AuthRbacPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthTokenIssuerPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
@@ -36,7 +36,7 @@ class RefreshTokenUseCaseTest {
 
   @Mock private AuthSessionPort authSessionPort;
   @Mock private AuthUsersPort authUsersPort;
-  @Mock private AuthRbacPort authRbacPort;
+  @Mock private AuthPermissionService authPermissionService;
   @Mock private AuthTokenIssuerPort authTokenIssuerPort;
   @Mock private AuthClockPort authClockPort;
 
@@ -54,7 +54,8 @@ class RefreshTokenUseCaseTest {
     given(authClockPort.now()).willReturn(NOW);
     given(authSessionPort.findActiveUserId("old-refresh", NOW)).willReturn(Optional.of(1L));
     given(authUsersPort.findById(1L)).willReturn(Optional.of(activeUser));
-    given(authRbacPort.resolvePermissions(Set.of("USER"))).willReturn(Set.of("PROFILE:READ"));
+    given(authPermissionService.resolvePermissions(1L, Set.of("USER")))
+      .willReturn(Set.of("PROFILE:READ"));
     given(authTokenIssuerPort.issue(1L, "alice@example.com", NOW)).willReturn(newTokens);
 
     AuthResult result = sut.execute(cmd);

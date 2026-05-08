@@ -2,6 +2,8 @@ package eu.alboranplus.chinvat.auth.infrastructure.persistence.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -22,8 +24,9 @@ public class AuthSessionJpaEntity {
   @Column(name = "session_token_hash", nullable = false, unique = true, length = 255)
   private String sessionTokenHash;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "session_token_kind", nullable = false, length = 20)
-  private String sessionTokenKind;
+  private AuthSessionTokenKind sessionTokenKind;
 
   @Column(name = "issued_at", nullable = false)
   private Instant issuedAt;
@@ -54,7 +57,7 @@ public class AuthSessionJpaEntity {
     this.id = id;
     this.userId = userId;
     this.sessionTokenHash = sessionTokenHash;
-    this.sessionTokenKind = sessionTokenKind.name();
+    this.sessionTokenKind = sessionTokenKind;
     this.issuedAt = issuedAt;
     this.expiresAt = expiresAt;
     this.clientIp = clientIp;
@@ -74,11 +77,11 @@ public class AuthSessionJpaEntity {
   }
 
   public AuthSessionTokenKind getSessionTokenKind() {
-    return AuthSessionTokenKind.valueOf(sessionTokenKind);
+    return sessionTokenKind;
   }
 
   public void setSessionTokenKind(AuthSessionTokenKind sessionTokenKind) {
-    this.sessionTokenKind = sessionTokenKind == null ? null : sessionTokenKind.name();
+    this.sessionTokenKind = sessionTokenKind;
   }
 
   public Instant getIssuedAt() {

@@ -9,6 +9,7 @@ import eu.alboranplus.chinvat.users.domain.model.UserType;
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.entity.UserAccountJpaEntity;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.jpa.UserAccountJpaRepository;
+import eu.alboranplus.chinvat.users.infrastructure.persistence.jpa.UserCertificateJpaRepository;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.mapper.UserAccountJpaMapper;
 import java.time.Instant;
 import java.util.List;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 class UsersRepositoryAdapterIT {
 
   @Autowired private UserAccountJpaRepository jpaRepository;
+  @Autowired private UserCertificateJpaRepository userCertificateJpaRepository;
   @Autowired private UserAccountJpaMapper mapper;
 
   private UsersRepositoryAdapter sut;
@@ -36,7 +38,7 @@ class UsersRepositoryAdapterIT {
 
   @BeforeEach
   void setUp() {
-    sut = new UsersRepositoryAdapter(jpaRepository, mapper);
+    sut = new UsersRepositoryAdapter(jpaRepository, userCertificateJpaRepository, mapper);
   }
 
   @Test

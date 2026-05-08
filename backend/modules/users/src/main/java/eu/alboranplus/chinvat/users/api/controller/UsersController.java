@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,7 +68,13 @@ public class UsersController {
   }
 
   @Operation(summary = "Get all users")
-  @ApiResponse(responseCode = "200", description = "List of users")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "List of users"),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized — missing or invalid bearer token",
+        content = @Content(schema = @Schema(hidden = true)))
+  })
   @GetMapping
   public ResponseEntity<List<UserResponse>> getAllUsers() {
     List<UserResponse> users =
@@ -78,6 +85,10 @@ public class UsersController {
   @Operation(summary = "Get user by ID")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "User found"),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
     @ApiResponse(responseCode = "404", description = "User not found",
         content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = UsersErrorResponse.class)))
@@ -90,6 +101,10 @@ public class UsersController {
   @Operation(summary = "Update user")
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "User updated"),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
     @ApiResponse(responseCode = "404", description = "User not found",
         content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = UsersErrorResponse.class))),
@@ -99,22 +114,32 @@ public class UsersController {
   })
   @PutMapping("/{id}")
   public ResponseEntity<UserResponse> updateUser(
-      @PathVariable Long id, @Valid @RequestBody UpdateUserRequest request) {
-    UserView userView = usersFacade.updateUser(id, usersApiMapper.toCommand(request));
+      @PathVariable Long id,
+      @Valid @RequestBody UpdateUserRequest request,
+      Authentication authentication) {
+    UserView userView = usersFacade.updateUser(id, usersApiMapper.toCommand(request), actor(authentication));
     return ResponseEntity.ok(usersApiMapper.toResponse(userView));
   }
 
   @Operation(summary = "Delete user")
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "User deleted"),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
     @ApiResponse(responseCode = "404", description = "User not found",
         content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = UsersErrorResponse.class)))
   })
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-    usersFacade.deleteUser(id);
+  public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication) {
+    usersFacade.deleteUser(id, actor(authentication));
     return ResponseEntity.noContent().build();
+  }
+
+  private static String actor(Authentication authentication) {
+    return authentication.getName();
   }
 }
 

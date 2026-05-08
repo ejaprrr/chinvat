@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Auth", description = "Session management")
+@Tag(name = "Authentication", description = "Authentication: login, register, token refresh, password management, logout, and user profile")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthSessionsController {

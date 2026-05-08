@@ -9,20 +9,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import eu.alboranplus.chinvat.auth.application.command.RegisterCommand;
+import eu.alboranplus.chinvat.auth.application.service.AuthPermissionService;
 import eu.alboranplus.chinvat.auth.application.dto.AuthResult;
 import eu.alboranplus.chinvat.auth.application.dto.AuthUserProjection;
 import eu.alboranplus.chinvat.auth.application.dto.IssuedTokenPair;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthClockPort;
-import eu.alboranplus.chinvat.auth.application.port.out.AuthRbacPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthTokenIssuerPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUserRegistrationPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
 import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
-import eu.alboranplus.chinvat.users.domain.model.AccessLevel;
 import eu.alboranplus.chinvat.users.domain.model.UserType;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
@@ -39,7 +37,7 @@ class RegisterUseCaseTest {
 
   @Mock private AuthUserRegistrationPort userRegistrationPort;
   @Mock private AuthUsersPort authUsersPort;
-  @Mock private AuthRbacPort authRbacPort;
+    @Mock private AuthPermissionService authPermissionService;
   @Mock private AuthTokenIssuerPort authTokenIssuerPort;
   @Mock private AuthSessionPort authSessionPort;
   @Mock private AuthClockPort authClockPort;
@@ -76,7 +74,8 @@ class RegisterUseCaseTest {
 
     given(userRegistrationPort.register(command)).willReturn(1L);
     given(authUsersPort.findById(1L)).willReturn(Optional.of(user));
-    given(authRbacPort.resolvePermissions(user.roles())).willReturn(Set.of("PROFILE:READ"));
+    given(authPermissionService.resolvePermissions(1L, user.roles()))
+        .willReturn(Set.of("PROFILE:READ"));
     given(authClockPort.now()).willReturn(NOW);
     given(authTokenIssuerPort.issue(1L, "alice@example.com", NOW)).willReturn(tokens);
 
@@ -130,7 +129,7 @@ class RegisterUseCaseTest {
     assertThatThrownBy(() -> sut.execute(command))
         .isInstanceOf(InvalidAuthenticationException.class);
 
-    verifyNoInteractions(authRbacPort, authTokenIssuerPort, authSessionPort, authClockPort);
+        verifyNoInteractions(authPermissionService, authTokenIssuerPort, authSessionPort, authClockPort);
   }
 }
 

@@ -17,6 +17,11 @@
     <dependencies>
         <dependency>
             <groupId>eu.alboranplus</groupId>
+            <artifactId>chinvat-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>eu.alboranplus</groupId>
             <artifactId>chinvat-users-module</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import eu.alboranplus.chinvat.rbac.domain.model.RoleDefinition;
 import eu.alboranplus.chinvat.rbac.infrastructure.persistence.entity.RoleJpaEntity;
 import eu.alboranplus.chinvat.rbac.infrastructure.persistence.jpa.RoleJpaRepository;
-import eu.alboranplus.chinvat.rbac.infrastructure.persistence.mapper.RoleJpaMapper;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,18 +18,16 @@ import eu.alboranplus.chinvat.rbac.RbacTestApplication;
 
 @SpringBootTest(classes = RbacTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @Transactional
-@Import(RoleJpaMapper.class)
 class RbacRepositoryAdapterIT {
 
   @Autowired private RoleJpaRepository roleJpaRepository;
-  @Autowired private RoleJpaMapper roleJpaMapper;
   @Autowired private JdbcTemplate jdbcTemplate;
 
   private RbacRepositoryAdapter sut;
 
   @BeforeEach
   void setUp() {
-    sut = new RbacRepositoryAdapter(roleJpaRepository, roleJpaMapper, jdbcTemplate);
+    sut = new RbacRepositoryAdapter(roleJpaRepository, jdbcTemplate);
   }
 
   @Test
@@ -84,9 +81,35 @@ class RbacRepositoryAdapterIT {
   // --- helpers ---
 
   private void persistRole(String roleName, String permissionsCsv) {
+    // Create role entity
     RoleJpaEntity entity = new RoleJpaEntity();
     entity.setRoleName(roleName);
-    entity.setPermissionsCsv(permissionsCsv);
-    roleJpaRepository.save(entity);
+    RoleJpaEntity savedRole = roleJpaRepository.save(entity);
+
+    // Parse permissions and create entries
+    String[] permissions = permissionsCsv.split(",");
+    for (String perm : permissions) {
+      String permCode = perm.trim();
+      if (permCode.isBlank()) continue;
+
+      // Ensure permission exists
+      jdbcTemplate.update(
+          "INSERT INTO rbac_permission (permission_code, created_at) VALUES (?, ?) "
+              + "ON CONFLICT (permission_code) DO NOTHING",
+          permCode,
+          java.sql.Timestamp.from(java.time.Instant.now()));
+
+      // Get permission ID
+      Long permId = jdbcTemplate.queryForObject(
+          "SELECT id FROM rbac_permission WHERE UPPER(permission_code) = UPPER(?)",
+          Long.class,
+          permCode);
+
+      // Link role to permission
+      jdbcTemplate.update(
+          "INSERT INTO rbac_role_permission (role_id, permission_id) VALUES (?, ?)",
+          savedRole.getId(),
+          permId);
+    }
   }
 }

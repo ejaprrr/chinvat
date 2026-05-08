@@ -23,9 +23,29 @@ server {
     ssl_certificate_key ${TLS_KEY_PATH};
     ssl_client_certificate ${MTLS_CA_PATH};
     ssl_verify_client ${MTLS_VERIFY_MODE};
+    ssl_verify_depth 3;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_session_timeout 10m;
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    location = /api/v1/auth/fnmt/login {
+        if ($ssl_client_verify != SUCCESS) {
+            return 401;
+        }
+
+        proxy_pass http://backend_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Internal-Proxy-Auth ${MTLS_PROXY_SHARED_SECRET};
+        proxy_set_header X-SSL-Client-Verify $ssl_client_verify;
+        proxy_set_header X-SSL-Client-DN $ssl_client_s_dn;
+        proxy_set_header X-SSL-Client-Issuer $ssl_client_i_dn;
+        proxy_set_header X-SSL-Client-Serial $ssl_client_serial;
+        proxy_set_header X-SSL-Client-Cert $ssl_client_escaped_cert;
+    }
 
     location / {
         proxy_pass http://backend_upstream;
@@ -34,9 +54,12 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-SSL-Client-Verify $ssl_client_verify;
-        proxy_set_header X-SSL-Client-DN $ssl_client_s_dn;
-        proxy_set_header X-SSL-Client-Issuer $ssl_client_i_dn;
+        proxy_set_header X-Internal-Proxy-Auth "";
+        proxy_set_header X-SSL-Client-Verify "";
+        proxy_set_header X-SSL-Client-DN "";
+        proxy_set_header X-SSL-Client-Issuer "";
+        proxy_set_header X-SSL-Client-Serial "";
+        proxy_set_header X-SSL-Client-Cert "";
     }
 }
 

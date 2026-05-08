@@ -4,6 +4,7 @@ import eu.alboranplus.chinvat.auth.application.dto.AuthUserProjection;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import eu.alboranplus.chinvat.users.application.dto.UserSecurityView;
 import eu.alboranplus.chinvat.users.application.facade.UsersFacade;
+import java.time.Instant;
 import java.util.Optional;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,11 @@ public class AuthUsersFacadeAdapter implements AuthUsersPort {
   @Override
   public Optional<AuthUserProjection> findById(Long userId) {
     return usersFacade.findSecurityViewById(userId).map(this::mapUser);
+  }
+
+  @Override
+  public Optional<AuthUserProjection> findByCertificateThumbprint(String thumbprintSha256, Instant now) {
+    return usersFacade.findSecurityViewByCertificateThumbprint(thumbprintSha256, now).map(this::mapUser);
   }
 
   @Override

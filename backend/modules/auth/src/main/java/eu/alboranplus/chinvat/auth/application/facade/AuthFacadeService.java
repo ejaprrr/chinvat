@@ -1,5 +1,8 @@
 package eu.alboranplus.chinvat.auth.application.facade;
 
+import eu.alboranplus.chinvat.common.audit.AuditDetails;
+import eu.alboranplus.chinvat.common.audit.AuditFacade;
+import eu.alboranplus.chinvat.auth.application.command.CertificateLoginCommand;
 import eu.alboranplus.chinvat.auth.application.command.LoginCommand;
 import eu.alboranplus.chinvat.auth.application.command.LogoutCommand;
 import eu.alboranplus.chinvat.auth.application.command.RefreshCommand;
@@ -12,6 +15,7 @@ import eu.alboranplus.chinvat.auth.application.dto.AuthMeView;
 import eu.alboranplus.chinvat.auth.application.dto.AuthSessionView;
 import eu.alboranplus.chinvat.auth.application.dto.PasswordResetRequestResult;
 import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
+import eu.alboranplus.chinvat.auth.application.usecase.CertificateLoginUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.LoginUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.RegisterUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.RequestPasswordResetUseCase;
@@ -33,6 +37,7 @@ import org.springframework.stereotype.Service;
 public class AuthFacadeService implements AuthFacade {
 
   private final LoginUseCase loginUseCase;
+  private final CertificateLoginUseCase certificateLoginUseCase;
   private final RefreshTokenUseCase refreshTokenUseCase;
   private final LogoutUseCase logoutUseCase;
   private final ValidateTokenUseCase validateTokenUseCase;
@@ -44,9 +49,11 @@ public class AuthFacadeService implements AuthFacade {
   private final ListSessionsUseCase listSessionsUseCase;
   private final RevokeSessionUseCase revokeSessionUseCase;
   private final LogoutAllSessionsUseCase logoutAllSessionsUseCase;
+  private final AuditFacade auditFacade;
 
   public AuthFacadeService(
       LoginUseCase loginUseCase,
+      CertificateLoginUseCase certificateLoginUseCase,
       RefreshTokenUseCase refreshTokenUseCase,
       LogoutUseCase logoutUseCase,
       ValidateTokenUseCase validateTokenUseCase,
@@ -57,8 +64,10 @@ public class AuthFacadeService implements AuthFacade {
       GetMeUseCase getMeUseCase,
       ListSessionsUseCase listSessionsUseCase,
       RevokeSessionUseCase revokeSessionUseCase,
-      LogoutAllSessionsUseCase logoutAllSessionsUseCase) {
+      LogoutAllSessionsUseCase logoutAllSessionsUseCase,
+      AuditFacade auditFacade) {
     this.loginUseCase = loginUseCase;
+    this.certificateLoginUseCase = certificateLoginUseCase;
     this.refreshTokenUseCase = refreshTokenUseCase;
     this.logoutUseCase = logoutUseCase;
     this.validateTokenUseCase = validateTokenUseCase;
@@ -70,16 +79,50 @@ public class AuthFacadeService implements AuthFacade {
     this.listSessionsUseCase = listSessionsUseCase;
     this.revokeSessionUseCase = revokeSessionUseCase;
     this.logoutAllSessionsUseCase = logoutAllSessionsUseCase;
+    this.auditFacade = auditFacade;
   }
 
   @Override
   public AuthResult login(LoginCommand command) {
-    return loginUseCase.execute(command);
+    AuthResult result = loginUseCase.execute(command);
+    auditFacade.log(
+        "AUTH_LOGIN_SUCCEEDED",
+        result.email(),
+        result.userId(),
+        AuditDetails.builder()
+            .add("clientIp", command.clientIp())
+            .add("userAgent", command.userAgent())
+            .build());
+    return result;
+  }
+
+  @Override
+  public AuthResult loginWithCertificate(CertificateLoginCommand command) {
+    AuthResult result = certificateLoginUseCase.execute(command);
+    auditFacade.log(
+        "AUTH_MTLS_LOGIN_SUCCEEDED",
+        result.email(),
+        result.userId(),
+        AuditDetails.builder()
+            .add("clientIp", command.clientIp())
+            .add("userAgent", command.userAgent())
+            .add("thumbprintSha256", command.thumbprintSha256())
+            .build());
+    return result;
   }
 
   @Override
   public AuthResult refresh(RefreshCommand command) {
-    return refreshTokenUseCase.execute(command);
+    AuthResult result = refreshTokenUseCase.execute(command);
+    auditFacade.log(
+        "AUTH_REFRESH_SUCCEEDED",
+        result.email(),
+        result.userId(),
+        AuditDetails.builder()
+            .add("clientIp", command.clientIp())
+            .add("userAgent", command.userAgent())
+            .build());
+    return result;
   }
 
   @Override
@@ -94,22 +137,53 @@ public class AuthFacadeService implements AuthFacade {
 
   @Override
   public AuthResult register(RegisterCommand command) {
-    return registerUseCase.execute(command);
+    AuthResult result = registerUseCase.execute(command);
+    auditFacade.log(
+        "AUTH_REGISTER_SUCCEEDED",
+        result.email(),
+        result.userId(),
+        AuditDetails.builder()
+            .add("clientIp", command.clientIp())
+            .add("userAgent", command.userAgent())
+            .build());
+    return result;
   }
 
   @Override
   public PasswordResetRequestResult requestPasswordReset(RequestPasswordResetCommand command) {
-    return requestPasswordResetUseCase.execute(command);
+    PasswordResetRequestResult result = requestPasswordResetUseCase.execute(command);
+    auditFacade.log(
+        "AUTH_PASSWORD_RESET_REQUESTED",
+        command.email(),
+        null,
+        AuditDetails.builder()
+            .add("clientIp", command.clientIp())
+            .add("userAgent", command.userAgent())
+            .build());
+    return result;
   }
 
   @Override
   public void confirmPasswordReset(ConfirmPasswordResetCommand command) {
     confirmPasswordResetUseCase.execute(command);
+    auditFacade.log(
+        "AUTH_PASSWORD_RESET_CONFIRMED",
+        command.email(),
+        null,
+        AuditDetails.builder()
+            .add("clientIp", command.clientIp())
+            .add("userAgent", command.userAgent())
+            .build());
   }
 
   @Override
   public void changePassword(TokenPrincipal principal, ChangePasswordCommand command) {
     changePasswordUseCase.execute(principal, command);
+    auditFacade.log(
+        "AUTH_PASSWORD_CHANGED",
+        principal.email(),
+        principal.userId(),
+        AuditDetails.builder().build());
   }
 
   @Override
@@ -125,10 +199,20 @@ public class AuthFacadeService implements AuthFacade {
   @Override
   public void revokeSession(TokenPrincipal principal, UUID sessionId) {
     revokeSessionUseCase.execute(principal, sessionId);
+    auditFacade.log(
+        "AUTH_SESSION_REVOKED",
+        principal.email(),
+        principal.userId(),
+        AuditDetails.builder().add("sessionId", sessionId).build());
   }
 
   @Override
   public void logoutAll(TokenPrincipal principal) {
     logoutAllSessionsUseCase.execute(principal);
+    auditFacade.log(
+        "AUTH_LOGOUT_ALL",
+        principal.email(),
+        principal.userId(),
+        AuditDetails.builder().build());
   }
 }

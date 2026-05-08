@@ -5,7 +5,9 @@ import eu.alboranplus.chinvat.users.domain.model.UserAccount;
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.entity.UserAccountJpaEntity;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.jpa.UserAccountJpaRepository;
+import eu.alboranplus.chinvat.users.infrastructure.persistence.jpa.UserCertificateJpaRepository;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.mapper.UserAccountJpaMapper;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
@@ -14,12 +16,15 @@ import org.springframework.stereotype.Repository;
 public class UsersRepositoryAdapter implements UsersRepositoryPort {
 
   private final UserAccountJpaRepository userAccountJpaRepository;
+  private final UserCertificateJpaRepository userCertificateJpaRepository;
   private final UserAccountJpaMapper userAccountJpaMapper;
 
   public UsersRepositoryAdapter(
       UserAccountJpaRepository userAccountJpaRepository,
+      UserCertificateJpaRepository userCertificateJpaRepository,
       UserAccountJpaMapper userAccountJpaMapper) {
     this.userAccountJpaRepository = userAccountJpaRepository;
+    this.userCertificateJpaRepository = userCertificateJpaRepository;
     this.userAccountJpaMapper = userAccountJpaMapper;
   }
 
@@ -43,6 +48,14 @@ public class UsersRepositoryAdapter implements UsersRepositoryPort {
   @Override
   public Optional<UserAccount> findById(Long id) {
     return userAccountJpaRepository.findById(id).map(userAccountJpaMapper::toDomain);
+  }
+
+  @Override
+  public Optional<UserAccount> findByCertificateThumbprint(String thumbprintSha256, Instant now) {
+    return userCertificateJpaRepository
+        .findActiveUserIdByThumbprintSha256(thumbprintSha256, now)
+        .flatMap(userAccountJpaRepository::findById)
+        .map(userAccountJpaMapper::toDomain);
   }
 
   @Override
