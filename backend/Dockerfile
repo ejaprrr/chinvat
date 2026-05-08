@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.7
+
 FROM eclipse-temurin:21-jdk-alpine AS base
 WORKDIR /workspace/backend
 COPY backend/.mvn/ .mvn/
@@ -7,7 +9,7 @@ COPY backend/modules/users/pom.xml modules/users/pom.xml
 COPY backend/modules/rbac/pom.xml modules/rbac/pom.xml
 COPY backend/modules/auth/pom.xml modules/auth/pom.xml
 COPY backend/app/pom.xml app/pom.xml
-RUN ./mvnw dependency:go-offline -q
+RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -q
 
 FROM base AS test
 COPY backend/common/src common/src
@@ -16,10 +18,10 @@ COPY backend/modules/rbac/src modules/rbac/src
 COPY backend/modules/auth/src modules/auth/src
 COPY backend/app/src app/src
 # Run deterministic tests in image build; exclude infra-dependent integration suites.
-RUN ./mvnw test --no-transfer-progress -Dtest='!*IT,!*E2ETest'
+RUN --mount=type=cache,target=/root/.m2 ./mvnw test --no-transfer-progress -Dtest='!*IT,!*E2ETest'
 
 FROM test AS build
-RUN ./mvnw -pl app -am package -DskipTests -q
+RUN --mount=type=cache,target=/root/.m2 ./mvnw -pl app -am package -DskipTests -q
 
 RUN java -Djarmode=layertools \
     -jar app/target/*.jar extract \
