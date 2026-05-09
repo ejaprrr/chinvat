@@ -20,6 +20,7 @@ import java.time.Instant;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -92,6 +93,7 @@ public class ProfileController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
   })
   @SecurityRequirement(name = "bearerAuth")
+  @PreAuthorize("hasAuthority('PROFILE:READ')")
   @GetMapping("/certificates")
   public ResponseEntity<List<ProfileCertificateResponse>> listCertificates(Authentication authentication) {
     List<ProfileCertificateResponse> response =
@@ -107,6 +109,7 @@ public class ProfileController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
   })
   @SecurityRequirement(name = "bearerAuth")
+  @PreAuthorize("hasAuthority('PROFILE:WRITE')")
   @PostMapping("/certificates")
   public ResponseEntity<ProfileCertificateResponse> addCertificate(
       @Valid @RequestBody AddProfileCertificateRequest request,
@@ -125,6 +128,7 @@ public class ProfileController {
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
     @ApiResponse(responseCode = "400", description = "Validation failed")
   })
+  @PreAuthorize("hasAuthority('PROFILE:WRITE')")
   @SecurityRequirement(name = "bearerAuth")
   @DeleteMapping("/certificates/{credentialId}")
   public ResponseEntity<Void> removeCertificate(
@@ -142,6 +146,7 @@ public class ProfileController {
     @ApiResponse(responseCode = "400", description = "Validation failed")
   })
   @SecurityRequirement(name = "bearerAuth")
+  @PreAuthorize("hasAuthority('PROFILE:WRITE')")
   @PostMapping("/certificates/{credentialId}/primary")
   public ResponseEntity<ProfileCertificateResponse> setPrimaryCertificate(
       @PathVariable Long credentialId,
