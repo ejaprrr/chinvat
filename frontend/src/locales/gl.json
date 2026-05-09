@@ -1,0 +1,179 @@
+{
+  "meta": {
+    "pageTitle": "Acceder a chinvat",
+    "registerPageTitle": "Crear conta | chinvat",
+    "resetPasswordPageTitle": "Restablecer o contrasinal | chinvat",
+    "profilePageTitle": "Perfil | chinvat"
+  },
+  "accessibility": {
+    "skipToContent": "Ir ao contido principal",
+    "languageLabel": "Cambiar idioma"
+  },
+  "brand": {
+    "projectName": "chinvat",
+    "label": "Verificación de identidade"
+  },
+  "auth": {
+    "title": "Benvido de novo",
+    "intro": "Accede co teu usuario e contrasinal. Se o prefires, continúa co teu certificado FNMT.",
+    "divider": "ou",
+    "actions": {
+      "continue": "Acceder",
+      "submitting": "Accedendo...",
+      "resetPassword": "Restablecer o contrasinal",
+      "continueToReset": "Continuar coa recuperación",
+      "backToSignIn": "Volver ao acceso"
+    },
+    "status": {
+      "certificateOpening": "Redirixindo ao acceso con certificado…",
+      "loginSuccess": "O acceso completouse correctamente.",
+      "loginError": "Non puidemos iniciar a sesión. Revisa os datos e téntao de novo.",
+      "networkError": "Non se puido conectar co servizo. Revisa a conexión e téntao de novo."
+    },
+    "fields": {
+      "username": {
+        "label": "Usuario",
+        "hint": "Usa o nome de usuario asignado á túa conta.",
+        "required": "Introduce o teu nome de usuario."
+      },
+      "password": {
+        "label": "Contrasinal",
+        "hint": "O contrasinal distingue maiúsculas e minúsculas.",
+        "required": "Introduce o teu contrasinal.",
+        "show": "Amosar contrasinal",
+        "hide": "Ocultar contrasinal",
+        "capsLock": "O bloqueo de maiúsculas está activado."
+      }
+    },
+    "certificate": {
+      "action": "Usar certificado FNMT",
+      "hint": "Levarémoste ao acceso con certificado. Se o navegador atopa un certificado FNMT, selecciónao cando cho pida.",
+      "unavailable": "O acceso con certificado FNMT só está dispoñible en navegadores de escritorio."
+    },
+    "resetPassword": {
+      "title": "Restablecer o contrasinal",
+      "intro": "Usa o teu correo, verifica o código e establece un novo contrasinal.",
+      "progress": {
+        "label": "Pasos de recuperación do contrasinal",
+        "current": "Paso {{current}} de {{total}}",
+        "email": "Correo",
+        "code": "Código",
+        "password": "Contrasinal"
+      },
+      "form": {
+        "codeSent": "Enviamos un código de verificación a {{email}}.",
+        "emailStepTitle": "Restablece o teu contrasinal",
+        "emailStepIntro": "Escribe o correo ligado á túa conta e enviarémosche un código de verificación.",
+        "codeStepTitle": "Introduce o código",
+        "codeStepIntro": "Revisa o teu correo e pega aquí o código de verificación.",
+        "passwordStepTitle": "Crea un novo contrasinal",
+        "passwordStepIntro": "Escolle un contrasinal novo que non empregases recentemente.",
+        "doneTitle": "Contrasinal actualizado",
+        "doneIntro": "O teu contrasinal xa está listo. Xa podes iniciar sesión.",
+        "doneBody": "O teu contrasinal actualizouse. Xa podes acceder coas novas credenciais.",
+        "email": {
+          "label": "Correo electrónico",
+          "hint": "Usa o correo asociado á túa conta para que poidamos enviarche un código de verificación.",
+          "required": "Introduce o correo asociado á túa conta.",
+          "invalid": "Introduce un correo electrónico válido.",
+          "submit": "Enviar código de verificación"
+        },
+        "code": {
+          "label": "Código de verificación",
+          "hint": "Introduce o código recibido por correo. Un único campo é máis doado de pegar e funciona mellor coas tecnoloxías de asistencia.",
+          "required": "Introduce o código de verificación.",
+          "submit": "Continuar",
+          "changeEmail": "Probar con outro correo"
+        },
+        "password": {
+          "label": "Novo contrasinal",
+          "hint": "Usa polo menos 8 caracteres. Unha frase de contrasinal máis longa adoita ser máis doada de lembrar e máis difícil de adiviñar.",
+          "required": "Introduce un novo contrasinal.",
+          "length": "Usa polo menos {{count}} caracteres.",
+          "submit": "Restablecer o contrasinal",
+          "back": "Volver"
+        },
+        "confirmPassword": {
+          "label": "Confirmar novo contrasinal",
+          "hint": "Volve escribir o contrasinal exactamente igual que enriba.",
+          "required": "Confirma o novo contrasinal.",
+          "mismatch": "Os contrasinais non coinciden."
+        }
+      }
+    }
+  },
+  "profile": {
+    "title": "O teu perfil",
+    "intro": "Actualiza os datos da túa conta e preferencias.",
+    "actions": {
+      "save": "Gardar cambios",
+      "saving": "Gardando...",
+      "changePassword": "Cambiar contrasinal",
+      "changingPassword": "Cambiando contrasinal...",
+      "discard": "Descartar cambios",
+      "updatePassword": "Actualizar contrasinal"
+    },
+    "status": {
+      "saveSuccess": "Perfil actualizado correctamente.",
+      "saveError": "Non se puido actualizar o perfil. Téntao de novo.",
+      "passwordChangeSuccess": "Contrasinal cambiado correctamente.",
+      "passwordChangeError": "Non se puido cambiar o contrasinal. Téntao de novo.",
+      "networkError": "Non se puido conectar co servizo. Revisa a conexión e téntao de novo.",
+      "reviewFields": "Revisa os campos destacados do perfil.",
+      "previewSave": "Perfil gardado na previsualización da IU. Conecta esta acción ao teu backend cando estea listo.",
+      "changesDiscarded": "Os cambios non gardados do perfil foron descartados.",
+      "reviewPasswordFields": "Revisa os campos destacados de contrasinal."
+    },
+    "fields": {
+      "username": {
+        "label": "Usuario",
+        "hint": "O teu identificador de inicio de sesión.",
+        "required": "Introduce un nome de usuario."
+      },
+      "fullName": {
+        "label": "Nome completo",
+        "hint": "O teu nome de visualización.",
+        "required": "Introduce o nome completo."
+      },
+      "phoneNumber": {
+        "label": "Número de teléfono",
+        "hint": "Opcional. O teu número de contacto.",
+        "countryHint": "Código de marcado seleccionado {{dialCode}}."
+      },
+      "email": {
+        "label": "Enderezo de correo electrónico",
+        "hint": "O teu correo principal para notificacións.",
+        "required": "Introduce un enderezo de correo electrónico.",
+        "invalid": "Introduce un enderezo de correo electrónico válido."
+      },
+      "location": {
+        "label": "Ubicación",
+        "hint": "Opcional. A túa dirección.",
+        "required": "Busca a túa ubicación.",
+        "loading": "Buscando ubicacións...",
+        "resolved": "Ubicación establecida en {{location}}."
+      },
+      "defaultLanguage": {
+        "label": "Idioma por defecto",
+        "hint": "O teu idioma preferido para a interface."
+      },
+      "currentPassword": {
+        "label": "Contrasinal actual",
+        "hint": "Introduce o teu contrasinal actual para confirmar.",
+        "required": "Introduce o teu contrasinal actual."
+      },
+      "newPassword": {
+        "label": "Novo contrasinal",
+        "hint": "Elixe un novo contrasinal.",
+        "required": "Introduce un novo contrasinal.",
+        "length": "Utiliza polo menos 8 caracteres."
+      },
+      "confirmPassword": {
+        "label": "Confirma o novo contrasinal",
+        "hint": "Volve a introducir o novo contrasinal.",
+        "required": "Confirma o teu novo contrasinal.",
+        "mismatch": "Os contrasinais non coinciden."
+      }
+    }
+  }
+}
