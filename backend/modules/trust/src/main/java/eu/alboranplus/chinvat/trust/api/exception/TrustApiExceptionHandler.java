@@ -1,6 +1,7 @@
 package eu.alboranplus.chinvat.trust.api.exception;
 
 import eu.alboranplus.chinvat.trust.api.dto.TrustApiErrorResponse;
+import eu.alboranplus.chinvat.trust.domain.exception.CertificateCredentialNotFoundException;
 import eu.alboranplus.chinvat.trust.domain.exception.TrustProviderSyncException;
 import eu.alboranplus.chinvat.trust.domain.exception.TrustValidationException;
 import java.time.Instant;
@@ -23,6 +24,13 @@ public class TrustApiExceptionHandler {
   @ExceptionHandler(TrustProviderSyncException.class)
   public ResponseEntity<TrustApiErrorResponse> handleSync(TrustProviderSyncException exception) {
     return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+        .body(new TrustApiErrorResponse(exception.getMessage(), Instant.now()));
+  }
+
+  @ExceptionHandler(CertificateCredentialNotFoundException.class)
+  public ResponseEntity<TrustApiErrorResponse> handleNotFound(
+      CertificateCredentialNotFoundException exception) {
+    return ResponseEntity.status(HttpStatus.NOT_FOUND)
         .body(new TrustApiErrorResponse(exception.getMessage(), Instant.now()));
   }
 

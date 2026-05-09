@@ -29,6 +29,18 @@ services:
     networks:
       - chinvat
 
+  redis-eidas:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - chinvat
+
   # Production: runs only prisma migrate deploy – never resets the database.
   # ALLOW_DB_RESET is intentionally absent; reset.sh will refuse to run without it.
   db-migrate:
@@ -76,11 +88,17 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      EIDAS_STATE_REDIS_DEDICATED: ${EIDAS_STATE_REDIS_DEDICATED:-true}
+      EIDAS_STATE_REDIS_HOST: ${EIDAS_STATE_REDIS_HOST:-redis-eidas}
+      EIDAS_STATE_REDIS_PORT: ${EIDAS_STATE_REDIS_PORT:-6379}
+      EIDAS_STATE_REDIS_DATABASE: ${EIDAS_STATE_REDIS_DATABASE:-0}
+      EIDAS_STATE_REDIS_USERNAME: ${EIDAS_STATE_REDIS_USERNAME:-}
+      EIDAS_STATE_REDIS_PASSWORD: ${EIDAS_STATE_REDIS_PASSWORD:-}
       JPA_DDL_AUTO: validate
       JPA_SHOW_SQL: false
       APP_VERSION: ${APP_VERSION:-latest}
       APP_TIME_ZONE: ${APP_TIME_ZONE:-UTC}
-        CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://your-frontend-domain.example}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://your-frontend-domain.example}
       FNMT_PROXY_SHARED_SECRET: ${FNMT_PROXY_SHARED_SECRET:-change-me-fnmt-secret}
     expose:
       - "8080"
@@ -89,6 +107,8 @@ services:
       db-seed:
         condition: service_completed_successfully
       redis:
+        condition: service_healthy
+      redis-eidas:
         condition: service_healthy
     networks:
       - chinvat

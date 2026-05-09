@@ -31,6 +31,17 @@ services:
     networks:
       - chinvat
 
+  redis-eidas:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - chinvat
+
   # DEV ONLY: drops and recreates the public schema before migrations run.
   # Controlled by ALLOW_DB_RESET=true – never set this in production.
   db-reset:
@@ -103,6 +114,12 @@ services:
       DB_PASSWORD: ${POSTGRES_PASSWORD:-chinvat}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      EIDAS_STATE_REDIS_DEDICATED: ${EIDAS_STATE_REDIS_DEDICATED:-true}
+      EIDAS_STATE_REDIS_HOST: ${EIDAS_STATE_REDIS_HOST:-redis-eidas}
+      EIDAS_STATE_REDIS_PORT: ${EIDAS_STATE_REDIS_PORT:-6379}
+      EIDAS_STATE_REDIS_DATABASE: ${EIDAS_STATE_REDIS_DATABASE:-0}
+      EIDAS_STATE_REDIS_USERNAME: ${EIDAS_STATE_REDIS_USERNAME:-}
+      EIDAS_STATE_REDIS_PASSWORD: ${EIDAS_STATE_REDIS_PASSWORD:-}
       JPA_DDL_AUTO: validate
       JPA_SHOW_SQL: true
       APP_VERSION: ${APP_VERSION:-0.0.1-SNAPSHOT}
@@ -117,6 +134,8 @@ services:
       db-seed:
         condition: service_completed_successfully
       redis:
+        condition: service_healthy
+      redis-eidas:
         condition: service_healthy
     networks:
       - chinvat

@@ -130,3 +130,30 @@ Operational rules:
 3. treat CA bundle changes as security changes and deploy them through change control
 4. revoke compromised certificates by setting `revoked_at` in `user_certificate`
 
+## eIDAS State Redis Hardening
+
+The eIDAS callback state is short-lived, security-sensitive data and should be isolated from
+general caches (for example permission cache).
+
+Current setup in this repository:
+
+1. Dedicated Redis service `redis-eidas` in both `compose.dev.yml` and `compose.prod.yml`
+2. Separate app connection settings via `EIDAS_STATE_REDIS_*`
+3. Dedicated key prefix (`chinvat:eidas:state:`) and one-key delete operations only
+
+Recommended production hardening:
+
+1. Enable Redis ACL and create a dedicated user for eIDAS state (`EIDAS_STATE_REDIS_USERNAME` / `EIDAS_STATE_REDIS_PASSWORD`)
+2. Restrict ACL permissions to the eIDAS prefix only (`~chinvat:eidas:state:*`) and required commands only (`+get +set +del +expire +ping`)
+3. Keep `redis-eidas` private (no published ports), reachable only from backend network segment
+4. Use independent credentials from the general Redis cache instance
+5. Add monitoring/alerts for unexpected keyspace patterns and high delete/set anomaly rates
+
+Example ACL profile for eIDAS state user:
+
+```text
+user chinvat-eidas-state on >strong-password ~chinvat:eidas:state:* +get +set +del +expire +ping -@all
+```
+
+The application intentionally avoids wildcard deletes in the eIDAS state adapter.
+

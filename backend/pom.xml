@@ -64,6 +64,11 @@
 				<artifactId>dss-tsl-validation</artifactId>
 				<version>${dss.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>eu.europa.ec.joinup.sd-dss</groupId>
+				<artifactId>dss-utils-apache-commons</artifactId>
+				<version>${dss.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -88,6 +93,7 @@
 		<module>modules/rbac</module>
 		<module>modules/auth</module>
 		<module>modules/trust</module>
+		<module>modules/eidas</module>
 		<module>app</module>
 	</modules>
 </project>

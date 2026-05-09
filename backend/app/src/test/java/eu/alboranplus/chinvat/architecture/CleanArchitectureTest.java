@@ -91,6 +91,7 @@ class CleanArchitectureTest {
               "..auth..",
               "..rbac..",
               "..users..",
-              "..trust..")
+              "..trust..",
+              "..eidas..")
           .because("Common module should be independent of feature modules to prevent cyclic dependencies.");
 }

@@ -13,6 +13,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -24,6 +25,13 @@ import org.springframework.test.web.servlet.MvcResult;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
+@TestPropertySource(
+        properties = {
+            "spring.datasource.url=jdbc:tc:postgresql:16-alpine:///chinvat",
+            "spring.datasource.driver-class-name=org.testcontainers.jdbc.ContainerDatabaseDriver",
+            "spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect",
+            "spring.jpa.hibernate.ddl-auto=create-drop"
+        })
 @DirtiesContext
 class AuthFlowE2ETest {
 

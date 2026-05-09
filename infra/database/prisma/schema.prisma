@@ -51,6 +51,9 @@ model User {
 
   password      UserPassword?
   certificates  UserCertificate[]
+  certificateCredentials CertificateCredential[]
+  externalIdentities ExternalIdentity[]
+  certificateEnrollments CertificateEnrollment[]
   resetTokens   AuthPasswordReset[]
   sessions      AuthSession[]
   auditEvents   AuthAuditEvent[]
@@ -89,6 +92,166 @@ model UserCertificate {
   @@index([userId], name: "idx_user_certificate_user_id")
   @@index([thumbprintSha256], name: "idx_user_certificate_thumbprint")
   @@map("user_certificate")
+}
+
+/// Enterprise-grade trust provider registry synchronized from LOTL/TSL or managed internally.
+model TrustProvider {
+  id                BigInt   @id @default(autoincrement())
+  providerCode      String   @unique @db.VarChar(80)
+  displayName       String   @db.VarChar(160)
+  providerType      String   @db.VarChar(80)
+  sourceType        String   @db.VarChar(80)
+  countryCode       String?  @db.VarChar(2)
+  lotlUrl           String?  @db.VarChar(1024)
+  tslUrl            String?  @db.VarChar(1024)
+  trustListKey      String?  @db.VarChar(255)
+  active            Boolean  @default(true)
+  lastSynchronizedAt DateTime? @db.Timestamptz
+  createdAt         DateTime @default(now()) @db.Timestamptz
+  updatedAt         DateTime @default(now()) @db.Timestamptz
+
+  credentials       CertificateCredential[]
+  externalIdentities ExternalIdentity[]
+
+  @@index([providerType], name: "idx_trust_provider_provider_type")
+  @@index([active], name: "idx_trust_provider_active")
+  @@map("trust_provider")
+}
+
+/// Enterprise credential binding for X.509 login and signing use-cases.
+model CertificateCredential {
+  id                   BigInt   @id @default(autoincrement())
+  userId               BigInt
+  providerId           BigInt?
+  providerCode         String?  @db.VarChar(80)
+  credentialType       String   @db.VarChar(80)
+  trustStatus          String   @db.VarChar(80)
+  revocationStatus     String   @db.VarChar(80)
+  assuranceLevel       String?  @db.VarChar(80)
+  registrationSource   String   @db.VarChar(80)
+  externalSubjectId    String?  @db.VarChar(255)
+  linkedIdentitySource String?  @db.VarChar(120)
+  certificatePem       String   @db.Text
+  subjectDn            String   @db.VarChar(1024)
+  issuerDn             String   @db.VarChar(1024)
+  serialNumber         String   @db.VarChar(128)
+  thumbprintSha256     String   @unique @db.VarChar(64)
+  policyOids           String?  @db.Text
+  qcStatementFlags     String?  @db.Text
+  keyUsageFlags        String?  @db.Text
+  extendedKeyUsageFlags String? @db.Text
+  notBefore            DateTime @db.Timestamptz
+  notAfter             DateTime @db.Timestamptz
+  trustCheckedAt       DateTime? @db.Timestamptz
+  revocationCheckedAt  DateTime? @db.Timestamptz
+  approvedBy           String?  @db.VarChar(120)
+  approvedAt           DateTime? @db.Timestamptz
+  revokedBy            String?  @db.VarChar(120)
+  revokedAt            DateTime? @db.Timestamptz
+  isPrimary            Boolean  @default(false)
+  lastSuccessfulAuthAt DateTime? @db.Timestamptz
+  lastFailedAuthAt     DateTime? @db.Timestamptz
+  failureCount         Int      @default(0)
+  createdAt            DateTime @default(now()) @db.Timestamptz
+  updatedAt            DateTime @default(now()) @db.Timestamptz
+
+  user                 User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider             TrustProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  enrollments          CertificateEnrollment[]
+  identityAuditEvents  IdentityAuditEvent[]
+
+  @@index([userId], name: "idx_certificate_credential_user_id")
+  @@index([providerId], name: "idx_certificate_credential_provider_id")
+  @@index([providerCode], name: "idx_certificate_credential_provider_code")
+  @@index([trustStatus], name: "idx_certificate_credential_trust_status")
+  @@index([revocationStatus], name: "idx_certificate_credential_revocation_status")
+  @@index([thumbprintSha256], name: "idx_certificate_credential_thumbprint")
+  @@map("certificate_credential")
+}
+
+/// Enrollment and approval workflow for certificate onboarding.
+model CertificateEnrollment {
+  id                    BigInt   @id @default(autoincrement())
+  userId                BigInt?
+  certificateCredentialId BigInt?
+  providerCode          String?  @db.VarChar(80)
+  requestedBy           String   @db.VarChar(120)
+  status                String   @db.VarChar(80)
+  registrationSource    String   @db.VarChar(80)
+  requestPayload        Json     @default("{}")
+  reviewNotes           String?  @db.Text
+  approvedBy            String?  @db.VarChar(120)
+  approvedAt            DateTime? @db.Timestamptz
+  rejectedBy            String?  @db.VarChar(120)
+  rejectedAt            DateTime? @db.Timestamptz
+  createdAt             DateTime @default(now()) @db.Timestamptz
+  updatedAt             DateTime @default(now()) @db.Timestamptz
+
+  user                  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  certificateCredential CertificateCredential? @relation(fields: [certificateCredentialId], references: [id], onDelete: SetNull)
+
+  @@index([userId], name: "idx_certificate_enrollment_user_id")
+  @@index([certificateCredentialId], name: "idx_certificate_enrollment_credential_id")
+  @@index([status], name: "idx_certificate_enrollment_status")
+  @@map("certificate_enrollment")
+}
+
+/// Linked external identity from eIDAS or another trust broker.
+model ExternalIdentity {
+  id                BigInt   @id @default(autoincrement())
+  userId            BigInt?
+  providerId        BigInt?
+  providerCode      String   @db.VarChar(80)
+  identitySource    String   @db.VarChar(80)
+  externalSubjectId String   @db.VarChar(255)
+  assuranceLevel    String?  @db.VarChar(80)
+  personIdentifier  String?  @db.VarChar(255)
+  legalPersonIdentifier String? @db.VarChar(255)
+  identityReference String? @db.VarChar(255)
+  nationality       String? @db.VarChar(80)
+  firstName         String?  @db.VarChar(160)
+  familyName        String?  @db.VarChar(160)
+  dateOfBirth       String?  @db.VarChar(40)
+  rawClaimsJson     String?  @db.Text
+  currentStatus     String   @db.VarChar(80)
+  reviewedBy        String?  @db.VarChar(120)
+  reviewedAt        DateTime? @db.Timestamptz
+  reviewReason      String?  @db.Text
+  linkedAt          DateTime? @db.Timestamptz
+  unlinkedAt        DateTime? @db.Timestamptz
+  createdAt         DateTime @default(now()) @db.Timestamptz
+  updatedAt         DateTime @default(now()) @db.Timestamptz
+
+  user              User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  provider          TrustProvider? @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  identityAuditEvents IdentityAuditEvent[]
+
+  @@unique([providerCode, externalSubjectId], name: "uq_external_identity_provider_subject")
+  @@index([userId], name: "idx_external_identity_user_id")
+  @@index([providerId], name: "idx_external_identity_provider_id")
+  @@map("external_identity")
+}
+
+/// Immutable high-level audit stream for trust and identity lifecycle events.
+model IdentityAuditEvent {
+  id                   BigInt   @id @default(autoincrement())
+  eventType            String   @db.VarChar(120)
+  actor                String?  @db.VarChar(120)
+  userId               BigInt?
+  certificateCredentialId BigInt?
+  externalIdentityId   BigInt?
+  details              Json     @default("{}")
+  createdAt            DateTime @default(now()) @db.Timestamptz
+
+  user                 User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  certificateCredential CertificateCredential? @relation(fields: [certificateCredentialId], references: [id], onDelete: SetNull)
+  externalIdentity     ExternalIdentity? @relation(fields: [externalIdentityId], references: [id], onDelete: SetNull)
+
+  @@index([eventType], name: "idx_identity_audit_event_event_type")
+  @@index([userId], name: "idx_identity_audit_event_user_id")
+  @@index([certificateCredentialId], name: "idx_identity_audit_event_credential_id")
+  @@index([externalIdentityId], name: "idx_identity_audit_event_external_identity_id")
+  @@map("identity_audit_event")
 }
 
 model AuthPasswordReset {
