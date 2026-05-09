@@ -90,6 +90,7 @@ class CleanArchitectureTest {
           .resideInAnyPackage(
               "..auth..",
               "..rbac..",
-              "..users..")
+              "..users..",
+              "..trust..")
           .because("Common module should be independent of feature modules to prevent cyclic dependencies.");
 }

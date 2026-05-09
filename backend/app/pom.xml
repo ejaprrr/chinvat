@@ -35,6 +35,11 @@
             <artifactId>chinvat-auth-module</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>eu.alboranplus</groupId>
+            <artifactId>chinvat-trust-module</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

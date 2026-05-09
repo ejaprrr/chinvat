@@ -1,0 +1,10 @@
+.idea/
+.env
+docker/.env.dev
+docker/.env.prod
+docker/nginx/certs/*/tls/*.crt
+docker/nginx/certs/*/tls/*.key
+docker/nginx/certs/*/mtls/*.crt
+docker/nginx/certs/*/mtls/*.key
+docker/nginx/certs/*/mtls/*.csr
+docker/nginx/certs/*/mtls/*.srl

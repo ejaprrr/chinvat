@@ -97,11 +97,11 @@ public class AuthController {
     return ResponseEntity.ok(authApiMapper.toResponse(result));
   }
 
-    @Operation(
-            summary = "FNMT / client certificate login",
+        @Operation(
+            summary = "Client certificate login",
             description =
-                    "Authenticates the caller using a client certificate already validated by the mTLS gateway."
-                            + " No request body is required; the gateway forwards the verified certificate.",
+                "Authenticates the caller using a client certificate already validated by the mTLS gateway."
+                    + " No request body is required; the gateway forwards the verified certificate.",
             security = {})
     @ApiResponses({
         @ApiResponse(
@@ -119,15 +119,41 @@ public class AuthController {
                                 mediaType = "application/json",
                                 schema = @Schema(implementation = AuthApiErrorResponse.class)))
     })
-    @PostMapping("/fnmt/login")
-    public ResponseEntity<AuthResponse> loginWithCertificate(HttpServletRequest httpRequest) {
-        String clientIp = resolveClientIp(httpRequest);
-        String userAgent = httpRequest.getHeader("User-Agent");
-        String thumbprintSha256 = mtlsClientCertificateResolver.resolveThumbprintSha256(httpRequest);
-        AuthResult result =
+            @PostMapping("/certificates/login")
+            public ResponseEntity<AuthResponse> loginWithCertificate(HttpServletRequest httpRequest) {
+            String clientIp = resolveClientIp(httpRequest);
+            String userAgent = httpRequest.getHeader("User-Agent");
+            String thumbprintSha256 = mtlsClientCertificateResolver.resolveThumbprintSha256(httpRequest);
+            AuthResult result =
                 authFacade.loginWithCertificate(
-                        new CertificateLoginCommand(thumbprintSha256, clientIp, userAgent));
-        return ResponseEntity.ok(authApiMapper.toResponse(result));
+                    new CertificateLoginCommand(thumbprintSha256, clientIp, userAgent));
+            return ResponseEntity.ok(authApiMapper.toResponse(result));
+            }
+
+            @Operation(
+                summary = "FNMT certificate login (compatibility)",
+                description =
+                    "Compatibility alias for legacy FNMT clients. Prefer /api/v1/auth/certificates/login.",
+                security = {})
+            @ApiResponses({
+            @ApiResponse(
+                responseCode = "200",
+                description = "Authenticated successfully with client certificate",
+                content =
+                    @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = AuthResponse.class))),
+            @ApiResponse(
+                responseCode = "401",
+                description = "Client certificate missing, invalid, or not registered",
+                content =
+                    @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = AuthApiErrorResponse.class)))
+            })
+    @PostMapping("/fnmt/login")
+            public ResponseEntity<AuthResponse> loginWithFnmtAlias(HttpServletRequest httpRequest) {
+            return loginWithCertificate(httpRequest);
     }
 
   @Operation(
