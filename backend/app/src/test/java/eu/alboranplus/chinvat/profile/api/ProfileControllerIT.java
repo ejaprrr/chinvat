@@ -11,10 +11,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
 import eu.alboranplus.chinvat.auth.application.facade.AuthFacade;
+import eu.alboranplus.chinvat.common.audit.AuditFacade;
 import eu.alboranplus.chinvat.eidas.application.dto.EidasProfileCompletionView;
 import eu.alboranplus.chinvat.eidas.application.facade.EidasFacade;
 import eu.alboranplus.chinvat.trust.application.dto.CertificateCredentialView;
 import eu.alboranplus.chinvat.trust.application.facade.TrustFacade;
+import eu.alboranplus.chinvat.trust.domain.exception.CertificateCredentialNotFoundException;
 import eu.alboranplus.chinvat.users.application.dto.UserSecurityView;
 import eu.alboranplus.chinvat.users.application.dto.UserView;
 import eu.alboranplus.chinvat.users.application.facade.UsersFacade;
@@ -29,11 +31,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("local")
 class ProfileControllerIT {
 
   @Autowired private MockMvc mockMvc;
@@ -41,11 +45,12 @@ class ProfileControllerIT {
   @MockitoBean private UsersFacade usersFacade;
   @MockitoBean private TrustFacade trustFacade;
   @MockitoBean private EidasFacade eidasFacade;
-  @MockitoBean private AuthFacade authFacade;
+    @MockitoBean private AuthFacade authFacade;
+    @MockitoBean private AuditFacade auditFacade;
 
   @Test
   void completeEidasProfile_createsUserBindsCertificateAndLinksIdentity() throws Exception {
-    Instant now = Instant.parse("2026-05-09T10:00:00Z");
+    Instant now = Instant.now();
 
     given(usersFacade.createUser(any()))
         .willReturn(
@@ -153,7 +158,7 @@ class ProfileControllerIT {
 
   @Test
   void certificateEndpoints_requireAuthAndSupportLifecycle() throws Exception {
-    Instant now = Instant.parse("2026-05-09T10:00:00Z");
+        Instant now = Instant.now();
     given(authFacade.validateAccessToken("token"))
         .willReturn(
             Optional.of(
@@ -161,7 +166,7 @@ class ProfileControllerIT {
                     77L,
                     "maria@example.com",
                     Set.of("USER"),
-                    Set.of("PROFILE:MANAGE"))));
+                    Set.of("PROFILE:READ", "PROFILE:WRITE"))));
     given(usersFacade.findSecurityViewByEmail("maria@example.com"))
         .willReturn(Optional.of(new UserSecurityView(77L, "maria@example.com", "Maria", Set.of("USER"), true)));
 
@@ -282,5 +287,47 @@ class ProfileControllerIT {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(501))
         .andExpect(jsonPath("$.primary").value(true));
+  }
+
+  @Test
+  void setPrimaryCertificate_whenCredentialMissing_returns404() throws Exception {
+    given(authFacade.validateAccessToken("token"))
+        .willReturn(
+            Optional.of(
+                new TokenPrincipal(
+                    77L,
+                    "maria@example.com",
+                    Set.of("USER"),
+                    Set.of("PROFILE:READ", "PROFILE:WRITE"))));
+    given(usersFacade.findSecurityViewByEmail("maria@example.com"))
+        .willReturn(Optional.of(new UserSecurityView(77L, "maria@example.com", "Maria", Set.of("USER"), true)));
+    given(trustFacade.setPrimaryCertificateCredential(77L, 999L, "maria@example.com"))
+        .willThrow(new CertificateCredentialNotFoundException("Certificate credential not found: 999"));
+
+    mockMvc
+        .perform(post("/api/v1/profile/certificates/999/primary").header("Authorization", "Bearer token"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.message").value("Certificate credential not found: 999"));
+  }
+
+  @Test
+  void setPrimaryCertificate_whenCredentialNotActive_returns400() throws Exception {
+    given(authFacade.validateAccessToken("token"))
+        .willReturn(
+            Optional.of(
+                new TokenPrincipal(
+                    77L,
+                    "maria@example.com",
+                    Set.of("USER"),
+                    Set.of("PROFILE:READ", "PROFILE:WRITE"))));
+    given(usersFacade.findSecurityViewByEmail("maria@example.com"))
+        .willReturn(Optional.of(new UserSecurityView(77L, "maria@example.com", "Maria", Set.of("USER"), true)));
+    given(trustFacade.setPrimaryCertificateCredential(77L, 501L, "maria@example.com"))
+        .willThrow(new IllegalStateException("Only ACTIVE credentials can be primary"));
+
+    mockMvc
+        .perform(post("/api/v1/profile/certificates/501/primary").header("Authorization", "Bearer token"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value("Only ACTIVE credentials can be primary"));
   }
 }
