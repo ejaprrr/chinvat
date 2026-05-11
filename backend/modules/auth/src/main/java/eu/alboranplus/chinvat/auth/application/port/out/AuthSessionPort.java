@@ -2,6 +2,8 @@ package eu.alboranplus.chinvat.auth.application.port.out;
 
 import java.time.Instant;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AuthSessionPort {
 
@@ -30,6 +32,10 @@ public interface AuthSessionPort {
   /** Returns active sessions for a user (non-expired, not revoked), most recent first. */
   java.util.List<eu.alboranplus.chinvat.auth.application.dto.AuthSessionView> listActiveSessionsByUserId(
       Long userId, Instant now);
+
+  /** Returns paginated active sessions for a user (non-expired, not revoked), most recent first. */
+  Page<eu.alboranplus.chinvat.auth.application.dto.AuthSessionView> listActiveSessionsByUserIdPaged(
+      Long userId, Instant now, Pageable pageable);
 
   /** Returns active session info by session id (used for ownership checks). */
   java.util.Optional<eu.alboranplus.chinvat.auth.application.dto.AuthSessionView> findActiveSessionById(

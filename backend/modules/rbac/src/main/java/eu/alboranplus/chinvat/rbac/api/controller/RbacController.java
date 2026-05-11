@@ -19,6 +19,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "RBAC", description = "Role-based access control — role inspection")
 @RestController
@@ -100,6 +103,32 @@ public class RbacController {
   }
 
   @PostMapping("/permissions")
+
+    @Operation(
+        summary = "List permissions with pagination",
+        description = "Returns all defined permissions with pagination support.")
+    @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Permissions returned"),
+      @ApiResponse(
+          responseCode = "401",
+          description = "Unauthorized — missing or invalid bearer token",
+          content = @Content(schema = @Schema(hidden = true)))
+      })
+    @GetMapping("/permissions/paged")
+    public ResponseEntity<PageResponse<PermissionResponse>> listPermissionsPaged(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String sort) {
+      PaginationRequest paginationRequest = new PaginationRequest(page, size, sort);
+      PageResponse<PermissionView> pageResponse = rbacFacade.listPermissionsPaged(paginationRequest);
+    
+      List<PermissionResponse> responseData = pageResponse.data().stream()
+          .map(rbacApiMapper::toResponse).toList();
+    
+      return ResponseEntity.ok(PageResponse.of(responseData, pageResponse.pagination()));
+    }
+
+    @PostMapping("/permissions")
   @PreAuthorize("hasAuthority('RBAC:MANAGE')")
     @Operation(
       summary = "Create permission",

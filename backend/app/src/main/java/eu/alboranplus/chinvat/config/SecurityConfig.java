@@ -1,6 +1,7 @@
 package eu.alboranplus.chinvat.config;
 
 import eu.alboranplus.chinvat.security.BearerTokenAuthFilter;
+import eu.alboranplus.chinvat.security.RateLimitingFilter;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -25,12 +26,14 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   private final BearerTokenAuthFilter bearerTokenAuthFilter;
+  private final RateLimitingFilter rateLimitingFilter;
 
   @Value("${app.cors.allowed-origins}")
   private List<String> allowedOrigins;
 
-  public SecurityConfig(BearerTokenAuthFilter bearerTokenAuthFilter) {
+  public SecurityConfig(BearerTokenAuthFilter bearerTokenAuthFilter, RateLimitingFilter rateLimitingFilter) {
     this.bearerTokenAuthFilter = bearerTokenAuthFilter;
+    this.rateLimitingFilter = rateLimitingFilter;
   }
 
   @Bean
@@ -39,6 +42,7 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(bearerTokenAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(
             auth ->

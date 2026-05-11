@@ -10,6 +10,8 @@ import eu.alboranplus.chinvat.users.infrastructure.persistence.mapper.UserAccoun
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -63,6 +65,11 @@ public class UsersRepositoryAdapter implements UsersRepositoryPort {
     return userAccountJpaRepository.findAll().stream()
         .map(userAccountJpaMapper::toDomain)
         .toList();
+  }
+
+  @Override
+  public Page<UserAccount> findAll(Pageable pageable) {
+    return userAccountJpaRepository.findAll(pageable).map(userAccountJpaMapper::toDomain);
   }
 
   @Override

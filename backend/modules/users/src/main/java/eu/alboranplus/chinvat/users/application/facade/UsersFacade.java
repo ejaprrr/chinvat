@@ -1,5 +1,7 @@
 package eu.alboranplus.chinvat.users.application.facade;
 
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
 import eu.alboranplus.chinvat.users.application.command.CreateUserCommand;
 import eu.alboranplus.chinvat.users.application.command.UpdateUserCommand;
 import eu.alboranplus.chinvat.users.application.dto.UserSecurityView;
@@ -14,6 +16,8 @@ public interface UsersFacade {
   UserView getUserById(Long id);
 
   List<UserView> getAllUsers();
+
+  PageResponse<UserView> getAllUsersPaged(PaginationRequest paginationRequest);
 
   UserView updateUser(Long id, UpdateUserCommand command, String actor);
 

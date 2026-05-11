@@ -3,6 +3,8 @@ package eu.alboranplus.chinvat.users.application.facade;
 import eu.alboranplus.chinvat.common.audit.AuditDetails;
 import eu.alboranplus.chinvat.common.audit.AuditFacade;
 import eu.alboranplus.chinvat.common.cache.PermissionCacheFacade;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
 import eu.alboranplus.chinvat.users.application.command.CreateUserCommand;
 import eu.alboranplus.chinvat.users.application.command.UpdateUserCommand;
 import eu.alboranplus.chinvat.users.application.command.ChangePasswordCommand;
@@ -11,6 +13,7 @@ import eu.alboranplus.chinvat.users.application.dto.UserView;
 import eu.alboranplus.chinvat.users.application.usecase.ChangePasswordUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.CreateUserUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.DeleteUserUseCase;
+import eu.alboranplus.chinvat.users.application.usecase.GetAllUsersPagedUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetAllUsersUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetUserByIdUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetUserSecurityViewUseCase;
@@ -20,14 +23,21 @@ import eu.alboranplus.chinvat.users.domain.model.UserAccount;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.cache.annotation.Caching;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UsersFacadeService implements UsersFacade {
 
+  private static final String USERS_BY_ID_CACHE = "users.by-id";
+  private static final String USERS_ALL_CACHE = "users.all";
+
   private final CreateUserUseCase createUserUseCase;
   private final GetUserByIdUseCase getUserByIdUseCase;
   private final GetAllUsersUseCase getAllUsersUseCase;
+  private final GetAllUsersPagedUseCase getAllUsersPagedUseCase;
   private final UpdateUserUseCase updateUserUseCase;
   private final DeleteUserUseCase deleteUserUseCase;
   private final GetUserSecurityViewUseCase getUserSecurityViewUseCase;
@@ -40,6 +50,7 @@ public class UsersFacadeService implements UsersFacade {
       CreateUserUseCase createUserUseCase,
       GetUserByIdUseCase getUserByIdUseCase,
       GetAllUsersUseCase getAllUsersUseCase,
+      GetAllUsersPagedUseCase getAllUsersPagedUseCase,
       UpdateUserUseCase updateUserUseCase,
       DeleteUserUseCase deleteUserUseCase,
       GetUserSecurityViewUseCase getUserSecurityViewUseCase,
@@ -50,6 +61,7 @@ public class UsersFacadeService implements UsersFacade {
     this.createUserUseCase = createUserUseCase;
     this.getUserByIdUseCase = getUserByIdUseCase;
     this.getAllUsersUseCase = getAllUsersUseCase;
+    this.getAllUsersPagedUseCase = getAllUsersPagedUseCase;
     this.updateUserUseCase = updateUserUseCase;
     this.deleteUserUseCase = deleteUserUseCase;
     this.getUserSecurityViewUseCase = getUserSecurityViewUseCase;
@@ -60,6 +72,7 @@ public class UsersFacadeService implements UsersFacade {
   }
 
   @Override
+  @CacheEvict(cacheNames = USERS_ALL_CACHE, allEntries = true)
   public UserView createUser(CreateUserCommand command) {
     UserView created = toView(createUserUseCase.execute(command));
     auditFacade.log(
@@ -75,16 +88,29 @@ public class UsersFacadeService implements UsersFacade {
   }
 
   @Override
+  @Cacheable(cacheNames = USERS_BY_ID_CACHE, key = "#id")
   public UserView getUserById(Long id) {
     return toView(getUserByIdUseCase.execute(id));
   }
 
   @Override
+  @Cacheable(cacheNames = USERS_ALL_CACHE)
   public List<UserView> getAllUsers() {
     return getAllUsersUseCase.execute().stream().map(this::toView).toList();
   }
 
   @Override
+  public PageResponse<UserView> getAllUsersPaged(PaginationRequest paginationRequest) {
+    PageResponse<UserView> pagedResult = getAllUsersPagedUseCase.execute(paginationRequest);
+    return pagedResult;
+  }
+
+  @Override
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = USERS_BY_ID_CACHE, key = "#id"),
+        @CacheEvict(cacheNames = USERS_ALL_CACHE, allEntries = true)
+      })
   public UserView updateUser(Long id, UpdateUserCommand command, String actor) {
     UserView updated = toView(updateUserUseCase.execute(id, command));
     permissionCacheFacade.evictUserPermissions(id);
@@ -101,6 +127,11 @@ public class UsersFacadeService implements UsersFacade {
   }
 
   @Override
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = USERS_BY_ID_CACHE, key = "#id"),
+        @CacheEvict(cacheNames = USERS_ALL_CACHE, allEntries = true)
+      })
   public void deleteUser(Long id, String actor) {
     deleteUserUseCase.execute(id);
     permissionCacheFacade.evictUserPermissions(id);

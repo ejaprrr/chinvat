@@ -19,10 +19,13 @@ services:
     networks:
       - chinvat
 
-  redis:
+  # Global Redis: permissions cache, org data
+  # In production: bind on private network, require password, use ACL with default-deny
+  redis-global:
     image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
-      - "${REDIS_EXPOSED_PORT:-6379}:6379"
+      - "${REDIS_GLOBAL_EXPOSED_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -31,9 +34,13 @@ services:
     networks:
       - chinvat
 
-  redis-eidas:
+  # Auth Service Redis: eIDAS state + app cache
+  # In production: bind on private network, require password, use strict ACL
+  redis-auth:
     image: redis:7-alpine
     command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "${REDIS_AUTH_EXPOSED_PORT:-6380}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -112,12 +119,21 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-chinvat}
       DB_USERNAME: ${POSTGRES_USER:-chinvat}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-chinvat}
-      REDIS_HOST: redis
+      # Global Redis (permissions cache) - read-only for this service
+      REDIS_HOST: redis-global
       REDIS_PORT: 6379
-      EIDAS_STATE_REDIS_DEDICATED: ${EIDAS_STATE_REDIS_DEDICATED:-true}
-      EIDAS_STATE_REDIS_HOST: ${EIDAS_STATE_REDIS_HOST:-redis-eidas}
+      # Auth Service Redis (app cache + eIDAS state) - read-write for this service
+      APP_CACHE_REDIS_DEDICATED: ${APP_CACHE_REDIS_DEDICATED:-false}
+      APP_CACHE_REDIS_HOST: ${APP_CACHE_REDIS_HOST:-redis-auth}
+      APP_CACHE_REDIS_PORT: ${APP_CACHE_REDIS_PORT:-6379}
+      APP_CACHE_REDIS_DATABASE: ${APP_CACHE_REDIS_DATABASE:-0}
+      APP_CACHE_REDIS_USERNAME: ${APP_CACHE_REDIS_USERNAME:-}
+      APP_CACHE_REDIS_PASSWORD: ${APP_CACHE_REDIS_PASSWORD:-}
+      # eIDAS State on separate DB in auth Redis
+      EIDAS_STATE_REDIS_DEDICATED: ${EIDAS_STATE_REDIS_DEDICATED:-false}
+      EIDAS_STATE_REDIS_HOST: ${EIDAS_STATE_REDIS_HOST:-redis-auth}
       EIDAS_STATE_REDIS_PORT: ${EIDAS_STATE_REDIS_PORT:-6379}
-      EIDAS_STATE_REDIS_DATABASE: ${EIDAS_STATE_REDIS_DATABASE:-0}
+      EIDAS_STATE_REDIS_DATABASE: ${EIDAS_STATE_REDIS_DATABASE:-1}
       EIDAS_STATE_REDIS_USERNAME: ${EIDAS_STATE_REDIS_USERNAME:-}
       EIDAS_STATE_REDIS_PASSWORD: ${EIDAS_STATE_REDIS_PASSWORD:-}
       JPA_DDL_AUTO: validate
@@ -133,9 +149,9 @@ services:
     depends_on:
       db-seed:
         condition: service_completed_successfully
-      redis:
+      redis-global:
         condition: service_healthy
-      redis-eidas:
+      redis-auth:
         condition: service_healthy
     networks:
       - chinvat

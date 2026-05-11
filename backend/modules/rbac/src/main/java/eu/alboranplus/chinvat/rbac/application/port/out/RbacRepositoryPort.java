@@ -5,6 +5,8 @@ import eu.alboranplus.chinvat.rbac.domain.model.PermissionDefinition;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface RbacRepositoryPort {
   Optional<RoleDefinition> findByRoleName(String roleName);
@@ -12,6 +14,8 @@ public interface RbacRepositoryPort {
   Set<RoleDefinition> findByRoleNames(Set<String> roleNames);
 
   List<PermissionDefinition> findAllPermissions();
+
+  Page<PermissionDefinition> findAllPermissions(Pageable pageable);
 
   Optional<PermissionDefinition> findPermissionByCode(String permissionCode);
 

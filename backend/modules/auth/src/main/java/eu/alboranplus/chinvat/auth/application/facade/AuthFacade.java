@@ -16,6 +16,8 @@ import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
 import java.util.Optional;
 import java.util.List;
 import java.util.UUID;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 
 public interface AuthFacade {
   AuthResult login(LoginCommand command);
@@ -41,6 +43,7 @@ public interface AuthFacade {
   List<AuthSessionView> listSessions(TokenPrincipal principal);
 
   void revokeSession(TokenPrincipal principal, UUID sessionId);
+  PageResponse<AuthSessionView> listSessionsPaged(TokenPrincipal principal, PaginationRequest paginationRequest);
 
   void logoutAll(TokenPrincipal principal);
 }

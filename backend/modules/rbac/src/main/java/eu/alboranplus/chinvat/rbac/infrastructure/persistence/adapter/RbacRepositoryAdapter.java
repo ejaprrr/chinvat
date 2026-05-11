@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -65,6 +68,27 @@ public class RbacRepositoryAdapter implements RbacRepositoryPort {
         ORDER BY permission_code
         """,
         permissionRowMapper());
+  }
+
+  @Override
+  public Page<PermissionDefinition> findAllPermissions(Pageable pageable) {
+    Long total = jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM rbac_permission",
+        Long.class);
+    long totalCount = total != null ? total : 0L;
+
+    List<PermissionDefinition> content = jdbcTemplate.query(
+        """
+        SELECT permission_code, description
+        FROM rbac_permission
+        ORDER BY permission_code
+        LIMIT ? OFFSET ?
+        """,
+        permissionRowMapper(),
+        pageable.getPageSize(),
+        pageable.getOffset());
+
+    return new PageImpl<>(content, pageable, totalCount);
   }
 
   @Override

@@ -6,6 +6,8 @@ import eu.alboranplus.chinvat.trust.infrastructure.persistence.jpa.CertificateCr
 import eu.alboranplus.chinvat.trust.infrastructure.persistence.mapper.CertificateCredentialJpaMapper;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -36,6 +38,15 @@ public class CertificateCredentialLifecycleAdapter implements CertificateCredent
         .stream()
         .map(certificateCredentialJpaMapper::toView)
         .toList();
+  }
+
+  @Override
+  public Page<CertificateCredentialView> findAllPaged(Long userId, Pageable pageable) {
+    Page<eu.alboranplus.chinvat.trust.infrastructure.persistence.entity.CertificateCredentialJpaEntity> page =
+        userId == null
+            ? certificateCredentialJpaRepository.findAll(pageable)
+            : certificateCredentialJpaRepository.findAllByUserId(userId, pageable);
+    return page.map(certificateCredentialJpaMapper::toView);
   }
 
   @Override

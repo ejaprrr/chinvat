@@ -2,6 +2,8 @@ package eu.alboranplus.chinvat.trust.infrastructure.persistence.jpa;
 
 import eu.alboranplus.chinvat.trust.infrastructure.persistence.entity.CertificateCredentialJpaEntity;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -12,7 +14,11 @@ public interface CertificateCredentialJpaRepository
 
   List<CertificateCredentialJpaEntity> findAllByUserIdOrderByCreatedAtDesc(Long userId);
 
+  Page<CertificateCredentialJpaEntity> findAllByUserId(Long userId, Pageable pageable);
+
   List<CertificateCredentialJpaEntity> findAllByOrderByCreatedAtDesc();
+
+  Page<CertificateCredentialJpaEntity> findAll(Pageable pageable);
 
   @Modifying
   @Query(

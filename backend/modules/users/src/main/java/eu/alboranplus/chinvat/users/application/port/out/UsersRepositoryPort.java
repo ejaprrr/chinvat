@@ -5,6 +5,8 @@ import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UsersRepositoryPort {
   boolean existsByEmail(UserEmail email);
@@ -18,6 +20,8 @@ public interface UsersRepositoryPort {
   Optional<UserAccount> findByCertificateThumbprint(String thumbprintSha256, Instant now);
 
   List<UserAccount> findAll();
+
+  Page<UserAccount> findAll(Pageable pageable);
 
   UserAccount save(UserAccount userAccount);
 

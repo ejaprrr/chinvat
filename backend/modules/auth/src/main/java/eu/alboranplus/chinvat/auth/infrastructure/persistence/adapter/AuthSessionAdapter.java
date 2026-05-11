@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.HexFormat;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
@@ -77,6 +79,14 @@ public class AuthSessionAdapter implements AuthSessionPort {
         .stream()
         .map(this::toView)
         .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<AuthSessionView> listActiveSessionsByUserIdPaged(Long userId, Instant now, Pageable pageable) {
+    return repository
+        .findActiveByUserIdOrderByIssuedAtDescPaged(userId, now, pageable)
+        .map(this::toView);
   }
 
   @Override

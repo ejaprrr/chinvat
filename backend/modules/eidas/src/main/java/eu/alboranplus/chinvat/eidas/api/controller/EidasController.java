@@ -14,8 +14,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
+import eu.alboranplus.chinvat.eidas.application.dto.EidasProviderView;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -76,4 +82,19 @@ public class EidasController {
     var providers = eidasFacade.listProviders().stream().map(eidasApiMapper::toResponse).toList();
     return ResponseEntity.ok(providers);
   }
+  
+    @Operation(summary = "List eIDAS providers with pagination", description = "Returns configured eIDAS providers with pagination support.")
+    @GetMapping("/providers/paged")
+    public ResponseEntity<PageResponse<EidasProviderResponse>> listProviders(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) String sort) {
+      PaginationRequest paginationRequest = new PaginationRequest(page, size, sort);
+      PageResponse<EidasProviderView> pageResponse = eidasFacade.listProvidersPaged(paginationRequest);
+    
+      List<EidasProviderResponse> responseData = pageResponse.data().stream()
+          .map(eidasApiMapper::toResponse).toList();
+    
+      return ResponseEntity.ok(PageResponse.of(responseData, pageResponse.pagination()));
+    }
 }

@@ -1,5 +1,7 @@
 package eu.alboranplus.chinvat.users.api.controller;
 
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
 import eu.alboranplus.chinvat.users.api.dto.CreateUserRequest;
 import eu.alboranplus.chinvat.users.api.dto.UpdateUserRequest;
 import eu.alboranplus.chinvat.users.api.dto.UserResponse;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Users", description = "User registration and management")
@@ -69,17 +72,29 @@ public class UsersController {
 
   @Operation(summary = "Get all users")
   @ApiResponses({
-    @ApiResponse(responseCode = "200", description = "List of users"),
+    @ApiResponse(responseCode = "200", description = "Paginated list of users"),
     @ApiResponse(
         responseCode = "401",
         description = "Unauthorized — missing or invalid bearer token",
-        content = @Content(schema = @Schema(hidden = true)))
+        content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+        responseCode = "400",
+        description = "Invalid pagination parameters",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = UsersErrorResponse.class)))
   })
   @GetMapping
-  public ResponseEntity<List<UserResponse>> getAllUsers() {
-    List<UserResponse> users =
-        usersFacade.getAllUsers().stream().map(usersApiMapper::toResponse).toList();
-    return ResponseEntity.ok(users);
+  public ResponseEntity<PageResponse<UserResponse>> getAllUsers(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(required = false) String sort) {
+    PaginationRequest paginationRequest = new PaginationRequest(page, size, sort);
+    PageResponse<UserView> pagedUsers = usersFacade.getAllUsersPaged(paginationRequest);
+    PageResponse<UserResponse> response =
+        new PageResponse<>(
+            pagedUsers.data().stream().map(usersApiMapper::toResponse).toList(),
+            pagedUsers.pagination());
+    return ResponseEntity.ok(response);
   }
 
   @Operation(summary = "Get user by ID")

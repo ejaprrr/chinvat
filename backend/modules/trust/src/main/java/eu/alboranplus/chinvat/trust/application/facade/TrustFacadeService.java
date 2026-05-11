@@ -10,10 +10,13 @@ import eu.alboranplus.chinvat.trust.application.dto.CertificateValidationResult;
 import eu.alboranplus.chinvat.trust.application.dto.TrustedProviderSyncResult;
 import eu.alboranplus.chinvat.trust.application.usecase.BindCertificateCredentialUseCase;
 import eu.alboranplus.chinvat.trust.application.usecase.ListCertificateCredentialsUseCase;
+import eu.alboranplus.chinvat.trust.application.usecase.ListCertificateCredentialsPagedUseCase;
 import eu.alboranplus.chinvat.trust.application.usecase.RevokeCertificateCredentialUseCase;
 import eu.alboranplus.chinvat.trust.application.usecase.SetPrimaryCertificateCredentialUseCase;
 import eu.alboranplus.chinvat.trust.application.usecase.SyncTrustedProvidersUseCase;
 import eu.alboranplus.chinvat.trust.application.usecase.ValidateCertificateUseCase;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +27,7 @@ public class TrustFacadeService implements TrustFacade {
   private final SyncTrustedProvidersUseCase syncTrustedProvidersUseCase;
   private final BindCertificateCredentialUseCase bindCertificateCredentialUseCase;
   private final ListCertificateCredentialsUseCase listCertificateCredentialsUseCase;
+  private final ListCertificateCredentialsPagedUseCase listCertificateCredentialsPagedUseCase;
   private final RevokeCertificateCredentialUseCase revokeCertificateCredentialUseCase;
   private final SetPrimaryCertificateCredentialUseCase setPrimaryCertificateCredentialUseCase;
   private final AuditFacade auditFacade;
@@ -33,6 +37,7 @@ public class TrustFacadeService implements TrustFacade {
       SyncTrustedProvidersUseCase syncTrustedProvidersUseCase,
       BindCertificateCredentialUseCase bindCertificateCredentialUseCase,
       ListCertificateCredentialsUseCase listCertificateCredentialsUseCase,
+      ListCertificateCredentialsPagedUseCase listCertificateCredentialsPagedUseCase,
       RevokeCertificateCredentialUseCase revokeCertificateCredentialUseCase,
       SetPrimaryCertificateCredentialUseCase setPrimaryCertificateCredentialUseCase,
       AuditFacade auditFacade) {
@@ -40,6 +45,7 @@ public class TrustFacadeService implements TrustFacade {
     this.syncTrustedProvidersUseCase = syncTrustedProvidersUseCase;
     this.bindCertificateCredentialUseCase = bindCertificateCredentialUseCase;
     this.listCertificateCredentialsUseCase = listCertificateCredentialsUseCase;
+    this.listCertificateCredentialsPagedUseCase = listCertificateCredentialsPagedUseCase;
     this.revokeCertificateCredentialUseCase = revokeCertificateCredentialUseCase;
     this.setPrimaryCertificateCredentialUseCase = setPrimaryCertificateCredentialUseCase;
     this.auditFacade = auditFacade;
@@ -106,5 +112,11 @@ public class TrustFacadeService implements TrustFacade {
             .add("thumbprintSha256", primary.thumbprintSha256())
             .build());
     return primary;
+  }
+
+  @Override
+  public PageResponse<CertificateCredentialView> listCertificateCredentialsPaged(
+      Long userId, PaginationRequest paginationRequest) {
+    return listCertificateCredentialsPagedUseCase.execute(userId, paginationRequest);
   }
 }

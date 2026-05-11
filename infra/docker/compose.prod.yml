@@ -18,23 +18,47 @@ services:
     networks:
       - chinvat
 
-  redis:
+  # Global Redis: permissions cache (read-only for auth service)
+  # CRITICAL: In production, configure Redis with:
+  #   1. requirepass [strong-password]
+  #   2. bind 10.0.0.0/8 (private network only, NO 0.0.0.0)
+  #   3. ACL with default-deny for all other services
+  #   4. TLS enabled (--tls-port 6380, --tls-cert-file, --tls-key-file)
+  # See infra/redis/SECURITY.md for full ACL setup
+  redis-global:
     image: redis:7-alpine
+    command: >
+      redis-server
+      --save ""
+      --appendonly no
+      --requirepass ${REDIS_GLOBAL_PASSWORD:-change-me}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_GLOBAL_PASSWORD:-change-me}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
     networks:
       - chinvat
 
-  redis-eidas:
+  # Auth Service Redis: app cache + eIDAS state (read-write for auth service only)
+  # CRITICAL: In production, configure with strict ACL:
+  #   1. requirepass [strong-password]
+  #   2. bind 10.0.0.0/8 (private network only, NO 0.0.0.0)
+  #   3. ACL user 'eidas-app' with read-write on chinvat:eidas:* and chinvat:users:*
+  #   4. Block dangerous commands (FLUSHDB, SHUTDOWN, etc.)
+  #   5. TLS enabled
+  # See infra/redis/SECURITY.md and infra/scripts/redis-acl-setup.sh
+  redis-auth:
     image: redis:7-alpine
-    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    command: >
+      redis-server
+      --save ""
+      --appendonly no
+      --requirepass ${REDIS_AUTH_PASSWORD:-change-me}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_AUTH_PASSWORD:-change-me}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -86,14 +110,24 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-chinvat}
       DB_USERNAME: ${POSTGRES_USER:-chinvat}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
-      REDIS_HOST: redis
+      # Global Redis (permissions cache) - read-only for this service
+      REDIS_HOST: redis-global
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_GLOBAL_PASSWORD:-change-me}
+      # Auth Service Redis (app cache + eIDAS state) - read-write for this service
+      APP_CACHE_REDIS_DEDICATED: ${APP_CACHE_REDIS_DEDICATED:-true}
+      APP_CACHE_REDIS_HOST: ${APP_CACHE_REDIS_HOST:-redis-auth}
+      APP_CACHE_REDIS_PORT: ${APP_CACHE_REDIS_PORT:-6379}
+      APP_CACHE_REDIS_DATABASE: ${APP_CACHE_REDIS_DATABASE:-0}
+      APP_CACHE_REDIS_USERNAME: ${APP_CACHE_REDIS_USERNAME:-eidas-app}
+      APP_CACHE_REDIS_PASSWORD: ${APP_CACHE_REDIS_PASSWORD:-${REDIS_AUTH_PASSWORD:-change-me}}
+      # eIDAS State on separate DB in auth Redis
       EIDAS_STATE_REDIS_DEDICATED: ${EIDAS_STATE_REDIS_DEDICATED:-true}
-      EIDAS_STATE_REDIS_HOST: ${EIDAS_STATE_REDIS_HOST:-redis-eidas}
+      EIDAS_STATE_REDIS_HOST: ${EIDAS_STATE_REDIS_HOST:-redis-auth}
       EIDAS_STATE_REDIS_PORT: ${EIDAS_STATE_REDIS_PORT:-6379}
-      EIDAS_STATE_REDIS_DATABASE: ${EIDAS_STATE_REDIS_DATABASE:-0}
-      EIDAS_STATE_REDIS_USERNAME: ${EIDAS_STATE_REDIS_USERNAME:-}
-      EIDAS_STATE_REDIS_PASSWORD: ${EIDAS_STATE_REDIS_PASSWORD:-}
+      EIDAS_STATE_REDIS_DATABASE: ${EIDAS_STATE_REDIS_DATABASE:-1}
+      EIDAS_STATE_REDIS_USERNAME: ${EIDAS_STATE_REDIS_USERNAME:-eidas-app}
+      EIDAS_STATE_REDIS_PASSWORD: ${EIDAS_STATE_REDIS_PASSWORD:-${REDIS_AUTH_PASSWORD:-change-me}}
       JPA_DDL_AUTO: validate
       JPA_SHOW_SQL: false
       APP_VERSION: ${APP_VERSION:-latest}
@@ -106,9 +140,9 @@ services:
     depends_on:
       db-seed:
         condition: service_completed_successfully
-      redis:
+      redis-global:
         condition: service_healthy
-      redis-eidas:
+      redis-auth:
         condition: service_healthy
     networks:
       - chinvat
