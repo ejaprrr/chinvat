@@ -101,6 +101,164 @@ CREATE TABLE "auth_session" (
 CREATE INDEX "idx_auth_session_user_id" ON "auth_session"("user_id");
 CREATE INDEX "idx_auth_session_expires_at" ON "auth_session"("expires_at");
 
+-- Trust provider registry - used by certificate and external identity bindings
+CREATE TABLE "trust_provider" (
+  "id" BIGSERIAL NOT NULL,
+  "provider_code" VARCHAR(80) NOT NULL UNIQUE,
+  "display_name" VARCHAR(160) NOT NULL,
+  "provider_type" VARCHAR(80) NOT NULL,
+  "source_type" VARCHAR(80) NOT NULL,
+  "country_code" VARCHAR(2),
+  "lotl_url" VARCHAR(1024),
+  "tsl_url" VARCHAR(1024),
+  "trust_list_key" VARCHAR(255),
+  "active" BOOLEAN NOT NULL DEFAULT TRUE,
+  "last_synchronized_at" TIMESTAMPTZ,
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "trust_provider_pkey" PRIMARY KEY ("id")
+);
+
+CREATE UNIQUE INDEX "idx_trust_provider_code" ON "trust_provider"("provider_code");
+CREATE INDEX "idx_trust_provider_provider_type" ON "trust_provider"("provider_type");
+CREATE INDEX "idx_trust_provider_active" ON "trust_provider"("active");
+
+-- Enterprise credential binding for X.509 login and signing use-cases
+CREATE TABLE "certificate_credential" (
+  "id" BIGSERIAL NOT NULL,
+  "user_id" BIGINT NOT NULL,
+  "provider_id" BIGINT,
+  "provider_code" VARCHAR(80),
+  "credential_type" VARCHAR(80) NOT NULL,
+  "trust_status" VARCHAR(80) NOT NULL,
+  "revocation_status" VARCHAR(80) NOT NULL,
+  "assurance_level" VARCHAR(80),
+  "registration_source" VARCHAR(80) NOT NULL,
+  "external_subject_id" VARCHAR(255),
+  "linked_identity_source" VARCHAR(120),
+  "certificate_pem" TEXT NOT NULL,
+  "subject_dn" VARCHAR(1024) NOT NULL,
+  "issuer_dn" VARCHAR(1024) NOT NULL,
+  "serial_number" VARCHAR(128) NOT NULL,
+  "thumbprint_sha256" VARCHAR(64) NOT NULL UNIQUE,
+  "policy_oids" TEXT,
+  "qc_statement_flags" TEXT,
+  "key_usage_flags" TEXT,
+  "extended_key_usage_flags" TEXT,
+  "not_before" TIMESTAMPTZ NOT NULL,
+  "not_after" TIMESTAMPTZ NOT NULL,
+  "trust_checked_at" TIMESTAMPTZ,
+  "revocation_checked_at" TIMESTAMPTZ,
+  "approved_by" VARCHAR(120),
+  "approved_at" TIMESTAMPTZ,
+  "revoked_by" VARCHAR(120),
+  "revoked_at" TIMESTAMPTZ,
+  "is_primary" BOOLEAN NOT NULL DEFAULT FALSE,
+  "last_successful_auth_at" TIMESTAMPTZ,
+  "last_failed_auth_at" TIMESTAMPTZ,
+  "failure_count" INTEGER NOT NULL DEFAULT 0,
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "certificate_credential_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "certificate_credential_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE CASCADE,
+  CONSTRAINT "certificate_credential_provider_id_fkey" FOREIGN KEY ("provider_id") REFERENCES "trust_provider"("id") ON DELETE SET NULL
+);
+
+CREATE INDEX "idx_certificate_credential_user_id" ON "certificate_credential"("user_id");
+CREATE INDEX "idx_certificate_credential_provider_id" ON "certificate_credential"("provider_id");
+CREATE INDEX "idx_certificate_credential_provider_code" ON "certificate_credential"("provider_code");
+CREATE INDEX "idx_certificate_credential_trust_status" ON "certificate_credential"("trust_status");
+CREATE INDEX "idx_certificate_credential_revocation_status" ON "certificate_credential"("revocation_status");
+CREATE INDEX "idx_certificate_credential_thumbprint" ON "certificate_credential"("thumbprint_sha256");
+
+-- Enrollment and approval workflow for certificate onboarding
+CREATE TABLE "certificate_enrollment" (
+  "id" BIGSERIAL NOT NULL,
+  "user_id" BIGINT,
+  "certificate_credential_id" BIGINT,
+  "provider_code" VARCHAR(80),
+  "requested_by" VARCHAR(120) NOT NULL,
+  "status" VARCHAR(80) NOT NULL,
+  "registration_source" VARCHAR(80) NOT NULL,
+  "request_payload" JSON NOT NULL DEFAULT '{}',
+  "review_notes" TEXT,
+  "approved_by" VARCHAR(120),
+  "approved_at" TIMESTAMPTZ,
+  "rejected_by" VARCHAR(120),
+  "rejected_at" TIMESTAMPTZ,
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "certificate_enrollment_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "certificate_enrollment_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL,
+  CONSTRAINT "certificate_enrollment_certificate_credential_id_fkey" FOREIGN KEY ("certificate_credential_id") REFERENCES "certificate_credential"("id") ON DELETE SET NULL
+);
+
+CREATE INDEX "idx_certificate_enrollment_user_id" ON "certificate_enrollment"("user_id");
+CREATE INDEX "idx_certificate_enrollment_credential_id" ON "certificate_enrollment"("certificate_credential_id");
+CREATE INDEX "idx_certificate_enrollment_status" ON "certificate_enrollment"("status");
+
+-- Linked external identity from eIDAS or another trust broker
+CREATE TABLE "external_identity" (
+  "id" BIGSERIAL NOT NULL,
+  "user_id" BIGINT,
+  "provider_id" BIGINT,
+  "provider_code" VARCHAR(80) NOT NULL,
+  "identity_source" VARCHAR(80) NOT NULL,
+  "external_subject_id" VARCHAR(255) NOT NULL,
+  "assurance_level" VARCHAR(80),
+  "person_identifier" VARCHAR(255),
+  "legal_person_identifier" VARCHAR(255),
+  "identity_reference" VARCHAR(255),
+  "nationality" VARCHAR(80),
+  "first_name" VARCHAR(160),
+  "family_name" VARCHAR(160),
+  "date_of_birth" VARCHAR(40),
+  "raw_claims_json" TEXT,
+  "current_status" VARCHAR(80) NOT NULL,
+  "reviewed_by" VARCHAR(120),
+  "reviewed_at" TIMESTAMPTZ,
+  "review_reason" TEXT,
+  "linked_at" TIMESTAMPTZ,
+  "unlinked_at" TIMESTAMPTZ,
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "external_identity_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "external_identity_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL,
+  CONSTRAINT "external_identity_provider_id_fkey" FOREIGN KEY ("provider_id") REFERENCES "trust_provider"("id") ON DELETE SET NULL,
+  CONSTRAINT "uq_external_identity_provider_subject" UNIQUE ("provider_code", "external_subject_id")
+);
+
+CREATE INDEX "idx_external_identity_user_id" ON "external_identity"("user_id");
+CREATE INDEX "idx_external_identity_provider_id" ON "external_identity"("provider_id");
+CREATE INDEX "idx_external_identity_current_status" ON "external_identity"("current_status");
+CREATE INDEX "idx_external_identity_reviewed_at" ON "external_identity"("reviewed_at");
+
+-- Immutable high-level audit stream for trust and identity lifecycle events
+CREATE TABLE "identity_audit_event" (
+  "id" BIGSERIAL NOT NULL,
+  "event_type" VARCHAR(120) NOT NULL,
+  "actor" VARCHAR(120),
+  "user_id" BIGINT,
+  "certificate_credential_id" BIGINT,
+  "external_identity_id" BIGINT,
+  "details" JSON NOT NULL DEFAULT '{}',
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT "identity_audit_event_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "identity_audit_event_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL,
+  CONSTRAINT "identity_audit_event_certificate_credential_id_fkey" FOREIGN KEY ("certificate_credential_id") REFERENCES "certificate_credential"("id") ON DELETE SET NULL,
+  CONSTRAINT "identity_audit_event_external_identity_id_fkey" FOREIGN KEY ("external_identity_id") REFERENCES "external_identity"("id") ON DELETE SET NULL
+);
+
+CREATE INDEX "idx_identity_audit_event_event_type" ON "identity_audit_event"("event_type");
+CREATE INDEX "idx_identity_audit_event_user_id" ON "identity_audit_event"("user_id");
+CREATE INDEX "idx_identity_audit_event_credential_id" ON "identity_audit_event"("certificate_credential_id");
+CREATE INDEX "idx_identity_audit_event_external_identity_id" ON "identity_audit_event"("external_identity_id");
+
 -- Auth audit event table - audit logging
 CREATE TABLE "auth_audit_event" (
   "id" BIGSERIAL NOT NULL,
