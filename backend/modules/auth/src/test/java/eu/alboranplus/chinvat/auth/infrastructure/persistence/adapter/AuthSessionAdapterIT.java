@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import eu.alboranplus.chinvat.auth.infrastructure.persistence.repository.AuthSessionJpaRepository;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,8 @@ class AuthSessionAdapterIT {
 
   private AuthSessionAdapter sut;
 
-  private static final Long USER_ID = 1L;
+  private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  private static final UUID USER_ID_2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
   private static final Instant NOW = Instant.parse("2026-01-01T12:00:00Z");
   private static final Instant FUTURE = NOW.plusSeconds(3600);
   private static final Instant PAST = NOW.minusSeconds(3600);
@@ -60,7 +62,7 @@ class AuthSessionAdapterIT {
         "127.0.0.1",
         "Agent");
 
-    Optional<Long> result = sut.findActiveUserId("valid-token", NOW);
+    Optional<UUID> result = sut.findActiveUserId("valid-token", NOW);
 
     assertThat(result).contains(USER_ID);
   }
@@ -76,7 +78,7 @@ class AuthSessionAdapterIT {
         "127.0.0.1",
         "Agent");
 
-    Optional<Long> result = sut.findActiveUserId("expired-token", NOW);
+    Optional<UUID> result = sut.findActiveUserId("expired-token", NOW);
 
     assertThat(result).isEmpty();
   }
@@ -99,7 +101,7 @@ class AuthSessionAdapterIT {
 
     sut.revokeByRawToken("to-revoke", NOW);
 
-    Optional<Long> result = sut.findActiveUserId("to-revoke", NOW.plusSeconds(1));
+    Optional<UUID> result = sut.findActiveUserId("to-revoke", NOW.plusSeconds(1));
     assertThat(result).isEmpty();
   }
 
@@ -122,14 +124,14 @@ class AuthSessionAdapterIT {
   void revokeAllByUserId_revokesAllSessions() {
     sut.save(USER_ID, AuthSessionTokenKind.ACCESS, "token-a", NOW, FUTURE, "127.0.0.1", "Agent");
     sut.save(USER_ID, AuthSessionTokenKind.REFRESH, "token-b", NOW, FUTURE, "127.0.0.1", "Agent");
-    sut.save(2L, AuthSessionTokenKind.ACCESS, "other-user-token", NOW, FUTURE, "127.0.0.1", "Agent");
+    sut.save(USER_ID_2, AuthSessionTokenKind.ACCESS, "other-user-token", NOW, FUTURE, "127.0.0.1", "Agent");
 
     sut.revokeAllByUserId(USER_ID, NOW);
 
     assertThat(sut.findActiveUserId("token-a", NOW)).isEmpty();
     assertThat(sut.findActiveUserId("token-b", NOW)).isEmpty();
     // Other user's session is unaffected
-    assertThat(sut.findActiveUserId("other-user-token", NOW)).contains(2L);
+    assertThat(sut.findActiveUserId("other-user-token", NOW)).contains(USER_ID_2);
   }
 
   @Test

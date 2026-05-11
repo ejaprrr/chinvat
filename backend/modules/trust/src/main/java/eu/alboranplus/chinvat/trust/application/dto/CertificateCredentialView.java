@@ -1,10 +1,11 @@
 package eu.alboranplus.chinvat.trust.application.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record CertificateCredentialView(
-    Long id,
-    Long userId,
+    UUID id,
+    UUID userId,
     String providerCode,
     String credentialType,
     String trustStatus,

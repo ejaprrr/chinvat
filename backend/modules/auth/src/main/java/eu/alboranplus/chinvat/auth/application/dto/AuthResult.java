@@ -1,9 +1,10 @@
 package eu.alboranplus.chinvat.auth.application.dto;
 
 import java.util.Set;
+import java.util.UUID;
 
 public record AuthResult(
-    Long userId,
+    UUID userId,
     String email,
     String displayName,
     Set<String> roles,

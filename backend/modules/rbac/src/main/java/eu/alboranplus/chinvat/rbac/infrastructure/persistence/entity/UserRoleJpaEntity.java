@@ -7,6 +7,7 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_role")
@@ -14,12 +15,12 @@ import java.time.Instant;
 public class UserRoleJpaEntity {
 
   @Id
-  @Column(name = "user_id")
-  private Long userId;
+  @Column(name = "user_id", columnDefinition = "uuid")
+  private UUID userId;
 
   @Id
-  @Column(name = "role_id")
-  private Long roleId;
+  @Column(name = "role_id", columnDefinition = "uuid")
+  private UUID roleId;
 
   @Column(name = "assigned_at", nullable = false)
   private Instant assignedAt;
@@ -29,26 +30,26 @@ public class UserRoleJpaEntity {
 
   public UserRoleJpaEntity() {}
 
-  public UserRoleJpaEntity(Long userId, Long roleId, Instant assignedAt, String assignedBy) {
+  public UserRoleJpaEntity(UUID userId, UUID roleId, Instant assignedAt, String assignedBy) {
     this.userId = userId;
     this.roleId = roleId;
     this.assignedAt = assignedAt;
     this.assignedBy = assignedBy;
   }
 
-  public Long getUserId() {
+  public UUID getUserId() {
     return userId;
   }
 
-  public void setUserId(Long userId) {
+  public void setUserId(UUID userId) {
     this.userId = userId;
   }
 
-  public Long getRoleId() {
+  public UUID getRoleId() {
     return roleId;
   }
 
-  public void setRoleId(Long roleId) {
+  public void setRoleId(UUID roleId) {
     this.roleId = roleId;
   }
 
@@ -73,29 +74,29 @@ public class UserRoleJpaEntity {
  * Composite key class for UserRoleJpaEntity. Required for @IdClass annotation.
  */
 class UserRoleId implements Serializable {
-  private Long userId;
-  private Long roleId;
+  private UUID userId;
+  private UUID roleId;
 
   public UserRoleId() {}
 
-  public UserRoleId(Long userId, Long roleId) {
+  public UserRoleId(UUID userId, UUID roleId) {
     this.userId = userId;
     this.roleId = roleId;
   }
 
-  public Long getUserId() {
+  public UUID getUserId() {
     return userId;
   }
 
-  public void setUserId(Long userId) {
+  public void setUserId(UUID userId) {
     this.userId = userId;
   }
 
-  public Long getRoleId() {
+  public UUID getRoleId() {
     return roleId;
   }
 
-  public void setRoleId(Long roleId) {
+  public void setRoleId(UUID roleId) {
     this.roleId = roleId;
   }
 

@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -109,7 +110,7 @@ public class UsersController {
             schema = @Schema(implementation = UsersErrorResponse.class)))
   })
   @GetMapping("/{id}")
-  public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+  public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
     return ResponseEntity.ok(usersApiMapper.toResponse(usersFacade.getUserById(id)));
   }
 
@@ -129,7 +130,7 @@ public class UsersController {
   })
   @PutMapping("/{id}")
   public ResponseEntity<UserResponse> updateUser(
-      @PathVariable Long id,
+      @PathVariable UUID id,
       @Valid @RequestBody UpdateUserRequest request,
       Authentication authentication) {
     UserView userView = usersFacade.updateUser(id, usersApiMapper.toCommand(request), actor(authentication));
@@ -148,7 +149,7 @@ public class UsersController {
             schema = @Schema(implementation = UsersErrorResponse.class)))
   })
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUser(@PathVariable Long id, Authentication authentication) {
+  public ResponseEntity<Void> deleteUser(@PathVariable UUID id, Authentication authentication) {
     usersFacade.deleteUser(id, actor(authentication));
     return ResponseEntity.noContent().build();
   }

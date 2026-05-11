@@ -15,6 +15,7 @@ import eu.alboranplus.chinvat.auth.application.facade.AuthFacade;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -37,10 +38,11 @@ class AuthControllerIT {
 
   private static final Instant ACCESS_EXP = Instant.parse("2026-01-01T00:15:00Z");
   private static final Instant REFRESH_EXP = Instant.parse("2026-01-15T00:00:00Z");
+    private static final UUID UUID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
   private final AuthResult successResult =
       new AuthResult(
-          1L,
+          UUID_1,
           "alice@example.com",
           "Alice",
           Set.of("USER"),
@@ -163,7 +165,9 @@ class AuthControllerIT {
   void changePassword_authenticated_returns204() throws Exception {
     doNothing().when(authFacade).changePassword(any(), any());
     given(authFacade.validateAccessToken("valid-access"))
-        .willReturn(Optional.of(new TokenPrincipal(1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"))));
+        .willReturn(
+            Optional.of(
+                new TokenPrincipal(UUID_1, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"))));
 
     mockMvc
         .perform(

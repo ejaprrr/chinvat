@@ -11,6 +11,7 @@ import eu.alboranplus.chinvat.users.application.command.UpdateUserCommand;
 import eu.alboranplus.chinvat.users.application.usecase.ChangePasswordUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.CreateUserUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.DeleteUserUseCase;
+import eu.alboranplus.chinvat.users.application.usecase.GetAllUsersPagedUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetAllUsersUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetUserByIdUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetUserSecurityViewUseCase;
@@ -22,6 +23,7 @@ import eu.alboranplus.chinvat.users.domain.model.UserType;
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +36,7 @@ class UsersFacadeServiceTest {
   @Mock private CreateUserUseCase createUserUseCase;
   @Mock private GetUserByIdUseCase getUserByIdUseCase;
   @Mock private GetAllUsersUseCase getAllUsersUseCase;
+  @Mock private GetAllUsersPagedUseCase getAllUsersPagedUseCase;
   @Mock private UpdateUserUseCase updateUserUseCase;
   @Mock private DeleteUserUseCase deleteUserUseCase;
   @Mock private GetUserSecurityViewUseCase getUserSecurityViewUseCase;
@@ -51,6 +54,7 @@ class UsersFacadeServiceTest {
             createUserUseCase,
             getUserByIdUseCase,
             getAllUsersUseCase,
+            getAllUsersPagedUseCase,
             updateUserUseCase,
             deleteUserUseCase,
             getUserSecurityViewUseCase,
@@ -76,7 +80,7 @@ class UsersFacadeServiceTest {
             null,
             null,
             "en");
-    given(createUserUseCase.execute(command)).willReturn(user(11L, "alice", "alice@example.com"));
+    given(createUserUseCase.execute(command)).willReturn(user(UUID.fromString("00000000-0000-0000-0000-00000000000b"), "alice", "alice@example.com"));
 
     sut.createUser(command);
 
@@ -85,7 +89,7 @@ class UsersFacadeServiceTest {
         .log(
             eq("USER_CREATED"),
             eq("alice@example.com"),
-            eq(11L),
+            eq(UUID.fromString("00000000-0000-0000-0000-00000000000b")),
             eq(
                 Map.of(
                     "email",
@@ -110,17 +114,17 @@ class UsersFacadeServiceTest {
             null,
             null,
             "en");
-    given(updateUserUseCase.execute(11L, command)).willReturn(user(11L, "alice", "alice@example.com"));
+    given(updateUserUseCase.execute(UUID.fromString("00000000-0000-0000-0000-00000000000b"), command)).willReturn(user(UUID.fromString("00000000-0000-0000-0000-00000000000b"), "alice", "alice@example.com"));
 
-    sut.updateUser(11L, command, "admin@example.com");
+    sut.updateUser(UUID.fromString("00000000-0000-0000-0000-00000000000b"), command, "admin@example.com");
 
-    then(permissionCacheFacade).should().evictUserPermissions(11L);
+    then(permissionCacheFacade).should().evictUserPermissions(UUID.fromString("00000000-0000-0000-0000-00000000000b"));
     then(auditFacade)
         .should()
         .log(
             eq("USER_UPDATED"),
             eq("admin@example.com"),
-            eq(11L),
+            eq(UUID.fromString("00000000-0000-0000-0000-00000000000b")),
             eq(
                 Map.of(
                     "email",
@@ -131,7 +135,7 @@ class UsersFacadeServiceTest {
                     AccessLevel.NORMAL)));
   }
 
-  private static UserAccount user(Long id, String username, String email) {
+  private static UserAccount user(UUID id, String username, String email) {
     return new UserAccount(
         id,
         username,

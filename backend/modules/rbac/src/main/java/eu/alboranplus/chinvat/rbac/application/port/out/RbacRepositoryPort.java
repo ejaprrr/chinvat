@@ -5,6 +5,7 @@ import eu.alboranplus.chinvat.rbac.domain.model.PermissionDefinition;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -27,11 +28,11 @@ public interface RbacRepositoryPort {
 
   boolean roleExists(String roleName);
 
-  boolean userExists(Long userId);
+  boolean userExists(UUID userId);
 
-  void assignRoleToUser(Long userId, String roleName, String assignedBy);
+  void assignRoleToUser(UUID userId, String roleName, String assignedBy);
 
-  void removeRoleFromUser(Long userId, String roleName);
+  void removeRoleFromUser(UUID userId, String roleName);
 
-  Set<String> findRoleNamesByUserId(Long userId);
+  Set<String> findRoleNamesByUserId(UUID userId);
 }

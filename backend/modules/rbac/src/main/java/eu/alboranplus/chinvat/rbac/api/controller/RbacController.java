@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import eu.alboranplus.chinvat.common.pagination.PageResponse;
 import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -254,7 +255,7 @@ public class RbacController {
           mediaType = "application/json",
           schema = @Schema(implementation = RbacErrorResponse.class)))
     })
-  public ResponseEntity<UserRolesResponse> getUserRoles(@PathVariable Long userId) {
+  public ResponseEntity<UserRolesResponse> getUserRoles(@PathVariable UUID userId) {
     UserRolesView rolesView = rbacFacade.getUserRoles(userId);
     return ResponseEntity.ok(rbacApiMapper.toResponse(rolesView));
   }
@@ -283,7 +284,7 @@ public class RbacController {
           schema = @Schema(implementation = RbacErrorResponse.class)))
     })
   public ResponseEntity<Void> assignRoleToUser(
-      @PathVariable Long userId, @PathVariable String roleName, Authentication authentication) {
+      @PathVariable UUID userId, @PathVariable String roleName, Authentication authentication) {
     rbacFacade.assignRoleToUser(userId, roleName, actor(authentication));
     return ResponseEntity.noContent().build();
   }
@@ -312,7 +313,7 @@ public class RbacController {
           schema = @Schema(implementation = RbacErrorResponse.class)))
     })
   public ResponseEntity<Void> removeRoleFromUser(
-      @PathVariable Long userId, @PathVariable String roleName, Authentication authentication) {
+      @PathVariable UUID userId, @PathVariable String roleName, Authentication authentication) {
     rbacFacade.removeRoleFromUser(userId, roleName, actor(authentication));
     return ResponseEntity.noContent().build();
   }

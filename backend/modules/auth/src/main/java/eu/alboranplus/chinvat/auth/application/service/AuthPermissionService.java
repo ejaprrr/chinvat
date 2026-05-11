@@ -3,6 +3,7 @@ package eu.alboranplus.chinvat.auth.application.service;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthRbacPort;
 import eu.alboranplus.chinvat.common.cache.PermissionCacheFacade;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +18,7 @@ public class AuthPermissionService {
     this.permissionCacheFacade = permissionCacheFacade;
   }
 
-  public Set<String> resolvePermissions(Long userId, Set<String> roles) {
+  public Set<String> resolvePermissions(UUID userId, Set<String> roles) {
     return permissionCacheFacade
         .findUserPermissions(userId)
         .orElseGet(

@@ -14,11 +14,13 @@ import eu.alboranplus.chinvat.rbac.application.usecase.CreatePermissionUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.DeletePermissionUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.GetRoleUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.GetUserRolesUseCase;
+import eu.alboranplus.chinvat.rbac.application.usecase.ListPermissionsPagedUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ListPermissionsUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.RemoveRoleFromUserUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ResolvePermissionsUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.UpdatePermissionUseCase;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,7 @@ class RbacFacadeServiceTest {
   @Mock private GetRoleUseCase getRoleUseCase;
   @Mock private ResolvePermissionsUseCase resolvePermissionsUseCase;
   @Mock private ListPermissionsUseCase listPermissionsUseCase;
+  @Mock private ListPermissionsPagedUseCase listPermissionsPagedUseCase;
   @Mock private CreatePermissionUseCase createPermissionUseCase;
   @Mock private UpdatePermissionUseCase updatePermissionUseCase;
   @Mock private DeletePermissionUseCase deletePermissionUseCase;
@@ -50,6 +53,7 @@ class RbacFacadeServiceTest {
             getRoleUseCase,
             resolvePermissionsUseCase,
             listPermissionsUseCase,
+            listPermissionsPagedUseCase,
             createPermissionUseCase,
             updatePermissionUseCase,
             deletePermissionUseCase,
@@ -94,12 +98,14 @@ class RbacFacadeServiceTest {
             eq(Map.of("permissionCode", "RBAC:EXPORT")));
   }
 
+  private static final UUID TEST_USER_UUID = UUID.fromString("00000000-0000-0000-0000-000000000063");
+
   @Test
   void assignRoleToUser_logsAssignedByAsActor() {
-    sut.assignRoleToUser(99L, "ADMIN", "rbac-admin@example.com");
+    sut.assignRoleToUser(TEST_USER_UUID, "ADMIN", "rbac-admin@example.com");
 
-    then(assignRoleToUserUseCase).should().execute(99L, "ADMIN", "rbac-admin@example.com");
-    then(permissionCacheFacade).should().evictUserPermissions(99L);
+    then(assignRoleToUserUseCase).should().execute(TEST_USER_UUID, "ADMIN", "rbac-admin@example.com");
+    then(permissionCacheFacade).should().evictUserPermissions(TEST_USER_UUID);
     then(auditFacade)
         .should()
         .log(
@@ -109,7 +115,7 @@ class RbacFacadeServiceTest {
             eq(
                 Map.of(
                     "userId",
-                    99L,
+                    TEST_USER_UUID,
                     "roleName",
                     "ADMIN",
                     "assignedBy",
@@ -118,17 +124,17 @@ class RbacFacadeServiceTest {
 
   @Test
   void removeRoleFromUser_logsActor() {
-    sut.removeRoleFromUser(99L, "ADMIN", "rbac-admin@example.com");
+    sut.removeRoleFromUser(TEST_USER_UUID, "ADMIN", "rbac-admin@example.com");
 
-    then(removeRoleFromUserUseCase).should().execute(99L, "ADMIN");
-    then(permissionCacheFacade).should().evictUserPermissions(99L);
+    then(removeRoleFromUserUseCase).should().execute(TEST_USER_UUID, "ADMIN");
+    then(permissionCacheFacade).should().evictUserPermissions(TEST_USER_UUID);
     then(auditFacade)
         .should()
         .log(
             eq("RBAC_ROLE_REMOVED_FROM_USER"),
             eq("rbac-admin@example.com"),
             eq(null),
-            eq(Map.of("userId", 99L, "roleName", "ADMIN")));
+            eq(Map.of("userId", TEST_USER_UUID, "roleName", "ADMIN")));
   }
 
   @Test

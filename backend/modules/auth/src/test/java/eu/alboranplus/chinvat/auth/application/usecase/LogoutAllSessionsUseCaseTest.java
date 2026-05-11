@@ -9,6 +9,7 @@ import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -27,14 +28,15 @@ class LogoutAllSessionsUseCaseTest {
 
   @Test
   void execute_revokesAllUserSessions() {
+    UUID uuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
     TokenPrincipal principal =
-        new TokenPrincipal(1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
+        new TokenPrincipal(uuid1, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
 
     given(authClockPort.now()).willReturn(NOW);
 
     sut.execute(principal);
 
-    verify(authSessionPort).revokeAllByUserId(1L, NOW);
+    verify(authSessionPort).revokeAllByUserId(uuid1, NOW);
   }
 }
 

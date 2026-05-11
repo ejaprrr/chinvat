@@ -1,7 +1,9 @@
 package eu.alboranplus.chinvat.trust.application.command;
 
+import java.util.UUID;
+
 public record BindCertificateCredentialCommand(
-    Long userId,
+    UUID userId,
     String providerCode,
     String registrationSource,
     String assuranceLevel,

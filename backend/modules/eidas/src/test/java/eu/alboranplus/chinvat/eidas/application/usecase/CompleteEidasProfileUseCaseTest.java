@@ -12,6 +12,7 @@ import eu.alboranplus.chinvat.eidas.domain.exception.EidasExternalIdentityNotFou
 import eu.alboranplus.chinvat.eidas.domain.exception.EidasProfileCompletionException;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +21,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class CompleteEidasProfileUseCaseTest {
+
+    private static final UUID UUID_10 = UUID.fromString("00000000-0000-0000-0000-00000000000a");
+    private static final UUID UUID_11 = UUID.fromString("00000000-0000-0000-0000-00000000000b");
+    private static final UUID UUID_77 = UUID.fromString("00000000-0000-0000-0000-00000000004d");
+    private static final UUID UUID_88 = UUID.fromString("00000000-0000-0000-0000-000000000058");
 
   @Mock private ExternalIdentityLifecyclePort externalIdentityLifecyclePort;
 
@@ -35,7 +41,7 @@ class CompleteEidasProfileUseCaseTest {
     Instant createdAt = Instant.parse("2026-05-09T09:55:00Z");
     ExternalIdentityView pending =
         new ExternalIdentityView(
-            10L,
+                        UUID_10,
             null,
             "EIDAS_EU",
             "EIDAS_BROKER",
@@ -64,9 +70,10 @@ class CompleteEidasProfileUseCaseTest {
         .willAnswer(invocation -> invocation.getArgument(0, ExternalIdentityView.class));
 
     var result =
-        sut.execute(new CompleteEidasProfileCommand("EIDAS_EU", "subject-1", 77L, "ES/123", "ES"));
+        sut.execute(
+            new CompleteEidasProfileCommand("EIDAS_EU", "subject-1", UUID_77, "ES/123", "ES"));
 
-    assertThat(result.userId()).isEqualTo(77L);
+    assertThat(result.userId()).isEqualTo(UUID_77);
     assertThat(result.currentStatus()).isEqualTo("ACTIVE");
     assertThat(result.linkedAt()).isNotNull();
   }
@@ -79,7 +86,7 @@ class CompleteEidasProfileUseCaseTest {
     assertThatThrownBy(
             () ->
                 sut.execute(
-                    new CompleteEidasProfileCommand("EIDAS_EU", "subject-1", 77L, null, null)))
+                    new CompleteEidasProfileCommand("EIDAS_EU", "subject-1", UUID_77, null, null)))
         .isInstanceOf(EidasExternalIdentityNotFoundException.class);
   }
 
@@ -88,8 +95,8 @@ class CompleteEidasProfileUseCaseTest {
     Instant now = Instant.parse("2026-05-09T10:00:00Z");
     ExternalIdentityView linked =
         new ExternalIdentityView(
-            11L,
-            88L,
+                        UUID_11,
+                        UUID_88,
             "EIDAS_EU",
             "EIDAS_BROKER",
             "subject-1",
@@ -117,7 +124,7 @@ class CompleteEidasProfileUseCaseTest {
     assertThatThrownBy(
             () ->
                 sut.execute(
-                    new CompleteEidasProfileCommand("EIDAS_EU", "subject-1", 77L, null, null)))
+                                        new CompleteEidasProfileCommand("EIDAS_EU", "subject-1", UUID_77, null, null)))
         .isInstanceOf(EidasProfileCompletionException.class)
         .hasMessageContaining("already linked");
   }

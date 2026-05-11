@@ -13,6 +13,7 @@ import eu.alboranplus.chinvat.users.domain.exception.UserAlreadyExistsException;
 import eu.alboranplus.chinvat.users.domain.model.AccessLevel;
 import eu.alboranplus.chinvat.users.domain.model.UserType;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +31,8 @@ class UsersControllerIT {
   @MockitoBean private UsersFacade usersFacade;
   @MockitoBean private AuthFacade authFacade;
 
+  private static final UUID UUID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
   private static final String VALID_REQUEST =
       """
       {
@@ -43,7 +46,7 @@ class UsersControllerIT {
       """;
 
   private final UserView createdUser =
-      new UserView(1L, "alice", "Alice Smith", null, "alice@example.com",
+      new UserView(UUID_1, "alice", "Alice Smith", null, "alice@example.com",
           UserType.INDIVIDUAL, AccessLevel.NORMAL, null, null, null, null, "en");
 
   @Test
@@ -57,7 +60,7 @@ class UsersControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(VALID_REQUEST))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.id").value(1))
+        .andExpect(jsonPath("$.id").value(UUID_1.toString()))
         .andExpect(jsonPath("$.username").value("alice"))
         .andExpect(jsonPath("$.email").value("alice@example.com"))
         .andExpect(jsonPath("$.userType").value("INDIVIDUAL"))

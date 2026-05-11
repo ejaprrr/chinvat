@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -132,7 +133,7 @@ public class ProfileController {
   @SecurityRequirement(name = "bearerAuth")
   @DeleteMapping("/certificates/{credentialId}")
   public ResponseEntity<Void> removeCertificate(
-      @PathVariable Long credentialId,
+      @PathVariable UUID credentialId,
       @RequestParam(defaultValue = "USER_REQUEST") String reason,
       Authentication authentication) {
     profileService.removeCertificate(credentialId, reason, authentication);
@@ -149,7 +150,7 @@ public class ProfileController {
   @PreAuthorize("hasAuthority('PROFILE:WRITE')")
   @PostMapping("/certificates/{credentialId}/primary")
   public ResponseEntity<ProfileCertificateResponse> setPrimaryCertificate(
-      @PathVariable Long credentialId,
+      @PathVariable UUID credentialId,
       Authentication authentication) {
     CertificateCredentialView updated = profileService.setPrimaryCertificate(credentialId, authentication);
     return ResponseEntity.ok(toResponse(updated));

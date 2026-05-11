@@ -13,6 +13,7 @@ import eu.alboranplus.chinvat.auth.application.service.AuthPermissionService;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
 import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 import java.time.Instant;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +44,7 @@ public class RegisterUseCase {
 
   @Transactional
   public AuthResult execute(RegisterCommand command) {
-    Long userId = userRegistrationPort.register(command);
+    UUID userId = userRegistrationPort.register(command);
 
     AuthUserProjection user =
         authUsersPort

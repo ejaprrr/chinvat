@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,7 +28,7 @@ public class GetUserSecurityViewUseCase {
     return usersRepositoryPort.findByEmail(UserEmail.of(email)).map(this::toSecurityView);
   }
 
-  public Optional<UserSecurityView> executeById(Long id) {
+  public Optional<UserSecurityView> executeById(UUID id) {
     return usersRepositoryPort.findById(id).map(this::toSecurityView);
   }
 

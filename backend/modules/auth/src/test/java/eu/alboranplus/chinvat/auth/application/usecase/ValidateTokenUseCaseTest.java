@@ -14,6 +14,7 @@ import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,22 +33,26 @@ class ValidateTokenUseCaseTest {
 
   @InjectMocks private ValidateTokenUseCase sut;
 
+  private static final UUID UUID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  private static final UUID UUID_2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
+  private static final UUID UUID_99 = UUID.fromString("00000000-0000-0000-0000-000000000063");
+
   private final AuthUserProjection activeUser =
-      new AuthUserProjection(1L, "alice@example.com", "Alice", Set.of("USER"), true);
+      new AuthUserProjection(UUID_1, "alice@example.com", "Alice", Set.of("USER"), true);
 
   @Test
   void execute_validToken_returnsPopulatedPrincipal() {
     given(authClockPort.now()).willReturn(NOW);
-    given(authSessionPort.findActiveUserId("valid-token", NOW)).willReturn(Optional.of(1L));
-    given(authUsersPort.findById(1L)).willReturn(Optional.of(activeUser));
-    given(authPermissionService.resolvePermissions(1L, Set.of("USER")))
+    given(authSessionPort.findActiveUserId("valid-token", NOW)).willReturn(Optional.of(UUID_1));
+    given(authUsersPort.findById(UUID_1)).willReturn(Optional.of(activeUser));
+    given(authPermissionService.resolvePermissions(UUID_1, Set.of("USER")))
       .willReturn(Set.of("PROFILE:READ"));
 
     Optional<TokenPrincipal> result = sut.execute("valid-token");
 
     assertThat(result).isPresent();
     TokenPrincipal principal = result.get();
-    assertThat(principal.userId()).isEqualTo(1L);
+    assertThat(principal.userId()).isEqualTo(UUID_1);
     assertThat(principal.email()).isEqualTo("alice@example.com");
     assertThat(principal.roles()).containsExactly("USER");
     assertThat(principal.permissions()).containsExactly("PROFILE:READ");
@@ -64,10 +69,10 @@ class ValidateTokenUseCaseTest {
   @Test
   void execute_tokenValidButUserInactive_returnsEmpty() {
     AuthUserProjection inactive =
-        new AuthUserProjection(2L, "bob@example.com", "Bob", Set.of("USER"), false);
+        new AuthUserProjection(UUID_2, "bob@example.com", "Bob", Set.of("USER"), false);
     given(authClockPort.now()).willReturn(NOW);
-    given(authSessionPort.findActiveUserId("some-token", NOW)).willReturn(Optional.of(2L));
-    given(authUsersPort.findById(2L)).willReturn(Optional.of(inactive));
+    given(authSessionPort.findActiveUserId("some-token", NOW)).willReturn(Optional.of(UUID_2));
+    given(authUsersPort.findById(UUID_2)).willReturn(Optional.of(inactive));
 
     assertThat(sut.execute("some-token")).isEmpty();
   }
@@ -75,10 +80,10 @@ class ValidateTokenUseCaseTest {
   @Test
   void execute_tokenValidButUserDeleted_returnsEmpty() {
     given(authClockPort.now()).willReturn(NOW);
-    given(authSessionPort.findActiveUserId("orphan-token", NOW)).willReturn(Optional.of(99L));
-    given(authUsersPort.findById(99L)).willReturn(Optional.empty());
+    given(authSessionPort.findActiveUserId("orphan-token", NOW)).willReturn(Optional.of(UUID_99));
+    given(authUsersPort.findById(UUID_99)).willReturn(Optional.empty());
 
     assertThat(sut.execute("orphan-token")).isEmpty();
-    verify(authPermissionService, never()).resolvePermissions(99L, Set.of("USER"));
+    verify(authPermissionService, never()).resolvePermissions(UUID_99, Set.of("USER"));
   }
 }

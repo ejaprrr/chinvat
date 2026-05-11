@@ -4,7 +4,9 @@ import eu.alboranplus.chinvat.users.infrastructure.persistence.entity.UserAccoun
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserAccountJpaRepository extends JpaRepository<UserAccountJpaEntity, Long> {
+import java.util.UUID;
+
+public interface UserAccountJpaRepository extends JpaRepository<UserAccountJpaEntity, UUID> {
   boolean existsByEmailIgnoreCase(String email);
 
   boolean existsByUsernameIgnoreCase(String username);

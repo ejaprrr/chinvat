@@ -10,6 +10,7 @@ import eu.alboranplus.chinvat.users.infrastructure.persistence.mapper.UserAccoun
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -48,7 +49,7 @@ public class UsersRepositoryAdapter implements UsersRepositoryPort {
   }
 
   @Override
-  public Optional<UserAccount> findById(Long id) {
+  public Optional<UserAccount> findById(UUID id) {
     return userAccountJpaRepository.findById(id).map(userAccountJpaMapper::toDomain);
   }
 
@@ -80,7 +81,7 @@ public class UsersRepositoryAdapter implements UsersRepositoryPort {
   }
 
   @Override
-  public void deleteById(Long id) {
+  public void deleteById(UUID id) {
     userAccountJpaRepository.deleteById(id);
   }
 }

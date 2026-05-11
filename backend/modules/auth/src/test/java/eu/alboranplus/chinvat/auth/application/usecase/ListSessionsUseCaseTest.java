@@ -31,13 +31,14 @@ class ListSessionsUseCaseTest {
 
   @Test
   void execute_returnsActiveSessions() {
+    UUID uuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
     TokenPrincipal principal =
-        new TokenPrincipal(1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
+        new TokenPrincipal(uuid1, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
 
     AuthSessionView access =
         new AuthSessionView(
             UUID.randomUUID(),
-            1L,
+            uuid1,
             AuthSessionTokenKind.ACCESS,
             NOW.minusSeconds(10),
             NOW.plusSeconds(900),
@@ -47,7 +48,7 @@ class ListSessionsUseCaseTest {
     AuthSessionView refresh =
         new AuthSessionView(
             UUID.randomUUID(),
-            1L,
+            uuid1,
             AuthSessionTokenKind.REFRESH,
             NOW.minusSeconds(9),
             NOW.plusSeconds(1200),
@@ -55,7 +56,7 @@ class ListSessionsUseCaseTest {
             "Agent");
 
     given(authClockPort.now()).willReturn(NOW);
-    given(authSessionPort.listActiveSessionsByUserId(1L, NOW)).willReturn(List.of(access, refresh));
+    given(authSessionPort.listActiveSessionsByUserId(uuid1, NOW)).willReturn(List.of(access, refresh));
 
     List<AuthSessionView> sessions = sut.execute(principal);
 

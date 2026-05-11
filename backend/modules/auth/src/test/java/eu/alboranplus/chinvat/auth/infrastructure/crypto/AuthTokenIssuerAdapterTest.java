@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,9 +23,12 @@ class AuthTokenIssuerAdapterTest {
 
   private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
 
+  private static final UUID UUID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  private static final UUID UUID_42 = UUID.fromString("00000000-0000-0000-0000-000000000042");
+
   @Test
   void issue_returnsNonNullTokenPair() {
-    IssuedTokenPair pair = sut.issue(1L, "alice@example.com", NOW);
+    IssuedTokenPair pair = sut.issue(UUID_1, "alice@example.com", NOW);
 
     assertThat(pair.accessToken()).isNotBlank();
     assertThat(pair.refreshToken()).isNotBlank();
@@ -32,21 +36,21 @@ class AuthTokenIssuerAdapterTest {
 
   @Test
   void issue_accessTokenExpiresIn15Minutes() {
-    IssuedTokenPair pair = sut.issue(1L, "alice@example.com", NOW);
+    IssuedTokenPair pair = sut.issue(UUID_1, "alice@example.com", NOW);
 
     assertThat(pair.expiresAt()).isEqualTo(NOW.plusSeconds(900));
   }
 
   @Test
   void issue_refreshTokenExpiresIn14Days() {
-    IssuedTokenPair pair = sut.issue(1L, "alice@example.com", NOW);
+    IssuedTokenPair pair = sut.issue(UUID_1, "alice@example.com", NOW);
 
     assertThat(pair.refreshExpiresAt()).isEqualTo(NOW.plusSeconds(1_209_600));
   }
 
   @Test
   void issue_accessAndRefreshTokensAreDistinct() {
-    IssuedTokenPair pair = sut.issue(1L, "alice@example.com", NOW);
+    IssuedTokenPair pair = sut.issue(UUID_1, "alice@example.com", NOW);
 
     assertThat(pair.accessToken()).isNotEqualTo(pair.refreshToken());
   }
@@ -55,7 +59,7 @@ class AuthTokenIssuerAdapterTest {
   void issue_multipleInvocations_produceUniqueTokens() {
     Set<String> tokens = new HashSet<>();
     for (int i = 0; i < 20; i++) {
-      IssuedTokenPair pair = sut.issue(1L, "alice@example.com", NOW);
+      IssuedTokenPair pair = sut.issue(UUID_1, "alice@example.com", NOW);
       tokens.add(pair.accessToken());
       tokens.add(pair.refreshToken());
     }
@@ -64,17 +68,17 @@ class AuthTokenIssuerAdapterTest {
 
   @Test
   void issue_accessTokenDecodedPayload_containsAccessKind() {
-    IssuedTokenPair pair = sut.issue(42L, "bob@example.com", NOW);
+    IssuedTokenPair pair = sut.issue(UUID_42, "bob@example.com", NOW);
     String decoded = new String(Base64.getUrlDecoder().decode(pair.accessToken()), StandardCharsets.UTF_8);
 
     assertThat(decoded).startsWith("A:");
-    assertThat(decoded).contains("42");
+    assertThat(decoded).contains(UUID_42.toString());
     assertThat(decoded).contains("bob@example.com");
   }
 
   @Test
   void issue_refreshTokenDecodedPayload_containsRefreshKind() {
-    IssuedTokenPair pair = sut.issue(42L, "bob@example.com", NOW);
+    IssuedTokenPair pair = sut.issue(UUID_42, "bob@example.com", NOW);
     String decoded = new String(Base64.getUrlDecoder().decode(pair.refreshToken()), StandardCharsets.UTF_8);
 
     assertThat(decoded).startsWith("R:");

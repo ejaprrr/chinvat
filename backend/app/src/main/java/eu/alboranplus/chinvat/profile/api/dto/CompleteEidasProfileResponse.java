@@ -1,9 +1,10 @@
 package eu.alboranplus.chinvat.profile.api.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record CompleteEidasProfileResponse(
-    Long userId,
+    UUID userId,
     String providerCode,
     String externalSubjectId,
     String currentStatus,

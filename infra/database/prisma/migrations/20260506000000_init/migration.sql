@@ -10,7 +10,7 @@ CREATE TYPE "auth_session_token_kind" AS ENUM ('ACCESS', 'REFRESH');
 
 -- User table - base user entity
 CREATE TABLE "user" (
-  "id" BIGSERIAL NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "username" VARCHAR(100) NOT NULL UNIQUE,
   "full_name" VARCHAR(255) NOT NULL,
   "phone_number" VARCHAR(40),
@@ -33,7 +33,7 @@ CREATE UNIQUE INDEX "idx_user_email" ON "user"("email");
 
 -- User password table - password storage
 CREATE TABLE "user_password" (
-  "user_id" BIGINT NOT NULL,
+  "user_id" UUID NOT NULL,
   "password_hash" VARCHAR(255) NOT NULL,
   "password_algorithm" VARCHAR(50) NOT NULL,
   "password_changed_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -45,8 +45,8 @@ CREATE TABLE "user_password" (
 
 -- User certificate table - X.509 certificate-based login
 CREATE TABLE "user_certificate" (
-  "id" BIGSERIAL NOT NULL,
-  "user_id" BIGINT NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+  "user_id" UUID NOT NULL,
   "subject_dn" VARCHAR(512) NOT NULL,
   "issuer_dn" VARCHAR(512) NOT NULL,
   "serial_number" VARCHAR(128) NOT NULL,
@@ -66,7 +66,7 @@ CREATE INDEX "idx_user_certificate_thumbprint" ON "user_certificate"("thumbprint
 -- Auth password reset table - password reset tokens
 CREATE TABLE "auth_password_reset" (
   "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-  "user_id" BIGINT NOT NULL,
+  "user_id" UUID NOT NULL,
   "reset_token_hash" VARCHAR(255) NOT NULL,
   "issued_at" TIMESTAMPTZ NOT NULL,
   "expires_at" TIMESTAMPTZ NOT NULL,
@@ -85,7 +85,7 @@ CREATE INDEX "idx_auth_password_reset_expires_at" ON "auth_password_reset"("expi
 -- Auth session table - session management
 CREATE TABLE "auth_session" (
   "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-  "user_id" BIGINT NOT NULL,
+  "user_id" UUID NOT NULL,
   "session_token_hash" VARCHAR(255) NOT NULL UNIQUE,
   "session_token_kind" "auth_session_token_kind" NOT NULL,
   "issued_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -103,7 +103,7 @@ CREATE INDEX "idx_auth_session_expires_at" ON "auth_session"("expires_at");
 
 -- Trust provider registry - used by certificate and external identity bindings
 CREATE TABLE "trust_provider" (
-  "id" BIGSERIAL NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "provider_code" VARCHAR(80) NOT NULL UNIQUE,
   "display_name" VARCHAR(160) NOT NULL,
   "provider_type" VARCHAR(80) NOT NULL,
@@ -126,9 +126,9 @@ CREATE INDEX "idx_trust_provider_active" ON "trust_provider"("active");
 
 -- Enterprise credential binding for X.509 login and signing use-cases
 CREATE TABLE "certificate_credential" (
-  "id" BIGSERIAL NOT NULL,
-  "user_id" BIGINT NOT NULL,
-  "provider_id" BIGINT,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+  "user_id" UUID NOT NULL,
+  "provider_id" UUID,
   "provider_code" VARCHAR(80),
   "credential_type" VARCHAR(80) NOT NULL,
   "trust_status" VARCHAR(80) NOT NULL,
@@ -175,9 +175,9 @@ CREATE INDEX "idx_certificate_credential_thumbprint" ON "certificate_credential"
 
 -- Enrollment and approval workflow for certificate onboarding
 CREATE TABLE "certificate_enrollment" (
-  "id" BIGSERIAL NOT NULL,
-  "user_id" BIGINT,
-  "certificate_credential_id" BIGINT,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+  "user_id" UUID,
+  "certificate_credential_id" UUID,
   "provider_code" VARCHAR(80),
   "requested_by" VARCHAR(120) NOT NULL,
   "status" VARCHAR(80) NOT NULL,
@@ -202,9 +202,9 @@ CREATE INDEX "idx_certificate_enrollment_status" ON "certificate_enrollment"("st
 
 -- Linked external identity from eIDAS or another trust broker
 CREATE TABLE "external_identity" (
-  "id" BIGSERIAL NOT NULL,
-  "user_id" BIGINT,
-  "provider_id" BIGINT,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+  "user_id" UUID,
+  "provider_id" UUID,
   "provider_code" VARCHAR(80) NOT NULL,
   "identity_source" VARCHAR(80) NOT NULL,
   "external_subject_id" VARCHAR(255) NOT NULL,
@@ -239,12 +239,12 @@ CREATE INDEX "idx_external_identity_reviewed_at" ON "external_identity"("reviewe
 
 -- Immutable high-level audit stream for trust and identity lifecycle events
 CREATE TABLE "identity_audit_event" (
-  "id" BIGSERIAL NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "event_type" VARCHAR(120) NOT NULL,
   "actor" VARCHAR(120),
-  "user_id" BIGINT,
-  "certificate_credential_id" BIGINT,
-  "external_identity_id" BIGINT,
+  "user_id" UUID,
+  "certificate_credential_id" UUID,
+  "external_identity_id" UUID,
   "details" JSON NOT NULL DEFAULT '{}',
   "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -261,9 +261,9 @@ CREATE INDEX "idx_identity_audit_event_external_identity_id" ON "identity_audit_
 
 -- Auth audit event table - audit logging
 CREATE TABLE "auth_audit_event" (
-  "id" BIGSERIAL NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "event_type" VARCHAR(120) NOT NULL,
-  "user_id" BIGINT,
+  "user_id" UUID,
   "details" JSON NOT NULL DEFAULT '{}',
   "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -275,7 +275,7 @@ CREATE INDEX "idx_auth_audit_event_event_type" ON "auth_audit_event"("event_type
 
 -- RBAC role table - role definitions (no legacy permissions_csv)
 CREATE TABLE "rbac_role" (
-  "id" BIGSERIAL NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "role_name" VARCHAR(80) NOT NULL UNIQUE,
 
   CONSTRAINT "rbac_role_pkey" PRIMARY KEY ("id")
@@ -285,7 +285,7 @@ CREATE UNIQUE INDEX "idx_rbac_role_name" ON "rbac_role"("role_name");
 
 -- RBAC permission table - permission definitions
 CREATE TABLE "rbac_permission" (
-  "id" BIGSERIAL NOT NULL,
+  "id" UUID NOT NULL DEFAULT gen_random_uuid(),
   "permission_code" VARCHAR(120) NOT NULL UNIQUE,
   "description" VARCHAR(255),
   "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -297,8 +297,8 @@ CREATE UNIQUE INDEX "idx_rbac_permission_code" ON "rbac_permission"("permission_
 
 -- RBAC role permission table - N:M relationship between roles and permissions
 CREATE TABLE "rbac_role_permission" (
-  "role_id" BIGINT NOT NULL,
-  "permission_id" BIGINT NOT NULL,
+  "role_id" UUID NOT NULL,
+  "permission_id" UUID NOT NULL,
 
   CONSTRAINT "rbac_role_permission_pkey" PRIMARY KEY ("role_id", "permission_id"),
   CONSTRAINT "rbac_role_permission_role_id_fkey" FOREIGN KEY ("role_id") REFERENCES "rbac_role"("id") ON DELETE CASCADE,
@@ -309,8 +309,8 @@ CREATE INDEX "idx_rbac_role_permission_permission_id" ON "rbac_role_permission"(
 
 -- User role table - user-to-role assignment
 CREATE TABLE "user_role" (
-  "user_id" BIGINT NOT NULL,
-  "role_id" BIGINT NOT NULL,
+  "user_id" UUID NOT NULL,
+  "role_id" UUID NOT NULL,
   "assigned_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "assigned_by" VARCHAR(120),
 

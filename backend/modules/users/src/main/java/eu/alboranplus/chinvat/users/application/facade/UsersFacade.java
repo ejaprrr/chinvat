@@ -9,28 +9,29 @@ import eu.alboranplus.chinvat.users.application.dto.UserView;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UsersFacade {
   UserView createUser(CreateUserCommand command);
 
-  UserView getUserById(Long id);
+  UserView getUserById(UUID id);
 
   List<UserView> getAllUsers();
 
   PageResponse<UserView> getAllUsersPaged(PaginationRequest paginationRequest);
 
-  UserView updateUser(Long id, UpdateUserCommand command, String actor);
+  UserView updateUser(UUID id, UpdateUserCommand command, String actor);
 
-  void deleteUser(Long id, String actor);
+  void deleteUser(UUID id, String actor);
 
   Optional<UserSecurityView> findSecurityViewByEmail(String email);
 
-  Optional<UserSecurityView> findSecurityViewById(Long id);
+  Optional<UserSecurityView> findSecurityViewById(UUID id);
 
   Optional<UserSecurityView> findSecurityViewByCertificateThumbprint(String thumbprintSha256, Instant now);
 
   boolean verifyPassword(String email, String rawPassword);
 
-  void changePassword(Long userId, String rawPassword);
+  void changePassword(UUID userId, String rawPassword);
 }
 

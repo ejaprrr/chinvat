@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,6 +40,11 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 @ActiveProfiles("local")
 class ProfileControllerIT {
+
+    private static final UUID UUID_77 = UUID.fromString("00000000-0000-0000-0000-00000000004d");
+    private static final UUID UUID_501 = UUID.fromString("00000000-0000-0000-0000-0000000001f5");
+    private static final UUID UUID_777 = UUID.fromString("00000000-0000-0000-0000-000000000309");
+    private static final UUID UUID_999 = UUID.fromString("00000000-0000-0000-0000-0000000003e7");
 
   @Autowired private MockMvc mockMvc;
 
@@ -55,7 +61,7 @@ class ProfileControllerIT {
     given(usersFacade.createUser(any()))
         .willReturn(
             new UserView(
-                77L,
+                UUID_77,
                 "maria",
                 "Maria Example",
                 "+34 600 000 111",
@@ -71,8 +77,8 @@ class ProfileControllerIT {
     given(trustFacade.bindCertificateCredential(any(), any()))
         .willReturn(
             new CertificateCredentialView(
-                501L,
-                77L,
+                UUID_501,
+                UUID_77,
                 "FNMT",
                 "CLIENT_TLS",
                 "TRUSTED",
@@ -95,13 +101,14 @@ class ProfileControllerIT {
                 now));
 
     given(eidasFacade.completeProfile(any(), any()))
-        .willReturn(new EidasProfileCompletionView("EIDAS_EU", "subject-1", 77L, "ACTIVE", now, now));
+        .willReturn(
+            new EidasProfileCompletionView("EIDAS_EU", "subject-1", UUID_77, "ACTIVE", now, now));
 
-    given(trustFacade.setPrimaryCertificateCredential(77L, 501L, "maria@example.com"))
+    given(trustFacade.setPrimaryCertificateCredential(UUID_77, UUID_501, "maria@example.com"))
         .willReturn(
             new CertificateCredentialView(
-                501L,
-                77L,
+                UUID_501,
+                UUID_77,
                 "FNMT",
                 "CLIENT_TLS",
                 "TRUSTED",
@@ -150,7 +157,7 @@ class ProfileControllerIT {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.userId").value(77))
+        .andExpect(jsonPath("$.userId").value(UUID_77.toString()))
         .andExpect(jsonPath("$.providerCode").value("EIDAS_EU"))
         .andExpect(jsonPath("$.externalSubjectId").value("subject-1"))
         .andExpect(jsonPath("$.currentStatus").value("ACTIVE"));
@@ -163,19 +170,21 @@ class ProfileControllerIT {
         .willReturn(
             Optional.of(
                 new TokenPrincipal(
-                    77L,
+                    UUID_77,
                     "maria@example.com",
                     Set.of("USER"),
                     Set.of("PROFILE:READ", "PROFILE:WRITE"))));
     given(usersFacade.findSecurityViewByEmail("maria@example.com"))
-        .willReturn(Optional.of(new UserSecurityView(77L, "maria@example.com", "Maria", Set.of("USER"), true)));
+        .willReturn(
+            Optional.of(
+                new UserSecurityView(UUID_77, "maria@example.com", "Maria", Set.of("USER"), true)));
 
-    given(trustFacade.listCertificateCredentials(77L))
+    given(trustFacade.listCertificateCredentials(UUID_77))
         .willReturn(
             List.of(
                 new CertificateCredentialView(
-                    501L,
-                    77L,
+                    UUID_501,
+                    UUID_77,
                     "FNMT",
                     "CLIENT_TLS",
                     "TRUSTED",
@@ -200,8 +209,8 @@ class ProfileControllerIT {
     given(trustFacade.bindCertificateCredential(any(), any()))
         .willReturn(
             new CertificateCredentialView(
-                777L,
-                77L,
+                UUID_777,
+                UUID_77,
                 "FNMT",
                 "CLIENT_TLS",
                 "TRUSTED",
@@ -223,13 +232,15 @@ class ProfileControllerIT {
                 now,
                 now));
 
-    willDoNothing().given(trustFacade).revokeCertificateCredential(501L, "maria@example.com", "ROTATED");
+    willDoNothing()
+        .given(trustFacade)
+        .revokeCertificateCredential(UUID_501, "maria@example.com", "ROTATED");
 
-    given(trustFacade.setPrimaryCertificateCredential(77L, 501L, "maria@example.com"))
+    given(trustFacade.setPrimaryCertificateCredential(UUID_77, UUID_501, "maria@example.com"))
         .willReturn(
             new CertificateCredentialView(
-                501L,
-                77L,
+                UUID_501,
+                UUID_77,
                 "FNMT",
                 "CLIENT_TLS",
                 "TRUSTED",
@@ -254,7 +265,7 @@ class ProfileControllerIT {
     mockMvc
         .perform(get("/api/v1/profile/certificates").header("Authorization", "Bearer token"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].id").value(501))
+        .andExpect(jsonPath("$[0].id").value(UUID_501.toString()))
         .andExpect(jsonPath("$[0].primary").value(true));
 
     mockMvc
@@ -271,21 +282,21 @@ class ProfileControllerIT {
                     }
                     """))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.id").value(777));
+        .andExpect(jsonPath("$.id").value(UUID_777.toString()));
 
     mockMvc
         .perform(
-            delete("/api/v1/profile/certificates/501")
+            delete("/api/v1/profile/certificates/" + UUID_501)
                 .queryParam("reason", "ROTATED")
                 .header("Authorization", "Bearer token"))
         .andExpect(status().isNoContent());
 
     mockMvc
         .perform(
-            post("/api/v1/profile/certificates/501/primary")
+            post("/api/v1/profile/certificates/" + UUID_501 + "/primary")
                 .header("Authorization", "Bearer token"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(501))
+        .andExpect(jsonPath("$.id").value(UUID_501.toString()))
         .andExpect(jsonPath("$.primary").value(true));
   }
 
@@ -295,19 +306,25 @@ class ProfileControllerIT {
         .willReturn(
             Optional.of(
                 new TokenPrincipal(
-                    77L,
+                    UUID_77,
                     "maria@example.com",
                     Set.of("USER"),
                     Set.of("PROFILE:READ", "PROFILE:WRITE"))));
     given(usersFacade.findSecurityViewByEmail("maria@example.com"))
-        .willReturn(Optional.of(new UserSecurityView(77L, "maria@example.com", "Maria", Set.of("USER"), true)));
-    given(trustFacade.setPrimaryCertificateCredential(77L, 999L, "maria@example.com"))
-        .willThrow(new CertificateCredentialNotFoundException("Certificate credential not found: 999"));
+        .willReturn(
+            Optional.of(
+                new UserSecurityView(UUID_77, "maria@example.com", "Maria", Set.of("USER"), true)));
+    given(trustFacade.setPrimaryCertificateCredential(UUID_77, UUID_999, "maria@example.com"))
+        .willThrow(
+            new CertificateCredentialNotFoundException(
+                "Certificate credential not found: " + UUID_999));
 
     mockMvc
-        .perform(post("/api/v1/profile/certificates/999/primary").header("Authorization", "Bearer token"))
+        .perform(
+            post("/api/v1/profile/certificates/" + UUID_999 + "/primary")
+                .header("Authorization", "Bearer token"))
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.message").value("Certificate credential not found: 999"));
+        .andExpect(jsonPath("$.message").value("Certificate credential not found: " + UUID_999));
   }
 
   @Test
@@ -316,17 +333,21 @@ class ProfileControllerIT {
         .willReturn(
             Optional.of(
                 new TokenPrincipal(
-                    77L,
+                    UUID_77,
                     "maria@example.com",
                     Set.of("USER"),
                     Set.of("PROFILE:READ", "PROFILE:WRITE"))));
     given(usersFacade.findSecurityViewByEmail("maria@example.com"))
-        .willReturn(Optional.of(new UserSecurityView(77L, "maria@example.com", "Maria", Set.of("USER"), true)));
-    given(trustFacade.setPrimaryCertificateCredential(77L, 501L, "maria@example.com"))
+        .willReturn(
+            Optional.of(
+                new UserSecurityView(UUID_77, "maria@example.com", "Maria", Set.of("USER"), true)));
+    given(trustFacade.setPrimaryCertificateCredential(UUID_77, UUID_501, "maria@example.com"))
         .willThrow(new IllegalStateException("Only ACTIVE credentials can be primary"));
 
     mockMvc
-        .perform(post("/api/v1/profile/certificates/501/primary").header("Authorization", "Bearer token"))
+        .perform(
+            post("/api/v1/profile/certificates/" + UUID_501 + "/primary")
+                .header("Authorization", "Bearer token"))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.message").value("Only ACTIVE credentials can be primary"));
   }

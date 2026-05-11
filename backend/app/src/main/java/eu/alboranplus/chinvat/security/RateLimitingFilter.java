@@ -1,5 +1,6 @@
 package eu.alboranplus.chinvat.security;
 
+import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
 import eu.alboranplus.chinvat.config.RateLimitingConfig;
 import eu.alboranplus.chinvat.config.RateLimitingConfig.RateLimit;
 import jakarta.servlet.FilterChain;
@@ -124,7 +125,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
   private String resolveBucketKey(HttpServletRequest request, String type) {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     if (auth != null && auth.isAuthenticated()) {
-      Long userId = extractUserId(auth);
+      String userId = extractUserId(auth);
       if (userId != null) {
         return type + ":user:" + userId;
       }
@@ -158,14 +159,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     return Optional.of("API_GENERAL");
   }
 
-  private Long extractUserId(Authentication auth) {
+  private String extractUserId(Authentication auth) {
     try {
       Object principal = auth.getPrincipal();
-      if (principal != null) {
-        String str = principal.toString();
-        if (str.matches("\\d+")) {
-          return Long.parseLong(str);
-        }
+      if (principal instanceof TokenPrincipal tp) {
+        return tp.userId().toString();
       }
     } catch (Exception e) {
       logger.debug("Cannot extract user ID", e);

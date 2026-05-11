@@ -1,10 +1,11 @@
 package eu.alboranplus.chinvat.eidas.application.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record ExternalIdentityView(
-    Long id,
-    Long userId,
+    UUID id,
+    UUID userId,
     String providerCode,
     String identitySource,
     String externalSubjectId,
@@ -27,7 +28,7 @@ public record ExternalIdentityView(
         Instant updatedAt) {
 
     public ExternalIdentityView withLinkedUser(
-            Long linkedUserId,
+            UUID linkedUserId,
             String newStatus,
             String newIdentityReference,
             String newNationality,

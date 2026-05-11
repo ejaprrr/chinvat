@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +23,7 @@ class RedisPermissionCacheFacadeTest {
 
   private static final String KEY_PREFIX = "chinvat:permissions:";
   private static final Duration TTL = Duration.ofMinutes(15);
-  private static final Long TEST_USER_ID = 42L;
+  private static final UUID TEST_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000042");
 
   @Mock private StringRedisTemplate stringRedisTemplate;
   @Mock private SetOperations<String, String> setOperations;
@@ -36,7 +37,7 @@ class RedisPermissionCacheFacadeTest {
 
   @Test
   void findUserPermissions_cacheHit_returnsCachedPermissions() {
-    String key = KEY_PREFIX + "user:" + TEST_USER_ID + ":permissions";
+    String key = KEY_PREFIX + "user:" + TEST_USER_ID.toString() + ":permissions";
     Set<String> cachedPerms = Set.of("PROFILE:READ", "PROFILE:UPDATE");
     given(stringRedisTemplate.opsForSet()).willReturn(setOperations);
     given(setOperations.members(key)).willReturn(cachedPerms);

@@ -15,6 +15,7 @@ import eu.alboranplus.chinvat.auth.application.usecase.CertificateLoginUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.ConfirmPasswordResetUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.GetMeUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.ListSessionsUseCase;
+import eu.alboranplus.chinvat.auth.application.usecase.ListSessionsPagedUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.LoginUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.LogoutAllSessionsUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.LogoutUseCase;
@@ -50,6 +51,7 @@ class AuthFacadeServiceTest {
   @Mock private AuthChangePasswordUseCase changePasswordUseCase;
   @Mock private GetMeUseCase getMeUseCase;
   @Mock private ListSessionsUseCase listSessionsUseCase;
+  @Mock private ListSessionsPagedUseCase listSessionsPagedUseCase;
   @Mock private RevokeSessionUseCase revokeSessionUseCase;
   @Mock private LogoutAllSessionsUseCase logoutAllSessionsUseCase;
   @Mock private AuditFacade auditFacade;
@@ -71,6 +73,7 @@ class AuthFacadeServiceTest {
             changePasswordUseCase,
             getMeUseCase,
             listSessionsUseCase,
+            listSessionsPagedUseCase,
             revokeSessionUseCase,
             logoutAllSessionsUseCase,
             auditFacade);
@@ -78,10 +81,11 @@ class AuthFacadeServiceTest {
 
   @Test
   void login_logsSharedAuditEvent() {
+    UUID uuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
     LoginCommand command = new LoginCommand("alice@example.com", "secret", "127.0.0.1", "Agent");
     AuthResult result =
         new AuthResult(
-            1L,
+            uuid1,
             "alice@example.com",
             "Alice",
             Set.of("USER"),
@@ -100,7 +104,7 @@ class AuthFacadeServiceTest {
         .log(
             eq("AUTH_LOGIN_SUCCEEDED"),
             eq("alice@example.com"),
-            eq(1L),
+            eq(uuid1),
             eq(Map.of("clientIp", "127.0.0.1", "userAgent", "Agent")));
   }
 
@@ -125,13 +129,14 @@ class AuthFacadeServiceTest {
 
   @Test
   void logoutAll_logsSharedAuditEvent() {
+    UUID uuid7 = UUID.fromString("00000000-0000-0000-0000-000000000007");
     TokenPrincipal principal =
-        new TokenPrincipal(7L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
+        new TokenPrincipal(uuid7, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
 
     sut.logoutAll(principal);
 
     then(auditFacade)
         .should()
-        .log(eq("AUTH_LOGOUT_ALL"), eq("alice@example.com"), eq(7L), eq(Map.of()));
+        .log(eq("AUTH_LOGOUT_ALL"), eq("alice@example.com"), eq(uuid7), eq(Map.of()));
   }
 }

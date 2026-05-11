@@ -5,6 +5,7 @@ import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import eu.alboranplus.chinvat.common.pagination.PaginationUtils;
 import eu.alboranplus.chinvat.trust.application.dto.CertificateCredentialView;
 import eu.alboranplus.chinvat.trust.application.port.out.CertificateCredentialLifecyclePort;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,7 @@ public class ListCertificateCredentialsPagedUseCase {
 
   @Transactional(readOnly = true)
   public PageResponse<CertificateCredentialView> execute(
-      Long userId, PaginationRequest paginationRequest) {
+      UUID userId, PaginationRequest paginationRequest) {
     Page<CertificateCredentialView> page =
         certificateCredentialLifecyclePort.findAllPaged(userId, paginationRequest.toPageable());
     return PaginationUtils.toPageResponse(page);

@@ -18,6 +18,7 @@ import eu.alboranplus.chinvat.trust.application.usecase.ValidateCertificateUseCa
 import eu.alboranplus.chinvat.common.pagination.PageResponse;
 import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -79,12 +80,12 @@ public class TrustFacadeService implements TrustFacade {
   }
 
   @Override
-  public List<CertificateCredentialView> listCertificateCredentials(Long userId) {
+  public List<CertificateCredentialView> listCertificateCredentials(UUID userId) {
     return listCertificateCredentialsUseCase.execute(userId);
   }
 
   @Override
-  public void revokeCertificateCredential(Long credentialId, String actor, String reason) {
+  public void revokeCertificateCredential(UUID credentialId, String actor, String reason) {
     CertificateCredentialView revoked = revokeCertificateCredentialUseCase.execute(credentialId, actor, reason);
     auditFacade.log(
         "TRUST_CREDENTIAL_REVOKED",
@@ -100,7 +101,7 @@ public class TrustFacadeService implements TrustFacade {
 
   @Override
   public CertificateCredentialView setPrimaryCertificateCredential(
-      Long userId, Long credentialId, String actor) {
+      UUID userId, UUID credentialId, String actor) {
     CertificateCredentialView primary =
         setPrimaryCertificateCredentialUseCase.execute(userId, credentialId);
     auditFacade.log(
@@ -116,7 +117,7 @@ public class TrustFacadeService implements TrustFacade {
 
   @Override
   public PageResponse<CertificateCredentialView> listCertificateCredentialsPaged(
-      Long userId, PaginationRequest paginationRequest) {
+      UUID userId, PaginationRequest paginationRequest) {
     return listCertificateCredentialsPagedUseCase.execute(userId, paginationRequest);
   }
 }

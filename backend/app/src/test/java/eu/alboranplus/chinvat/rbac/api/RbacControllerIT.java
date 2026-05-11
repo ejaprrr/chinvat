@@ -18,6 +18,7 @@ import eu.alboranplus.chinvat.rbac.application.facade.RbacFacade;
 import eu.alboranplus.chinvat.rbac.domain.exception.RoleNotFoundException;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -29,12 +30,16 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class RbacControllerIT {
 
+    private static final UUID UUID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID UUID_2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    private static final UUID UUID_99 = UUID.fromString("00000000-0000-0000-0000-000000000063");
+
     private static final TokenPrincipal PROFILE_READER_PRINCIPAL =
-            new TokenPrincipal(1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
+        new TokenPrincipal(UUID_1, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
 
     private static final TokenPrincipal RbacManagerPrincipal =
             new TokenPrincipal(
-                    2L,
+            UUID_2,
                     "rbac-admin@example.com",
                     Set.of("SUPERADMIN"),
                     Set.of("PROFILE:READ", "RBAC:MANAGE", "USERS:MANAGE"));
@@ -133,7 +138,7 @@ class RbacControllerIT {
                 .header("Authorization", "Bearer valid-token"))
         .andExpect(status().isNoContent());
 
-    then(rbacFacade).should().assignRoleToUser(99L, "ADMIN", "rbac-admin@example.com");
+    then(rbacFacade).should().assignRoleToUser(UUID_99, "ADMIN", "rbac-admin@example.com");
   }
 
   @Test
@@ -161,6 +166,6 @@ class RbacControllerIT {
                                 .header("Authorization", "Bearer valid-token"))
                 .andExpect(status().isNoContent());
 
-        then(rbacFacade).should().removeRoleFromUser(99L, "ADMIN", "rbac-admin@example.com");
+        then(rbacFacade).should().removeRoleFromUser(UUID_99, "ADMIN", "rbac-admin@example.com");
     }
 }

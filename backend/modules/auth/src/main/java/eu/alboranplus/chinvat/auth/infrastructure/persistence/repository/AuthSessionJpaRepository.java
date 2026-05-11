@@ -24,7 +24,7 @@ public interface AuthSessionJpaRepository extends JpaRepository<AuthSessionJpaEn
           + "AND s.expiresAt > :now "
           + "ORDER BY s.issuedAt DESC")
   List<AuthSessionJpaEntity> findActiveByUserIdOrderByIssuedAtDesc(
-      @Param("userId") Long userId, @Param("now") Instant now);
+      @Param("userId") UUID userId, @Param("now") Instant now);
 
   @Query(
       "SELECT s FROM AuthSessionJpaEntity s "
@@ -33,7 +33,7 @@ public interface AuthSessionJpaRepository extends JpaRepository<AuthSessionJpaEn
           + "AND s.expiresAt > :now "
           + "ORDER BY s.issuedAt DESC")
   Page<AuthSessionJpaEntity> findActiveByUserIdOrderByIssuedAtDescPaged(
-      @Param("userId") Long userId, @Param("now") Instant now, Pageable pageable);
+      @Param("userId") UUID userId, @Param("now") Instant now, Pageable pageable);
 
   @Query(
       "SELECT s FROM AuthSessionJpaEntity s "
@@ -53,7 +53,7 @@ public interface AuthSessionJpaRepository extends JpaRepository<AuthSessionJpaEn
   @Query(
       "UPDATE AuthSessionJpaEntity s SET s.revokedAt = :now "
           + "WHERE s.userId = :userId AND s.revokedAt IS NULL")
-  void revokeAllByUserId(@Param("userId") Long userId, @Param("now") Instant now);
+  void revokeAllByUserId(@Param("userId") UUID userId, @Param("now") Instant now);
 
   @Modifying
   @Query(
@@ -68,7 +68,7 @@ public interface AuthSessionJpaRepository extends JpaRepository<AuthSessionJpaEn
           + "AND s.sessionTokenKind = :tokenKind "
           + "AND s.revokedAt IS NULL")
   void revokeActiveByUserIdAndTokenKind(
-      @Param("userId") Long userId,
+      @Param("userId") UUID userId,
       @Param("tokenKind") AuthSessionTokenKind tokenKind,
       @Param("now") Instant now);
 }

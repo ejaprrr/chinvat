@@ -2,6 +2,7 @@ package eu.alboranplus.chinvat.users.infrastructure.persistence.adapter;
 
 import eu.alboranplus.chinvat.users.application.port.out.UsersRoleRepositoryPort;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +16,7 @@ public class UsersRoleRepositoryAdapter implements UsersRoleRepositoryPort {
   }
 
   @Override
-  public Set<String> findRoleNamesByUserId(Long userId) {
+  public Set<String> findRoleNamesByUserId(UUID userId) {
     return Set.copyOf(
         jdbcTemplate.queryForList(
             """

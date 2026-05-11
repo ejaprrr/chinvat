@@ -34,7 +34,7 @@ enum AuthSessionTokenKind {
 }
 
 model User {
-  id              BigInt      @id @default(autoincrement())
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username        String      @unique @db.VarChar(100)
   fullName        String      @db.VarChar(255)
   phoneNumber     String?     @db.VarChar(40)
@@ -64,7 +64,7 @@ model User {
 }
 
 model UserPassword {
-  userId              BigInt   @id
+  userId              String   @id @db.Uuid
   passwordHash        String   @db.VarChar(255)
   passwordAlgorithm   String   @db.VarChar(50)
   passwordChangedAt   DateTime @default(now()) @db.Timestamptz
@@ -77,8 +77,8 @@ model UserPassword {
 
 /// Digital certificate for certificate-based login (X.509 / client TLS)
 model UserCertificate {
-  id              BigInt    @id @default(autoincrement())
-  userId          BigInt
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String    @db.Uuid
   subjectDn       String    @db.VarChar(512)           // Certificate Subject DN
   issuerDn        String    @db.VarChar(512)           // Certificate Issuer DN
   serialNumber    String    @db.VarChar(128)           // Serial number (hex)
@@ -97,7 +97,7 @@ model UserCertificate {
 
 /// Enterprise-grade trust provider registry synchronized from LOTL/TSL or managed internally.
 model TrustProvider {
-  id                BigInt   @id @default(autoincrement())
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   providerCode      String   @unique @db.VarChar(80)
   displayName       String   @db.VarChar(160)
   providerType      String   @db.VarChar(80)
@@ -121,9 +121,9 @@ model TrustProvider {
 
 /// Enterprise credential binding for X.509 login and signing use-cases.
 model CertificateCredential {
-  id                   BigInt   @id @default(autoincrement())
-  userId               BigInt
-  providerId           BigInt?
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId               String   @db.Uuid
+  providerId           String?  @db.Uuid
   providerCode         String?  @db.VarChar(80)
   credentialType       String   @db.VarChar(80)
   trustStatus          String   @db.VarChar(80)
@@ -172,9 +172,9 @@ model CertificateCredential {
 
 /// Enrollment and approval workflow for certificate onboarding.
 model CertificateEnrollment {
-  id                    BigInt   @id @default(autoincrement())
-  userId                BigInt?
-  certificateCredentialId BigInt?
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String?  @db.Uuid
+  certificateCredentialId String? @db.Uuid
   providerCode          String?  @db.VarChar(80)
   requestedBy           String   @db.VarChar(120)
   status                String   @db.VarChar(80)
@@ -199,9 +199,9 @@ model CertificateEnrollment {
 
 /// Linked external identity from eIDAS or another trust broker.
 model ExternalIdentity {
-  id                BigInt   @id @default(autoincrement())
-  userId            BigInt?
-  providerId        BigInt?
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String?  @db.Uuid
+  providerId        String?  @db.Uuid
   providerCode      String   @db.VarChar(80)
   identitySource    String   @db.VarChar(80)
   externalSubjectId String   @db.VarChar(255)
@@ -235,12 +235,12 @@ model ExternalIdentity {
 
 /// Immutable high-level audit stream for trust and identity lifecycle events.
 model IdentityAuditEvent {
-  id                   BigInt   @id @default(autoincrement())
+  id                   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   eventType            String   @db.VarChar(120)
   actor                String?  @db.VarChar(120)
-  userId               BigInt?
-  certificateCredentialId BigInt?
-  externalIdentityId   BigInt?
+  userId               String?  @db.Uuid
+  certificateCredentialId String? @db.Uuid
+  externalIdentityId   String?  @db.Uuid
   details              Json     @default("{}")
   createdAt            DateTime @default(now()) @db.Timestamptz
 
@@ -257,7 +257,7 @@ model IdentityAuditEvent {
 
 model AuthPasswordReset {
   id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         BigInt
+  userId         String    @db.Uuid
   resetTokenHash String    @db.VarChar(255)
   issuedAt       DateTime  @db.Timestamptz
   expiresAt      DateTime  @db.Timestamptz
@@ -275,7 +275,7 @@ model AuthPasswordReset {
 
 model AuthSession {
   id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId           BigInt
+  userId           String    @db.Uuid
   sessionTokenHash String    @unique @db.VarChar(255)
   sessionTokenKind AuthSessionTokenKind
   issuedAt         DateTime  @default(now()) @db.Timestamptz
@@ -292,9 +292,9 @@ model AuthSession {
 }
 
 model AuthAuditEvent {
-  id        BigInt   @id @default(autoincrement())
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   eventType String   @db.VarChar(120)
-  userId    BigInt?
+  userId    String?  @db.Uuid
   details   Json     @default("{}")
   createdAt DateTime @default(now()) @db.Timestamptz
 
@@ -305,7 +305,7 @@ model AuthAuditEvent {
 }
 
 model RbacRole {
-  id             BigInt @id @default(autoincrement())
+  id             String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   roleName       String @unique @db.VarChar(80)
   rolePermissions RbacRolePermission[]
   userRoles        UserRole[]
@@ -314,7 +314,7 @@ model RbacRole {
 }
 
 model RbacPermission {
-  id             BigInt @id @default(autoincrement())
+  id             String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   permissionCode String @unique @db.VarChar(120)
   description    String? @db.VarChar(255)
   createdAt      DateTime @default(now()) @db.Timestamptz
@@ -324,8 +324,8 @@ model RbacPermission {
 }
 
 model RbacRolePermission {
-  roleId       BigInt
-  permissionId BigInt
+  roleId       String @db.Uuid
+  permissionId String @db.Uuid
 
   role       RbacRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission RbacPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
@@ -336,8 +336,8 @@ model RbacRolePermission {
 }
 
 model UserRole {
-  userId     BigInt
-  roleId     BigInt
+  userId     String @db.Uuid
+  roleId     String @db.Uuid
   assignedAt DateTime @default(now()) @db.Timestamptz
   assignedBy String? @db.VarChar(120)
 

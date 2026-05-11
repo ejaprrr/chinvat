@@ -18,6 +18,7 @@ import eu.alboranplus.chinvat.common.pagination.PageResponse;
 import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import eu.alboranplus.chinvat.trust.application.dto.CertificateCredentialView;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -71,7 +72,7 @@ public class AdminCredentialsController {
   @GetMapping
   @PreAuthorize("hasAuthority('USERS:MANAGE') or hasAuthority('RBAC:MANAGE')")
   public ResponseEntity<PageResponse<CertificateCredentialResponse>> listCertificateCredentials(
-      @RequestParam(required = false) Long userId,
+      @RequestParam(required = false) UUID userId,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(required = false) String sort) {
@@ -94,7 +95,7 @@ public class AdminCredentialsController {
   @PostMapping("/{credentialId}/revoke")
   @PreAuthorize("hasAuthority('USERS:MANAGE') or hasAuthority('RBAC:MANAGE')")
   public ResponseEntity<Void> revokeCertificateCredential(
-      @PathVariable Long credentialId,
+      @PathVariable UUID credentialId,
       @Valid @RequestBody RevokeCertificateCredentialRequest request,
       Authentication authentication) {
     trustFacade.revokeCertificateCredential(credentialId, actor(authentication), request.reason());

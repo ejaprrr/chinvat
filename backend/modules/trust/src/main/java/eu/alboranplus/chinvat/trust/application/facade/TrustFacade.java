@@ -9,6 +9,7 @@ import eu.alboranplus.chinvat.trust.application.dto.CertificateCredentialView;
 import eu.alboranplus.chinvat.trust.application.dto.CertificateValidationResult;
 import eu.alboranplus.chinvat.trust.application.dto.TrustedProviderSyncResult;
 import java.util.List;
+import java.util.UUID;
 
 public interface TrustFacade {
   CertificateValidationResult validateCertificate(ValidateCertificateCommand command);
@@ -17,11 +18,11 @@ public interface TrustFacade {
 
   CertificateCredentialView bindCertificateCredential(BindCertificateCredentialCommand command, String actor);
 
-  List<CertificateCredentialView> listCertificateCredentials(Long userId);
+  List<CertificateCredentialView> listCertificateCredentials(UUID userId);
 
-  PageResponse<CertificateCredentialView> listCertificateCredentialsPaged(Long userId, PaginationRequest paginationRequest);
+  PageResponse<CertificateCredentialView> listCertificateCredentialsPaged(UUID userId, PaginationRequest paginationRequest);
 
-  void revokeCertificateCredential(Long credentialId, String actor, String reason);
+  void revokeCertificateCredential(UUID credentialId, String actor, String reason);
 
-  CertificateCredentialView setPrimaryCertificateCredential(Long userId, Long credentialId, String actor);
+  CertificateCredentialView setPrimaryCertificateCredential(UUID userId, UUID credentialId, String actor);
 }

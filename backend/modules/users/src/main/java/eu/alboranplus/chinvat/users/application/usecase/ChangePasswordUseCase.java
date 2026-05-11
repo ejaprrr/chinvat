@@ -5,6 +5,7 @@ import eu.alboranplus.chinvat.users.application.port.out.UsersPasswordHasherPort
 import eu.alboranplus.chinvat.users.application.port.out.UsersPasswordPort;
 import eu.alboranplus.chinvat.users.application.port.out.UsersRepositoryPort;
 import eu.alboranplus.chinvat.users.domain.exception.UserNotFoundException;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,7 @@ public class ChangePasswordUseCase {
 
   @Transactional
   public void execute(ChangePasswordCommand command) {
-    Long userId = command.userId();
+    UUID userId = command.userId();
     usersRepositoryPort
         .findById(userId)
         .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));

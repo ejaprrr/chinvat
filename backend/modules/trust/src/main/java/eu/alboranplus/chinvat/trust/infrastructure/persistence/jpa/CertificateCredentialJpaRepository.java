@@ -9,12 +9,14 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.UUID;
+
 public interface CertificateCredentialJpaRepository
-    extends JpaRepository<CertificateCredentialJpaEntity, Long> {
+    extends JpaRepository<CertificateCredentialJpaEntity, UUID> {
 
-  List<CertificateCredentialJpaEntity> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+  List<CertificateCredentialJpaEntity> findAllByUserIdOrderByCreatedAtDesc(UUID userId);
 
-  Page<CertificateCredentialJpaEntity> findAllByUserId(Long userId, Pageable pageable);
+  Page<CertificateCredentialJpaEntity> findAllByUserId(UUID userId, Pageable pageable);
 
   List<CertificateCredentialJpaEntity> findAllByOrderByCreatedAtDesc();
 
@@ -27,5 +29,5 @@ public interface CertificateCredentialJpaRepository
       set credential.primary = false
       where credential.userId = :userId
       """)
-  void clearPrimaryForUser(@Param("userId") Long userId);
+  void clearPrimaryForUser(@Param("userId") UUID userId);
 }

@@ -2,13 +2,14 @@ package eu.alboranplus.chinvat.common.cache;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 public interface PermissionCacheFacade {
-  Optional<Set<String>> findUserPermissions(Long userId);
+  Optional<Set<String>> findUserPermissions(UUID userId);
 
-  void cacheUserPermissions(Long userId, Set<String> permissions);
+  void cacheUserPermissions(UUID userId, Set<String> permissions);
 
-  void evictUserPermissions(Long userId);
+  void evictUserPermissions(UUID userId);
 
   void evictAllUserPermissions();
 }

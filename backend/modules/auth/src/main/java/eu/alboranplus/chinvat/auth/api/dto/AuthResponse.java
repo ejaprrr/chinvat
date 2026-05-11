@@ -3,6 +3,7 @@ package eu.alboranplus.chinvat.auth.api.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 
 @Schema(description = "Authentication response containing user info and issued token pair")
 public record AuthResponse(
@@ -11,7 +12,7 @@ public record AuthResponse(
 
   @Schema(description = "Authenticated user profile")
   public record UserInfo(
-      @Schema(description = "Internal user ID", example = "42") Long id,
+      @Schema(description = "Internal user ID", example = "550e8400-e29b-41d4-a716-446655440000") UUID id,
       @Schema(description = "Email address", example = "alice@example.com") String email,
       @Schema(description = "Display name", example = "Alice Smith") String displayName,
       @Schema(description = "Set of assigned role names", example = "[\"USER\"]") Set<String> roles,

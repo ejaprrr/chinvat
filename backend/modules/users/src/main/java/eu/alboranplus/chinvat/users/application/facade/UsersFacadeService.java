@@ -23,6 +23,7 @@ import eu.alboranplus.chinvat.users.domain.model.UserAccount;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -89,7 +90,7 @@ public class UsersFacadeService implements UsersFacade {
 
   @Override
   @Cacheable(cacheNames = USERS_BY_ID_CACHE, key = "#id")
-  public UserView getUserById(Long id) {
+  public UserView getUserById(UUID id) {
     return toView(getUserByIdUseCase.execute(id));
   }
 
@@ -111,7 +112,7 @@ public class UsersFacadeService implements UsersFacade {
         @CacheEvict(cacheNames = USERS_BY_ID_CACHE, key = "#id"),
         @CacheEvict(cacheNames = USERS_ALL_CACHE, allEntries = true)
       })
-  public UserView updateUser(Long id, UpdateUserCommand command, String actor) {
+  public UserView updateUser(UUID id, UpdateUserCommand command, String actor) {
     UserView updated = toView(updateUserUseCase.execute(id, command));
     permissionCacheFacade.evictUserPermissions(id);
     auditFacade.log(
@@ -132,7 +133,7 @@ public class UsersFacadeService implements UsersFacade {
         @CacheEvict(cacheNames = USERS_BY_ID_CACHE, key = "#id"),
         @CacheEvict(cacheNames = USERS_ALL_CACHE, allEntries = true)
       })
-  public void deleteUser(Long id, String actor) {
+  public void deleteUser(UUID id, String actor) {
     deleteUserUseCase.execute(id);
     permissionCacheFacade.evictUserPermissions(id);
     auditFacade.log(
@@ -145,7 +146,7 @@ public class UsersFacadeService implements UsersFacade {
   }
 
   @Override
-  public Optional<UserSecurityView> findSecurityViewById(Long id) {
+  public Optional<UserSecurityView> findSecurityViewById(UUID id) {
     return getUserSecurityViewUseCase.executeById(id);
   }
 
@@ -161,7 +162,7 @@ public class UsersFacadeService implements UsersFacade {
   }
 
   @Override
-  public void changePassword(Long userId, String rawPassword) {
+  public void changePassword(UUID userId, String rawPassword) {
     changePasswordUseCase.execute(new ChangePasswordCommand(userId, rawPassword));
   }
 

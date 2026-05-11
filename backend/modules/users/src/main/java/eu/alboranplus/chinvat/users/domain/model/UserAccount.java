@@ -2,9 +2,10 @@ package eu.alboranplus.chinvat.users.domain.model;
 
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import java.time.Instant;
+import java.util.UUID;
 
 public record UserAccount(
-    Long id,
+    UUID id,
     String username,
     String fullName,
     String phoneNumber,

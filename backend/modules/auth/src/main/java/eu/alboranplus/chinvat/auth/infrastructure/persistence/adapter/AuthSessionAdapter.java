@@ -31,7 +31,7 @@ public class AuthSessionAdapter implements AuthSessionPort {
   @Override
   @Transactional
   public void save(
-      Long userId,
+      UUID userId,
       AuthSessionTokenKind tokenKind,
       String rawToken,
       Instant issuedAt,
@@ -49,7 +49,7 @@ public class AuthSessionAdapter implements AuthSessionPort {
 
   @Override
   @Transactional(readOnly = true)
-  public Optional<Long> findActiveUserId(String rawToken, Instant now) {
+  public Optional<UUID> findActiveUserId(String rawToken, Instant now) {
     String hash = sha256Hex(rawToken);
     return repository
         .findBySessionTokenHash(hash)
@@ -67,13 +67,13 @@ public class AuthSessionAdapter implements AuthSessionPort {
 
   @Override
   @Transactional
-  public void revokeAllByUserId(Long userId, Instant now) {
+  public void revokeAllByUserId(UUID userId, Instant now) {
     repository.revokeAllByUserId(userId, now);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<AuthSessionView> listActiveSessionsByUserId(Long userId, Instant now) {
+  public List<AuthSessionView> listActiveSessionsByUserId(UUID userId, Instant now) {
     return repository
         .findActiveByUserIdOrderByIssuedAtDesc(userId, now)
         .stream()
@@ -83,7 +83,7 @@ public class AuthSessionAdapter implements AuthSessionPort {
 
   @Override
   @Transactional(readOnly = true)
-  public Page<AuthSessionView> listActiveSessionsByUserIdPaged(Long userId, Instant now, Pageable pageable) {
+  public Page<AuthSessionView> listActiveSessionsByUserIdPaged(UUID userId, Instant now, Pageable pageable) {
     return repository
         .findActiveByUserIdOrderByIssuedAtDescPaged(userId, now, pageable)
         .map(this::toView);

@@ -5,6 +5,7 @@ import eu.alboranplus.chinvat.common.audit.persistence.AuditEventJpaRepository;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,7 +18,7 @@ public class AuditFacadeService implements AuditFacade {
   }
 
   @Override
-  public void log(String eventType, String actor, Long actorUserId, Map<String, Object> details) {
+  public void log(String eventType, String actor, UUID actorUserId, Map<String, Object> details) {
     Map<String, Object> payload = new LinkedHashMap<>(details);
     if (actor != null) {
       payload.put("actor", actor);

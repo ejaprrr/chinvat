@@ -20,6 +20,7 @@ import eu.alboranplus.chinvat.common.pagination.PageResponse;
 import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -122,12 +123,12 @@ public class RbacFacadeService implements RbacFacade {
   }
 
   @Override
-  public UserRolesView getUserRoles(Long userId) {
+  public UserRolesView getUserRoles(UUID userId) {
     return getUserRolesUseCase.execute(userId);
   }
 
   @Override
-  public void assignRoleToUser(Long userId, String roleName, String assignedBy) {
+  public void assignRoleToUser(UUID userId, String roleName, String assignedBy) {
     assignRoleToUserUseCase.execute(userId, roleName, assignedBy);
     permissionCacheFacade.evictUserPermissions(userId);
     auditFacade.log(
@@ -142,7 +143,7 @@ public class RbacFacadeService implements RbacFacade {
   }
 
   @Override
-  public void removeRoleFromUser(Long userId, String roleName, String actor) {
+  public void removeRoleFromUser(UUID userId, String roleName, String actor) {
     removeRoleFromUserUseCase.execute(userId, roleName);
     permissionCacheFacade.evictUserPermissions(userId);
     auditFacade.log(

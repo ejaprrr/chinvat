@@ -18,6 +18,7 @@ import eu.alboranplus.chinvat.users.domain.model.UserAccount;
 import eu.alboranplus.chinvat.users.domain.model.UserType;
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -43,7 +44,7 @@ class CreateUserUseCaseTest {
         UserType.INDIVIDUAL, AccessLevel.NORMAL, null, null, null, null, "en");
   }
 
-  private UserAccount buildSaved(Long id, String username, String email) {
+  private UserAccount buildSaved(UUID id, String username, String email) {
     return UserAccount.newUser(
         username, "Alice Smith", null, UserEmail.of(email), UserType.INDIVIDUAL,
         AccessLevel.NORMAL, null, null, null, null, "en", FIXED_INSTANT);
@@ -56,7 +57,7 @@ class CreateUserUseCaseTest {
     given(usersRepositoryPort.existsByUsername("alice")).willReturn(false);
     given(usersPasswordHasherPort.hash("SecretPassword1!")).willReturn("$bcrypt_hash$");
     given(usersClockPort.now()).willReturn(FIXED_INSTANT);
-    UserAccount expected = buildSaved(1L, "alice", "alice@example.com");
+    UserAccount expected = buildSaved(UUID.fromString("00000000-0000-0000-0000-000000000001"), "alice", "alice@example.com");
     given(usersRepositoryPort.save(any())).willReturn(expected);
 
     UserAccount result = sut.execute(cmd);

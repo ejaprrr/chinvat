@@ -6,6 +6,7 @@ import eu.alboranplus.chinvat.users.application.port.out.UsersRepositoryPort;
 import eu.alboranplus.chinvat.users.domain.exception.UserAlreadyExistsException;
 import eu.alboranplus.chinvat.users.domain.exception.UserNotFoundException;
 import eu.alboranplus.chinvat.users.domain.model.UserAccount;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ public class UpdateUserUseCase {
   }
 
   @Transactional
-  public UserAccount execute(Long id, UpdateUserCommand command) {
+  public UserAccount execute(UUID id, UpdateUserCommand command) {
     UserAccount existing =
         usersRepositoryPort
             .findById(id)

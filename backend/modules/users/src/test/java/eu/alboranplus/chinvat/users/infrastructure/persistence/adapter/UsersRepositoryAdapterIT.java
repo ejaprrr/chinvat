@@ -14,6 +14,7 @@ import eu.alboranplus.chinvat.users.infrastructure.persistence.mapper.UserAccoun
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,7 +123,7 @@ class UsersRepositoryAdapterIT {
 
   @Test
   void findById_notFound_returnsEmpty() {
-    assertThat(sut.findById(999_999L)).isEmpty();
+    assertThat(sut.findById(UUID.randomUUID())).isEmpty();
   }
 
   @Test

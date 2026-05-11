@@ -22,6 +22,7 @@ import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,8 +44,10 @@ class CertificateLoginUseCaseTest {
 
   @InjectMocks private CertificateLoginUseCase sut;
 
+  private static final UUID UUID_7 = UUID.fromString("00000000-0000-0000-0000-000000000007");
+
   private final AuthUserProjection activeUser =
-      new AuthUserProjection(7L, "fnmt@example.com", "FNMT User", Set.of("USER"), true);
+      new AuthUserProjection(UUID_7, "fnmt@example.com", "FNMT User", Set.of("USER"), true);
 
   private final IssuedTokenPair tokens =
       new IssuedTokenPair("access-token", "refresh-token", ACCESS_EXP, REFRESH_EXP);
@@ -56,17 +59,17 @@ class CertificateLoginUseCaseTest {
     given(authClockPort.now()).willReturn(NOW);
     given(authUsersPort.findByCertificateThumbprint("ABCDEF", NOW))
         .willReturn(Optional.of(activeUser));
-    given(authPermissionService.resolvePermissions(7L, Set.of("USER")))
+    given(authPermissionService.resolvePermissions(UUID_7, Set.of("USER")))
         .willReturn(Set.of("PROFILE:READ"));
-    given(authTokenIssuerPort.issue(7L, "fnmt@example.com", NOW)).willReturn(tokens);
+    given(authTokenIssuerPort.issue(UUID_7, "fnmt@example.com", NOW)).willReturn(tokens);
 
     AuthResult result = sut.execute(command);
 
-    assertThat(result.userId()).isEqualTo(7L);
+    assertThat(result.userId()).isEqualTo(UUID_7);
     assertThat(result.permissions()).containsExactly("PROFILE:READ");
     verify(authSessionPort)
         .save(
-            eq(7L),
+            eq(UUID_7),
             eq(AuthSessionTokenKind.ACCESS),
             eq("access-token"),
             eq(NOW),
@@ -75,7 +78,7 @@ class CertificateLoginUseCaseTest {
             eq("curl/8"));
     verify(authSessionPort)
         .save(
-            eq(7L),
+            eq(UUID_7),
             eq(AuthSessionTokenKind.REFRESH),
             eq("refresh-token"),
             eq(NOW),

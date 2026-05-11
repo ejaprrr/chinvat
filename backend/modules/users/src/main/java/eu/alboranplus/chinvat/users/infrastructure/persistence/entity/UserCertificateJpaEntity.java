@@ -7,17 +7,19 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_certificate")
 public class UserCertificateJpaEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(columnDefinition = "uuid")
+  private UUID id;
 
-  @Column(name = "user_id", nullable = false)
-  private Long userId;
+  @Column(name = "user_id", nullable = false, columnDefinition = "uuid")
+  private UUID userId;
 
   @Column(name = "thumbprint_sha256", nullable = false, unique = true, length = 64)
   private String thumbprintSha256;
@@ -31,19 +33,19 @@ public class UserCertificateJpaEntity {
   @Column(name = "revoked_at")
   private Instant revokedAt;
 
-  public Long getId() {
+  public UUID getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 
-  public Long getUserId() {
+  public UUID getUserId() {
     return userId;
   }
 
-  public void setUserId(Long userId) {
+  public void setUserId(UUID userId) {
     this.userId = userId;
   }
 

@@ -1,8 +1,10 @@
 package eu.alboranplus.chinvat.eidas.application.command;
 
+import java.util.UUID;
+
 public record CompleteEidasProfileCommand(
     String providerCode,
     String externalSubjectId,
-    Long userId,
+    UUID userId,
     String identityReference,
     String nationality) {}
