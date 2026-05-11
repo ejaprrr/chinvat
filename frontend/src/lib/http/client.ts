@@ -1,5 +1,5 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { API_BASE_URL } from "../../config";
+import { API_BASE_URL, API_PREFIX } from "../../config";
 import {
   clearTokens,
   getAccessToken,
@@ -8,8 +8,8 @@ import {
 } from "../auth/tokenStorage";
 
 const baseURL = API_BASE_URL
-  ? `${API_BASE_URL.replace(/\/$/, "")}/api/v1`
-  : "http://192.168.181.152/api/v1";
+  ? `${API_BASE_URL.replace(/\/$/, "")}${API_PREFIX}`
+  : `http://localhost:8080${API_PREFIX}`;
 
 const api = axios.create({
   baseURL,
