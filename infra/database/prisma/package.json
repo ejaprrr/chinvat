@@ -8,8 +8,10 @@
     "seed:dev": "psql $DATABASE_URL -v ON_ERROR_STOP=1 -f /seeds/dev/001_seed.sql",
     "seed:prod": "psql $DATABASE_URL -v ON_ERROR_STOP=1 -f /seeds/prod/001_seed.sql"
   },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  },
   "dependencies": {
-    "prisma": "^5.14.0"
+    "@prisma/client": "^5.22.0"
   }
 }
-

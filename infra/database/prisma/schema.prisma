@@ -53,6 +53,7 @@ model User {
   certificates  UserCertificate[]
   certificateCredentials CertificateCredential[]
   externalIdentities ExternalIdentity[]
+  identityAuditEvents IdentityAuditEvent[]
   certificateEnrollments CertificateEnrollment[]
   resetTokens   AuthPasswordReset[]
   sessions      AuthSession[]

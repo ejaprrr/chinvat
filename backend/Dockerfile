@@ -8,6 +8,8 @@ COPY backend/common/pom.xml common/pom.xml
 COPY backend/modules/users/pom.xml modules/users/pom.xml
 COPY backend/modules/rbac/pom.xml modules/rbac/pom.xml
 COPY backend/modules/auth/pom.xml modules/auth/pom.xml
+COPY backend/modules/trust/pom.xml modules/trust/pom.xml
+COPY backend/modules/eidas/pom.xml modules/eidas/pom.xml
 COPY backend/app/pom.xml app/pom.xml
 RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -q
 
@@ -16,6 +18,8 @@ COPY backend/common/src common/src
 COPY backend/modules/users/src modules/users/src
 COPY backend/modules/rbac/src modules/rbac/src
 COPY backend/modules/auth/src modules/auth/src
+COPY backend/modules/trust/src modules/trust/src
+COPY backend/modules/eidas/src modules/eidas/src
 COPY backend/app/src app/src
 # Run deterministic tests in image build; exclude infra-dependent integration suites.
 RUN --mount=type=cache,target=/root/.m2 ./mvnw test --no-transfer-progress -Dtest='*Test,!*IT,!*E2ETest'
