@@ -32,6 +32,11 @@ export async function refreshTokens(
   return response.data;
 }
 
+export async function certificateLogin(): Promise<AuthResponse> {
+  const response = await api.post<AuthResponse>("/auth/certificates/login");
+  return response.data;
+}
+
 export async function getCurrentUser(): Promise<AuthMeResponse> {
   const response = await api.get<AuthMeResponse>("/auth/me");
   return response.data;

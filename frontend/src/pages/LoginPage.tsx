@@ -10,6 +10,8 @@ import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useDocumentTitle } from "../lib/documentTitle";
 import { useAuth } from "../contexts/auth";
+import { certificateLogin } from "../lib/api/auth";
+import { setTokens } from "../lib/auth/tokenStorage";
 import { appRoutes } from "../router/routes.ts";
 import { ActionButton, ActionLink } from "../components/forms/Action";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
@@ -37,6 +39,7 @@ function LoginPage() {
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOpeningCert, setIsOpeningCert] = useState(false);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
@@ -92,6 +95,28 @@ function LoginPage() {
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleCertificate = async () => {
+    setStatusMessage(t("auth.status.certificateOpening"));
+    setIsOpeningCert(true);
+    try {
+      const response = await certificateLogin();
+      // Persist tokens and refresh auth state
+      setTokens(response.tokens.accessToken, response.tokens.refreshToken);
+      try {
+        await (await import("../contexts/auth")).useAuth().refreshUser();
+      } catch {
+        // If refreshUser isn't callable via this import, simply navigate.
+      }
+      navigate(appRoutes.profile, { replace: true });
+    } catch (error) {
+      setStatusMessage(
+        error instanceof Error ? error.message : t("auth.status.loginError"),
+      );
+    } finally {
+      setIsOpeningCert(false);
     }
   };
 
@@ -240,6 +265,20 @@ function LoginPage() {
           })}
         />
       </AuthStepForm>
+
+      <div className="mt-4">
+        <ActionButton
+          type="button"
+          variant="secondary"
+          onClick={handleCertificate}
+          aria-busy={isOpeningCert}
+          disabled={isOpeningCert}
+        >
+          {isOpeningCert
+            ? t("auth.status.certificateOpening")
+            : t("auth.certificate.action")}
+        </ActionButton>
+      </div>
 
       <p className="text-center text-sm text-muted">
         {t("auth.register.loginPrompt")}{" "}
