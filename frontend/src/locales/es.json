@@ -7,7 +7,8 @@
   },
   "accessibility": {
     "skipToContent": "Saltar al contenido principal",
-    "languageLabel": "Cambiar idioma"
+    "languageLabel": "Cambiar idioma",
+    "closeError": "Cerrar error"
   },
   "brand": {
     "projectName": "chinvat",
@@ -15,7 +16,7 @@
   },
   "auth": {
     "title": "Bienvenido de nuevo",
-    "intro": "Accede con tu usuario y contraseña. Si lo prefieres, continúa con tu certificado FNMT.",
+    "intro": "Accede con tu usuario y contraseña. Si lo prefieres, continúa con tu certificado eIDAS.",
     "divider": "o",
     "actions": {
       "continue": "Acceder",
@@ -25,16 +26,17 @@
       "backToSignIn": "Volver al acceso"
     },
     "status": {
-      "certificateOpening": "Redirigiendo al acceso con certificado…",
+      "certificateOpening": "Redirigiendo al acceso eIDAS…",
       "loginSuccess": "El acceso se ha completado correctamente.",
       "loginError": "No hemos podido iniciar tu sesión. Revisa tus datos e inténtalo de nuevo.",
       "networkError": "No se ha podido conectar con el servicio. Revisa tu conexión e inténtalo de nuevo."
     },
     "fields": {
-      "username": {
-        "label": "Usuario",
-        "hint": "Usa el nombre de usuario asignado a tu cuenta.",
-        "required": "Introduce tu nombre de usuario."
+      "email": {
+        "label": "Dirección de correo electrónico",
+        "hint": "Usa la dirección de correo electrónico asociada a tu cuenta.",
+        "required": "Introduce una dirección de correo electrónico.",
+        "invalid": "Introduce una dirección de correo electrónico válida."
       },
       "password": {
         "label": "Contraseña",
@@ -46,13 +48,13 @@
       }
     },
     "certificate": {
-      "action": "Usar certificado FNMT",
-      "hint": "Te llevaremos al acceso con certificado. Si el navegador encuentra un certificado FNMT, selecciónalo cuando te lo pida.",
-      "unavailable": "El acceso con certificado FNMT solo está disponible en navegadores de escritorio."
+      "action": "Usar certificado eIDAS",
+      "hint": "Te llevaremos al acceso eIDAS. Si el navegador encuentra un certificado eIDAS, selecciónalo cuando te lo pida.",
+      "unavailable": "El acceso eIDAS solo está disponible en navegadores de escritorio."
     },
     "register": {
       "title": "Crear cuenta",
-      "intro": "Registra un nuevo usuario con sus datos principales, contraseña y un fichero opcional de certificado FNMT.",
+      "intro": "Registra un nuevo usuario con sus datos principales, contraseña y un fichero opcional de certificado eIDAS.",
       "footer": "La solicitud de registro crea el perfil de usuario y su registro de contraseña asociado.",
       "levelNotice": "Los registros de autoservicio se crean con el nivel de acceso predeterminado: normal.",
       "loginPrompt": "¿Todavía no tienes cuenta?",
@@ -80,8 +82,8 @@
           "intro": "Crea el registro de contraseña para la nueva cuenta."
         },
         "certificate": {
-          "title": "Certificado FNMT",
-          "intro": "Adjunta ahora un certificado FNMT o sáltate este paso y termina el registro."
+          "title": "Certificado eIDAS",
+          "intro": "Adjunta ahora un certificado eIDAS o sáltate este paso y termina el registro."
         },
         "done": {
           "title": "Cuenta creada",
@@ -154,8 +156,8 @@
           "mismatch": "Las contraseñas no coinciden."
         },
         "certificate": {
-          "label": "Certificado FNMT",
-          "hint": "Opcional. Sube ahora el fichero del certificado si esta cuenta deberá acceder más adelante con FNMT.",
+          "label": "Certificado eIDAS",
+          "hint": "Opcional. Sube ahora el fichero del certificado si esta cuenta deberá acceder más adelante con eIDAS.",
           "empty": "No se ha seleccionado ningún certificado.",
           "action": "Seleccionar archivo"
         }
@@ -216,6 +218,9 @@
   "profile": {
     "title": "Tu perfil",
     "intro": "Actualiza los datos de tu cuenta y preferencias.",
+    "sections": {
+      "accountDetails": "Detalles de la cuenta"
+    },
     "actions": {
       "save": "Guardar cambios",
       "saving": "Guardando...",

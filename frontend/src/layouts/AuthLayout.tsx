@@ -1,9 +1,18 @@
 import { Outlet } from "react-router";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../contexts/auth";
 
 function AuthLayout() {
   const { t } = useTranslation();
   const isPopupWindow = typeof window !== "undefined" && Boolean(window.opener);
+  const { error } = useAuth();
+
+  useEffect(() => {
+    // surface error value for debugging
+    // eslint-disable-next-line no-console
+    console.error("AuthLayout observed auth.error:", error);
+  }, [error]);
 
   return (
     <>

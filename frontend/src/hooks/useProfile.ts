@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getCurrentUser } from "../lib/api/auth";
 import { getUserById, updateUser } from "../lib/api/users";
+import { getErrorCode } from "../lib/http/errors";
 import type { AuthMeResponse } from "../types/auth";
 import type { UpdateUserRequest, UserResponse } from "../types/user";
 
@@ -23,11 +24,7 @@ export function useProfile(userId?: number) {
         setProfile(userProfile);
       }
     } catch (profileError) {
-      setError(
-        profileError instanceof Error
-          ? profileError.message
-          : "Unable to load profile",
-      );
+      setError(getErrorCode(profileError, "PROFILE_LOAD_FAILED"));
       setMe(null);
       setProfile(null);
     } finally {

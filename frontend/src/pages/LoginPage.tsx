@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useId,
   useRef,
   useState,
@@ -10,8 +9,10 @@ import { useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useDocumentTitle } from "../lib/documentTitle";
 import { useAuth } from "../contexts/auth";
-import { certificateLogin } from "../lib/api/auth";
+import { eidasLogin } from "../lib/api/auth";
+import { getErrorDisplay } from "../lib/http/errors";
 import { setTokens } from "../lib/auth/tokenStorage";
+import { isWellFormedEmail } from "../lib/validation/user";
 import { appRoutes } from "../router/routes.ts";
 import { ActionButton, ActionLink } from "../components/forms/Action";
 import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
@@ -30,7 +31,7 @@ function LoginPage() {
 
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, refreshUser, error: authError, reportError } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,11 +51,6 @@ function LoginPage() {
   const passwordErrorId = useId();
   const capsLockWarningId = useId();
 
-  useEffect(() => {
-    // Avoid setting state synchronously in the effect body
-    Promise.resolve().then(() => setStatusMessage(null));
-  }, [email, password]);
-
   const handleCapsLock = (event: KeyboardEvent<HTMLInputElement>) => {
     setCapsLockOn(event.getModifierState("CapsLock"));
   };
@@ -67,6 +63,8 @@ function LoginPage() {
 
     if (!trimmedEmail) {
       nextErrors.email = "auth.fields.email.required";
+    } else if (!isWellFormedEmail(trimmedEmail)) {
+      nextErrors.email = "auth.fields.email.invalid";
     }
 
     if (!password) {
@@ -90,31 +88,33 @@ function LoginPage() {
       await login(trimmedEmail, password);
       navigate(appRoutes.profile, { replace: true });
     } catch (error) {
-      setStatusMessage(
-        error instanceof Error ? error.message : t("auth.status.loginError"),
-      );
+      const detail = getErrorDisplay(error, {
+        fallbackCode: "AUTH_LOGIN_FAILED",
+        fallbackMessage: t("auth.status.loginError"),
+      });
+      setStatusMessage(detail.message);
+      reportError(detail.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleCertificate = async () => {
+  const handleEidas = async () => {
     setStatusMessage(t("auth.status.certificateOpening"));
     setIsOpeningCert(true);
     try {
-      const response = await certificateLogin();
+      const response = await eidasLogin();
       // Persist tokens and refresh auth state
       setTokens(response.tokens.accessToken, response.tokens.refreshToken);
-      try {
-        await (await import("../contexts/auth")).useAuth().refreshUser();
-      } catch {
-        // If refreshUser isn't callable via this import, simply navigate.
-      }
+      await refreshUser();
       navigate(appRoutes.profile, { replace: true });
     } catch (error) {
-      setStatusMessage(
-        error instanceof Error ? error.message : t("auth.status.loginError"),
-      );
+      const detail = getErrorDisplay(error, {
+        fallbackCode: "AUTH_EIDAS_LOGIN_FAILED",
+        fallbackMessage: t("auth.status.loginError"),
+      });
+      setStatusMessage(detail.message);
+      reportError(detail.message);
     } finally {
       setIsOpeningCert(false);
     }
@@ -146,9 +146,9 @@ function LoginPage() {
         defaultValue: "Use your email and password to sign in.",
       })}
       status={
-        statusMessage
+        statusMessage || authError
           ? {
-              content: statusMessage,
+              content: statusMessage || authError,
               tone: "critical",
             }
           : null
@@ -188,6 +188,7 @@ function LoginPage() {
               ...current,
               email: undefined,
             }));
+            setStatusMessage(null);
           }}
           error={Boolean(fieldErrors.email)}
           aria-describedby={emailDescribedBy}
@@ -220,6 +221,7 @@ function LoginPage() {
               ...current,
               password: undefined,
             }));
+            setStatusMessage(null);
           }}
           autoComplete="current-password"
           enterKeyHint="go"
@@ -270,7 +272,7 @@ function LoginPage() {
         <ActionButton
           type="button"
           variant="secondary"
-          onClick={handleCertificate}
+          onClick={handleEidas}
           aria-busy={isOpeningCert}
           disabled={isOpeningCert}
         >

@@ -4,6 +4,12 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { Mail } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { confirmPasswordReset, requestPasswordReset } from "../lib/api";
+import { useAuth } from "../contexts/auth";
+import { getErrorDisplay } from "../lib/http/errors";
+import {
+  isPasswordLongEnough,
+  PASSWORD_MIN_LENGTH,
+} from "../lib/validation/password";
 import { appRoutes } from "../router/routes.ts";
 import { ActionButton, ActionLink } from "../components/forms/Action";
 import AuthPage from "../components/auth/AuthPage";
@@ -29,12 +35,12 @@ type StatusMessage = {
 } | null;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordMinLength = 8;
-
+const resetCodePattern = /^\d{6}$/;
 function ResetPasswordPage() {
   useDocumentTitle("meta.resetPasswordPageTitle");
 
   const { t } = useTranslation();
+  const { error: authError, reportError, clearError } = useAuth();
   const [currentStep, setCurrentStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -87,6 +93,7 @@ function ResetPasswordPage() {
 
   const clearStatus = () => {
     setStatusMessage(null);
+    clearError();
   };
 
   const handleEmailSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -122,16 +129,18 @@ function ResetPasswordPage() {
         });
         setCurrentStep("code");
       } catch (error) {
+        const detail = getErrorDisplay(error, {
+          fallbackCode: "AUTH_PASSWORD_RESET_REQUEST_FAILED",
+          fallbackMessage: t("auth.resetPassword.form.email.invalid"),
+        });
         setFieldErrors({
-          email:
-            error instanceof Error
-              ? error.message
-              : t("auth.resetPassword.form.email.invalid"),
+          email: t("auth.resetPassword.form.email.invalid"),
         });
         setStatusMessage({
           tone: "warning",
-          text: t("auth.resetPassword.form.email.invalid"),
+          text: detail.message,
         });
+        reportError(detail.message);
         emailInputRef.current?.focus();
       }
     })();
@@ -141,6 +150,15 @@ function ResetPasswordPage() {
     event.preventDefault();
 
     if (!code.trim()) {
+      setFieldErrors({
+        code: t("auth.resetPassword.form.code.required"),
+      });
+      clearStatus();
+      codeInputRef.current?.focus();
+      return;
+    }
+
+    if (!resetCodePattern.test(code.trim())) {
       setFieldErrors({
         code: t("auth.resetPassword.form.code.required"),
       });
@@ -167,9 +185,9 @@ function ResetPasswordPage() {
 
     if (!password) {
       nextErrors.password = t("auth.resetPassword.form.password.required");
-    } else if (password.length < passwordMinLength) {
+    } else if (!isPasswordLongEnough(password)) {
       nextErrors.password = t("auth.resetPassword.form.password.length", {
-        count: passwordMinLength,
+        count: PASSWORD_MIN_LENGTH,
       });
     }
 
@@ -207,13 +225,15 @@ function ResetPasswordPage() {
         clearStatus();
         setCurrentStep("done");
       } catch (error) {
+        const detail = getErrorDisplay(error, {
+          fallbackCode: "AUTH_PASSWORD_RESET_CONFIRM_FAILED",
+          fallbackMessage: t("auth.resetPassword.form.code.required"),
+        });
         setStatusMessage({
           tone: "warning",
-          text:
-            error instanceof Error
-              ? error.message
-              : t("auth.resetPassword.form.code.required"),
+          text: detail.message,
         });
+        reportError(detail.message);
       }
     })();
   };
@@ -274,10 +294,10 @@ function ResetPasswordPage() {
         </div>
       }
       status={
-        statusMessage
+        statusMessage || authError
           ? {
-              content: statusMessage.text,
-              tone: statusMessage.tone === "warning" ? "warning" : "default",
+              content: statusMessage?.text || authError,
+              tone: statusMessage?.tone === "warning" ? "warning" : "default",
             }
           : null
       }

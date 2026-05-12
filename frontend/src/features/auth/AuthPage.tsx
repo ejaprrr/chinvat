@@ -1,5 +1,5 @@
 import type { ReactNode, Ref } from "react";
-import AuthPageHeader from "./AuthPageHeader";
+import AuthPageHeader from "../../components/auth/AuthPageHeader";
 import { FormStatus } from "../../components/forms";
 
 type AuthStatus = {

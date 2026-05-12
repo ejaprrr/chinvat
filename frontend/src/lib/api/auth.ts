@@ -32,9 +32,14 @@ export async function refreshTokens(
   return response.data;
 }
 
-export async function certificateLogin(): Promise<AuthResponse> {
+export async function eidasLogin(): Promise<AuthResponse> {
   const response = await api.post<AuthResponse>("/auth/certificates/login");
   return response.data;
+}
+
+// Backward-compatible alias; prefer eidasLogin.
+export async function certificateLogin(): Promise<AuthResponse> {
+  return eidasLogin();
 }
 
 export async function getCurrentUser(): Promise<AuthMeResponse> {

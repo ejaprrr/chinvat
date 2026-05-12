@@ -7,7 +7,8 @@
   },
   "accessibility": {
     "skipToContent": "Skip to main content",
-    "languageLabel": "Change language"
+    "languageLabel": "Change language",
+    "closeError": "Close error"
   },
   "brand": {
     "projectName": "chinvat",
@@ -15,7 +16,7 @@
   },
   "auth": {
     "title": "Welcome back",
-    "intro": "Use your username and password. If you prefer, continue with your FNMT certificate.",
+    "intro": "Use your username and password. If you prefer, continue with your eIDAS certificate.",
     "divider": "or",
     "actions": {
       "continue": "Sign in",
@@ -25,16 +26,17 @@
       "backToSignIn": "Back to sign in"
     },
     "status": {
-      "certificateOpening": "Redirecting to certificate sign-in…",
+      "certificateOpening": "Redirecting to eIDAS sign-in…",
       "loginSuccess": "Sign-in completed successfully.",
       "loginError": "We couldn't sign you in. Check your details and try again.",
       "networkError": "We couldn't reach the service. Check your connection and try again."
     },
     "fields": {
-      "username": {
-        "label": "Username",
-        "hint": "Use the username assigned to your account.",
-        "required": "Enter your username."
+      "email": {
+        "label": "Email address",
+        "hint": "Use the email address associated with your account.",
+        "required": "Enter an email address.",
+        "invalid": "Enter a valid email address."
       },
       "password": {
         "label": "Password",
@@ -46,13 +48,13 @@
       }
     },
     "certificate": {
-      "action": "Use FNMT certificate",
-      "hint": "We'll take you to certificate sign-in. If your browser finds an FNMT certificate, choose it when prompted.",
-      "unavailable": "FNMT certificate sign-in is only available in desktop browsers."
+      "action": "Use eIDAS certificate",
+      "hint": "We'll take you to eIDAS sign-in. If your browser finds an eIDAS certificate, choose it when prompted.",
+      "unavailable": "eIDAS sign-in is only available in desktop browsers."
     },
     "register": {
       "title": "Create your account",
-      "intro": "Register a new user with the core identity data, password, and an optional FNMT certificate file.",
+      "intro": "Register a new user with the core identity data, password, and an optional eIDAS certificate file.",
       "footer": "The registration request creates the user profile and the related password record.",
       "levelNotice": "New self-service registrations are created with the default access level: normal.",
       "loginPrompt": "Don't have an account yet?",
@@ -80,8 +82,8 @@
           "intro": "Create the password record for the new account."
         },
         "certificate": {
-          "title": "FNMT certificate",
-          "intro": "Attach an FNMT certificate now, or skip this step and finish the registration."
+          "title": "eIDAS certificate",
+          "intro": "Attach an eIDAS certificate now, or skip this step and finish the registration."
         },
         "done": {
           "title": "Account created",
@@ -154,8 +156,8 @@
           "mismatch": "The passwords do not match."
         },
         "certificate": {
-          "label": "FNMT certificate",
-          "hint": "Optional. Upload a certificate file now if this account should later sign in with FNMT.",
+          "label": "eIDAS certificate",
+          "hint": "Optional. Upload a certificate file now if this account should later sign in with eIDAS.",
           "empty": "No certificate selected.",
           "action": "Select file"
         }
@@ -216,6 +218,9 @@
   "profile": {
     "title": "Your profile",
     "intro": "Update your account details and preferences.",
+    "sections": {
+      "accountDetails": "Account details"
+    },
     "actions": {
       "save": "Save changes",
       "saving": "Saving...",

@@ -18,7 +18,7 @@ function FormStatus({
   const isAssertive = tone === "critical" || tone === "warning";
 
   return (
-    <p
+    <div
       className={cx("status-message", `status-message--${tone}`, className)}
       role={isAssertive ? "alert" : "status"}
       aria-live={isAssertive ? "assertive" : "polite"}
@@ -32,7 +32,7 @@ function FormStatus({
         />
       ) : null}
       {children}
-    </p>
+    </div>
   );
 }
 

@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { API_BASE_URL, API_PREFIX } from "../../config";
+import { normalizeHttpError } from "./errors";
 import {
   clearTokens,
   getAccessToken,
@@ -67,7 +68,7 @@ api.interceptors.response.use(
       originalRequest._retry ||
       !getRefreshToken()
     ) {
-      return Promise.reject(error);
+      return Promise.reject(normalizeHttpError(error));
     }
 
     originalRequest._retry = true;
@@ -87,7 +88,7 @@ api.interceptors.response.use(
       ) {
         window.location.assign("/login");
       }
-      return Promise.reject(error);
+      return Promise.reject(normalizeHttpError(error));
     }
 
     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

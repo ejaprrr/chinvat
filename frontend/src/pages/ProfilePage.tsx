@@ -41,6 +41,15 @@ import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
 import { useDocumentTitle } from "../lib/documentTitle";
 import { useGeocoding } from "../hooks/useGeocoding";
 import { useProfile } from "../hooks/useProfile";
+import { getErrorDisplay } from "../lib/http/errors";
+import { isPasswordLongEnough } from "../lib/validation/password";
+import {
+  EMAIL_MAX_LENGTH,
+  FULL_NAME_MAX_LENGTH,
+  PHONE_MAX_LENGTH,
+  USERNAME_MAX_LENGTH,
+  isWellFormedEmail,
+} from "../lib/validation/user";
 
 type ProfileForm = {
   username: string;
@@ -65,10 +74,6 @@ const initialProfile: ProfileForm = {
   defaultLanguage: "en",
   locationQuery: "",
 };
-
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
 
 function countryCodeToFlag(countryCode: CountryCode) {
   return countryCode.replace(/./g, (char) =>
@@ -108,7 +113,13 @@ function getDefaultPhoneCountry(language: string | undefined): CountryCode {
 
 function ProfilePage() {
   const { t } = useTranslation();
-  const { user, changePassword } = useAuth();
+  const {
+    user,
+    changePassword,
+    error: authError,
+    reportError,
+    clearError,
+  } = useAuth();
   const { profile: backendProfile, saveProfile } = useProfile(user?.id);
   const uid = useId();
   const [profile, setProfile] = useState<ProfileForm>(initialProfile);
@@ -263,6 +274,7 @@ function ProfilePage() {
     setProfile((current) => ({ ...current, [field]: value }));
     setProfileErrors((current) => ({ ...current, [field]: undefined }));
     setStatusMessage(null);
+    clearError();
   };
 
   const validateProfile = () => {
@@ -270,17 +282,25 @@ function ProfilePage() {
 
     if (!profile.username.trim())
       errors.username = t("profile.fields.username.required");
+    else if (profile.username.trim().length > USERNAME_MAX_LENGTH)
+      errors.username = t("profile.fields.username.required");
+
     if (!profile.fullName.trim())
+      errors.fullName = t("profile.fields.fullName.required");
+    else if (profile.fullName.trim().length > FULL_NAME_MAX_LENGTH)
       errors.fullName = t("profile.fields.fullName.required");
 
     if (!profile.email.trim()) {
       errors.email = t("profile.fields.email.required");
-    } else if (!isValidEmail(profile.email)) {
+    } else if (
+      !isWellFormedEmail(profile.email.trim()) ||
+      profile.email.trim().length > EMAIL_MAX_LENGTH
+    ) {
       errors.email = t("profile.fields.email.invalid");
     }
 
-    if (!profile.locationQuery.trim()) {
-      errors.locationQuery = t("profile.fields.location.required");
+    if (profile.phoneNumber.trim().length > PHONE_MAX_LENGTH) {
+      errors.phoneNumber = t("profile.fields.phoneNumber.hint");
     }
 
     return errors;
@@ -401,13 +421,15 @@ function ProfilePage() {
           text: t("profile.status.saveSuccess"),
         });
       } catch (error) {
+        const detail = getErrorDisplay(error, {
+          fallbackCode: "PROFILE_UPDATE_FAILED",
+          fallbackMessage: t("profile.status.saveError"),
+        });
         setStatusMessage({
           tone: "critical",
-          text:
-            error instanceof Error
-              ? error.message
-              : t("profile.status.saveError"),
+          text: detail.message,
         });
+        reportError(detail.message);
       }
     })();
   };
@@ -429,7 +451,7 @@ function ProfilePage() {
       nextErrors.currentPassword = t("profile.fields.currentPassword.required");
     if (!newPassword) {
       nextErrors.newPassword = t("profile.fields.newPassword.required");
-    } else if (newPassword.length < 8) {
+    } else if (!isPasswordLongEnough(newPassword)) {
       nextErrors.newPassword = t("profile.fields.newPassword.length");
     }
     if (newPassword !== confirmPassword) {
@@ -457,13 +479,15 @@ function ProfilePage() {
           text: t("profile.status.passwordChangeSuccess"),
         });
       } catch (error) {
+        const detail = getErrorDisplay(error, {
+          fallbackCode: "AUTH_PASSWORD_CHANGE_FAILED",
+          fallbackMessage: t("profile.status.passwordChangeError"),
+        });
         setStatusMessage({
           tone: "critical",
-          text:
-            error instanceof Error
-              ? error.message
-              : t("profile.status.passwordChangeError"),
+          text: detail.message,
         });
+        reportError(detail.message);
       }
     })();
   };
@@ -482,10 +506,10 @@ function ProfilePage() {
           title={t("profile.title")}
           intro={t("profile.intro")}
           status={
-            statusMessage
+            statusMessage || authError
               ? {
-                  content: statusMessage.text,
-                  tone: statusMessage.tone,
+                  content: statusMessage?.text || authError,
+                  tone: statusMessage?.tone || "critical",
                 }
               : null
           }
@@ -497,7 +521,9 @@ function ProfilePage() {
             >
               <AuthFormSection className="grid gap-3.5 md:grid-cols-2">
                 <div className="flex flex-col gap-1 md:col-span-2">
-                  <p className="auth-progress-text">Account details</p>
+                  <p className="auth-progress-text">
+                    {t("profile.sections.accountDetails")}
+                  </p>
                 </div>
 
                 <TextInput

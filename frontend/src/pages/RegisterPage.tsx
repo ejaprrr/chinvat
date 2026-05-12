@@ -35,6 +35,18 @@ import FormField from "../components/forms/FormField";
 import TextInput from "../components/forms/TextInput";
 import { useAuth } from "../contexts/auth";
 import { useGeocoding } from "../hooks/useGeocoding";
+import { getErrorDisplay } from "../lib/http/errors";
+import {
+  isPasswordLongEnough,
+  PASSWORD_MIN_LENGTH,
+} from "../lib/validation/password";
+import {
+  EMAIL_MAX_LENGTH,
+  FULL_NAME_MAX_LENGTH,
+  PHONE_MAX_LENGTH,
+  USERNAME_MAX_LENGTH,
+  isWellFormedEmail,
+} from "../lib/validation/user";
 
 type Step = "identity" | "contact" | "security" | "done";
 
@@ -101,16 +113,12 @@ function getDefaultPhoneCountry(language: string | undefined): CountryCode {
   return "ES";
 }
 
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
 function RegisterPage() {
   useDocumentTitle("meta.registerPageTitle");
 
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, error: authError, reportError, clearError } = useAuth();
   const uid = useId();
 
   // ── IDs for accessibility ──────────────────────────────────────────────────
@@ -227,6 +235,7 @@ function RegisterPage() {
     setValues((prev) => ({ ...prev, [field]: value }));
     setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
     clearStatus();
+    clearError();
   };
 
   const goToStep = (step: Step) => {
@@ -249,11 +258,15 @@ function RegisterPage() {
     const errors: FieldErrors = {};
     if (!values.username.trim()) {
       errors.username = t("auth.register.errors.usernameRequired");
+    } else if (values.username.trim().length > USERNAME_MAX_LENGTH) {
+      errors.username = t("auth.register.errors.usernameRequired");
     }
     if (!values.fullName.trim()) {
       errors.fullName = t("auth.register.errors.fullNameRequired");
+    } else if (values.fullName.trim().length > FULL_NAME_MAX_LENGTH) {
+      errors.fullName = t("auth.register.errors.fullNameRequired");
     }
-    if (!values.phoneNumber.trim()) {
+    if (values.phoneNumber.trim().length > PHONE_MAX_LENGTH) {
       errors.phoneNumber = t("auth.register.errors.phoneRequired");
     }
     return errors;
@@ -263,12 +276,13 @@ function RegisterPage() {
     const errors: FieldErrors = {};
     if (!values.email.trim()) {
       errors.email = t("auth.register.errors.emailRequired");
-    } else if (!isValidEmail(values.email)) {
+    } else if (
+      !isWellFormedEmail(values.email.trim()) ||
+      values.email.trim().length > EMAIL_MAX_LENGTH
+    ) {
       errors.email = t("auth.register.errors.emailInvalid");
     }
-    if (!resolvedLocation) {
-      errors.location = t("auth.register.errors.locationRequired");
-    }
+
     return errors;
   };
 
@@ -276,8 +290,17 @@ function RegisterPage() {
     const errors: FieldErrors = {};
     if (!values.password) {
       errors.password = t("auth.register.errors.passwordRequired");
+    } else if (!isPasswordLongEnough(values.password)) {
+      errors.password = t("auth.register.fields.password.length", {
+        count: PASSWORD_MIN_LENGTH,
+      });
     }
-    if (values.password !== values.confirmPassword) {
+    if (!values.confirmPassword) {
+      errors.confirmPassword = t(
+        "auth.register.fields.confirmPassword.required",
+      );
+    }
+    if (values.confirmPassword && values.password !== values.confirmPassword) {
       errors.confirmPassword = t("auth.register.errors.passwordMismatch");
     }
     return errors;
@@ -351,13 +374,15 @@ function RegisterPage() {
       });
       navigate(appRoutes.profile, { replace: true });
     } catch (error) {
+      const detail = getErrorDisplay(error, {
+        fallbackCode: "AUTH_REGISTER_FAILED",
+        fallbackMessage: t("auth.register.status.error"),
+      });
       setStatusMessage({
         tone: "critical",
-        text:
-          error instanceof Error
-            ? error.message
-            : t("auth.register.status.error"),
+        text: detail.message,
       });
+      reportError(detail.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -468,10 +493,10 @@ function RegisterPage() {
         </div>
       }
       status={
-        statusMessage
+        statusMessage || authError
           ? {
-              content: statusMessage.text,
-              tone: statusMessage.tone === "critical" ? "critical" : "default",
+              content: statusMessage?.text || authError,
+              tone: statusMessage?.tone === "critical" ? "critical" : "default",
             }
           : null
       }

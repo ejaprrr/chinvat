@@ -9,6 +9,7 @@ import {
 } from "react";
 import * as authApi from "../../lib/api/auth";
 import * as usersApi from "../../lib/api/users";
+import { getErrorDisplay } from "../../lib/http/errors";
 import {
   clearTokens,
   getAccessToken,
@@ -27,6 +28,7 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   clearError: () => void;
+  reportError: (message: string) => void;
   hasRole: (role: string) => boolean;
   hasPermission: (permission: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
@@ -42,18 +44,11 @@ export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
 
-function getErrorMessage(error: unknown, fallback: string) {
-  if (typeof error === "object" && error && "response" in error) {
-    const response = (error as { response?: { data?: { message?: string } } })
-      .response;
-    return response?.data?.message || fallback;
-  }
-
-  if (error instanceof Error) {
-    return error.message || fallback;
-  }
-
-  return fallback;
+function getErrorMessage(error: unknown, fallbackCode: string) {
+  return getErrorDisplay(error, {
+    fallbackCode,
+    fallbackMessage: fallbackCode,
+  }).message;
 }
 
 interface AuthProviderProps {
@@ -66,8 +61,44 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!error) return;
+    try {
+      // expose last error for debugging regardless of how it was set
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (typeof window !== "undefined") window.__lastAuthError = error;
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line no-console
+    console.error("AuthProvider.error changed:", error);
+  }, [error]);
+
   const clearError = useCallback(() => {
+    try {
+      // Debug: log when error is cleared and stack trace
+      // eslint-disable-next-line no-console
+      console.error("clearError() called. Stack:", new Error().stack);
+    } catch {
+      /* ignore */
+    }
     setError(null);
+  }, []);
+
+  const reportError = useCallback((message: string) => {
+    try {
+      // Helpful debug hook for runtime inspection
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (typeof window !== "undefined") window.__lastAuthError = message;
+    } catch {
+      /* ignore */
+    }
+    // also log so it's visible in devtools console when reproducing
+    // eslint-disable-next-line no-console
+    console.error("AuthProvider.reportError:", message);
+    setError(message);
   }, []);
 
   const refreshUser = useCallback(async () => {
@@ -80,7 +111,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (refreshError) {
       setUser(null);
       setAuthenticated(false);
-      setError(getErrorMessage(refreshError, "Unable to restore session"));
+      setError(getErrorMessage(refreshError, "AUTH_SESSION_RESTORE_FAILED"));
       clearTokens();
     } finally {
       setLoading(false);
@@ -109,7 +140,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (loginError) {
       setAuthenticated(false);
       setUser(null);
-      setError(getErrorMessage(loginError, "Login failed"));
+      setError(getErrorMessage(loginError, "AUTH_LOGIN_FAILED"));
       clearTokens();
       throw loginError;
     } finally {
@@ -128,7 +159,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (registerError) {
       setAuthenticated(false);
       setUser(null);
-      setError(getErrorMessage(registerError, "Registration failed"));
+      setError(getErrorMessage(registerError, "AUTH_REGISTER_FAILED"));
       clearTokens();
       throw registerError;
     } finally {
@@ -176,7 +207,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             : current,
         );
       } catch (profileError) {
-        setError(getErrorMessage(profileError, "Profile update failed"));
+        setError(getErrorMessage(profileError, "PROFILE_UPDATE_FAILED"));
         throw profileError;
       } finally {
         setLoading(false);
@@ -191,7 +222,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setLoading(true);
         await authApi.changePassword({ currentPassword, newPassword });
       } catch (passwordError) {
-        setError(getErrorMessage(passwordError, "Password change failed"));
+        setError(getErrorMessage(passwordError, "AUTH_PASSWORD_CHANGE_FAILED"));
         throw passwordError;
       } finally {
         setLoading(false);
@@ -231,6 +262,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     refreshUser,
     clearError,
+    reportError,
     hasRole,
     hasPermission,
     hasAnyRole,
