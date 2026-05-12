@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { getCurrentUser } from "../api/auth";
-import { getUserById, updateUser } from "../api/users";
+import { getCurrentUser } from "../lib/api/auth";
+import { getUserById, updateUser } from "../lib/api/users";
 import type { AuthMeResponse } from "../types/auth";
 import type { UpdateUserRequest, UserResponse } from "../types/user";
 
@@ -36,7 +36,6 @@ export function useProfile(userId?: number) {
   }, [userId]);
 
   useEffect(() => {
-    // Defer refresh to avoid synchronous state changes in effect
     Promise.resolve().then(() => void refreshProfile());
   }, [refreshProfile]);
 

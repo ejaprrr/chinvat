@@ -1,4 +1,4 @@
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useDocumentTitle } from "../lib/documentTitle";
 
 import {
   useEffect,
@@ -17,8 +17,8 @@ import {
   type CountryCode,
 } from "libphonenumber-js/min";
 import { useTranslation } from "react-i18next";
-import { languageLabels, type Locale } from "../i18n";
-import { appRoutes } from "../router/paths";
+import { languageLabels, type Locale } from "../lib/i18n";
+import { appRoutes } from "../router/routes.ts";
 import { ActionButton, ActionLink } from "../components/forms/Action";
 import { AuthStepForm, FormActions } from "../components/auth/AuthForm";
 import AuthPage from "../components/auth/AuthPage";
@@ -33,7 +33,7 @@ import PhoneNumberField from "../components/forms/PhoneNumberField";
 import type { PhoneCountryOption } from "../components/forms/PhoneCountrySelect";
 import FormField from "../components/forms/FormField";
 import TextInput from "../components/forms/TextInput";
-import { useAuth } from "../auth/useAuth";
+import { useAuth } from "../contexts/auth";
 import { useGeocoding } from "../hooks/useGeocoding";
 
 type Step = "identity" | "contact" | "security" | "done";

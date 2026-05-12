@@ -1,14 +1,46 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
-import * as authApi from "../api/auth";
-import * as usersApi from "../api/users";
-import { clearTokens, getAccessToken, setTokens } from "./tokenStorage";
-import { AuthContext, type AuthContextType } from "./AuthContext";
-import type { AuthUser, RegisterRequest } from "../types/auth";
-import type { UpdateUserRequest } from "../types/user";
+/* eslint-disable react-refresh/only-export-components */
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
+import * as authApi from "../../lib/api/auth";
+import * as usersApi from "../../lib/api/users";
+import {
+  clearTokens,
+  getAccessToken,
+  setTokens,
+} from "../../lib/auth/tokenStorage";
+import type { AuthUser, RegisterRequest } from "../../types/auth";
+import type { UpdateUserRequest } from "../../types/user";
 
-interface AuthProviderProps {
-  children: ReactNode;
+export interface AuthContextType {
+  user: AuthUser | null;
+  loading: boolean;
+  authenticated: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  clearError: () => void;
+  hasRole: (role: string) => boolean;
+  hasPermission: (permission: string) => boolean;
+  hasAnyRole: (roles: string[]) => boolean;
+  hasAnyPermission: (permissions: string[]) => boolean;
+  updateProfile: (data: UpdateUserRequest) => Promise<void>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+  ) => Promise<void>;
 }
+
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined,
+);
 
 function getErrorMessage(error: unknown, fallback: string) {
   if (typeof error === "object" && error && "response" in error) {
@@ -22,6 +54,10 @@ function getErrorMessage(error: unknown, fallback: string) {
   }
 
   return fallback;
+}
+
+interface AuthProviderProps {
+  children: ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
@@ -59,7 +95,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
 
-    // Defer updating loading state to avoid synchronous setState during render
     Promise.resolve().then(() => setLoading(false));
   }, [refreshUser]);
 
@@ -205,4 +240,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }

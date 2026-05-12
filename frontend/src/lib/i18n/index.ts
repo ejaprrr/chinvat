@@ -1,10 +1,10 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
-import ca from "./locales/ca.json";
-import en from "./locales/en.json";
-import es from "./locales/es.json";
-import eu from "./locales/eu.json";
-import gl from "./locales/gl.json";
+import ca from "../../locales/ca.json";
+import en from "../../locales/en.json";
+import es from "../../locales/es.json";
+import eu from "../../locales/eu.json";
+import gl from "../../locales/gl.json";
 
 export const resources = {
   es: { translation: es },

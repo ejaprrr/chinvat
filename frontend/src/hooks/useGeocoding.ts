@@ -29,7 +29,6 @@ export function useGeocoding(
     const normalizedQuery = query.trim().replace(/\s+/g, " ");
 
     if (normalizedQuery.length < 3) {
-      // Avoid synchronous setState inside effect body
       Promise.resolve().then(() => {
         setData([]);
         setLoading(false);

@@ -1,18 +1,16 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-type DocumentTitleKey =
+export type DocumentTitleKey =
   | "meta.pageTitle"
   | "meta.registerPageTitle"
   | "meta.resetPasswordPageTitle"
   | "meta.profilePageTitle";
 
-function useDocumentTitle(titleKey: DocumentTitleKey) {
+export function useDocumentTitle(titleKey: DocumentTitleKey) {
   const { i18n, t } = useTranslation();
 
   useEffect(() => {
     document.title = t(titleKey);
   }, [i18n.language, i18n.resolvedLanguage, t, titleKey]);
 }
-
-export default useDocumentTitle;

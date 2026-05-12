@@ -1,4 +1,4 @@
-import api from "./client";
+import api from "../http/client";
 import type {
   AuthMeResponse,
   AuthResponse,
@@ -11,7 +11,7 @@ import type {
   PasswordResetRequestResponse,
   RefreshRequest,
   RegisterRequest,
-} from "../types/auth";
+} from "../../types/auth";
 
 export async function login(payload: LoginRequest): Promise<AuthResponse> {
   const response = await api.post<AuthResponse>("/auth/login", payload);
@@ -29,6 +29,11 @@ export async function refreshTokens(
   payload: RefreshRequest,
 ): Promise<AuthResponse> {
   const response = await api.post<AuthResponse>("/auth/refresh", payload);
+  return response.data;
+}
+
+export async function certificateLogin(): Promise<AuthResponse> {
+  const response = await api.post<AuthResponse>("/auth/certificates/login");
   return response.data;
 }
 
