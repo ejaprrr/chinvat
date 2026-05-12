@@ -1,0 +1,194 @@
+{
+  "meta": {
+    "pageTitle": "Accedeix a chinvat",
+    "registerPageTitle": "Crea un compte | chinvat",
+    "resetPasswordPageTitle": "Restableix la contrasenya | chinvat",
+    "profilePageTitle": "Perfil | chinvat"
+  },
+  "accessibility": {
+    "skipToContent": "Salta al contingut principal",
+    "languageLabel": "Canviar idioma",
+    "closeError": "Tancar error"
+  },
+  "brand": {
+    "projectName": "chinvat",
+    "label": "Verificació d'identitat"
+  },
+  "auth": {
+    "title": "Benvingut de nou",
+    "intro": "Accedeix amb el teu usuari i contrasenya. Si ho prefereixes, continua amb el teu certificat eIDAS.",
+    "divider": "o",
+    "actions": {
+      "continue": "Accedeix",
+      "submitting": "Accedint...",
+      "resetPassword": "Restableix la contrasenya",
+      "continueToReset": "Continua amb la recuperació",
+      "backToSignIn": "Torna a l'accés"
+    },
+    "status": {
+      "certificateOpening": "S'està redirigint l'accés eIDAS…",
+      "loginSuccess": "L'accés s'ha completat correctament.",
+      "loginError": "No hem pogut iniciar la sessió. Revisa les dades i torna-ho a provar.",
+      "networkError": "No s'ha pogut connectar amb el servei. Revisa la connexió i torna-ho a provar."
+    },
+    "fields": {
+      "email": {
+        "label": "Adreça de correu electrònic",
+        "hint": "Fes servir l'adreça de correu electrònic associada al teu compte.",
+        "required": "Introdueix una adreça de correu electrònic.",
+        "invalid": "Introdueix una adreça de correu electrònic vàlida."
+      },
+      "password": {
+        "label": "Contrasenya",
+        "hint": "La contrasenya distingeix majúscules i minúscules.",
+        "required": "Introdueix la teva contrasenya.",
+        "show": "Mostra la contrasenya",
+        "hide": "Amaga la contrasenya",
+        "capsLock": "El bloqueig de majúscules està activat."
+      }
+    },
+    "certificate": {
+      "action": "Fes servir certificat eIDAS",
+      "hint": "Et portarem a l'accés eIDAS. Si el navegador troba un certificat eIDAS, selecciona'l quan t'ho demani.",
+      "unavailable": "L'accés eIDAS només està disponible en navegadors d'escriptori."
+    },
+    "resetPassword": {
+      "title": "Restableix la contrasenya",
+      "intro": "Fes servir el teu correu, verifica el codi i estableix una contrasenya nova.",
+      "progress": {
+        "label": "Passos de recuperació de contrasenya",
+        "current": "Pas {{current}} de {{total}}",
+        "email": "Correu",
+        "code": "Codi",
+        "password": "Contrasenya"
+      },
+      "form": {
+        "codeSent": "Hem enviat un codi de verificació a {{email}}.",
+        "emailStepTitle": "Restableix la contrasenya",
+        "emailStepIntro": "Escriu el correu vinculat al teu compte i t'enviarem un codi de verificació.",
+        "codeStepTitle": "Introdueix el codi",
+        "codeStepIntro": "Revisa el teu correu i enganxa aquí el codi de verificació.",
+        "passwordStepTitle": "Crea una contrasenya nova",
+        "passwordStepIntro": "Tria una contrasenya nova que no hagis fet servir recentment.",
+        "doneTitle": "Contrasenya actualitzada",
+        "doneIntro": "La contrasenya ja està llesta. Ja pots iniciar sessió.",
+        "doneBody": "La teva contrasenya s'ha actualitzat. Ja pots accedir amb les credencials noves.",
+        "email": {
+          "label": "Correu electrònic",
+          "hint": "Fes servir el correu associat al teu compte perquè et puguem enviar un codi de verificació.",
+          "required": "Introdueix el correu associat al teu compte.",
+          "invalid": "Introdueix un correu electrònic vàlid.",
+          "submit": "Enviar codi de verificació"
+        },
+        "code": {
+          "label": "Codi de verificació",
+          "hint": "Introdueix el codi rebut per correu. Un únic camp és més fàcil d'enganxar i funciona millor amb tecnologies d'assistència.",
+          "required": "Introdueix el codi de verificació.",
+          "submit": "Continua",
+          "changeEmail": "Prova amb un altre correu"
+        },
+        "password": {
+          "label": "Contrasenya nova",
+          "hint": "Fes servir almenys 8 caràcters. Una frase de contrasenya més llarga sol ser més fàcil de recordar i més difícil d'endevinar.",
+          "required": "Introdueix una contrasenya nova.",
+          "length": "Fes servir almenys {{count}} caràcters.",
+          "submit": "Restableix la contrasenya",
+          "back": "Torna"
+        },
+        "confirmPassword": {
+          "label": "Confirma la contrasenya nova",
+          "hint": "Torna a escriure la contrasenya exactament igual que a dalt.",
+          "required": "Confirma la contrasenya nova.",
+          "mismatch": "Les contrasenyes no coincideixen."
+        }
+      }
+    }
+  },
+  "profile": {
+    "title": "El teu perfil",
+    "intro": "Actualitza les dades del teu compte i preferències.",
+    "sections": {
+      "accountDetails": "Dades del compte"
+    },
+    "actions": {
+      "save": "Desa els canvis",
+      "saving": "Desant...",
+      "changePassword": "Canvia la contrasenya",
+      "changingPassword": "Canviant la contrasenya...",
+      "discard": "Descartar canvis",
+      "updatePassword": "Actualitzar contrasenya"
+    },
+    "status": {
+      "saveSuccess": "Perfil actualitzat correctament.",
+      "saveError": "No s'ha pogut actualitzar el perfil. Torna-ho a provar.",
+      "passwordChangeSuccess": "Contrasenya canviada correctament.",
+      "passwordChangeError": "No s'ha pogut canviar la contrasenya. Torna-ho a provar.",
+      "networkError": "No s'ha pogut connectar amb el servei. Revisa la connexió i torna-ho a provar.",
+      "reviewFields": "Revisa els camps destacats del perfil.",
+      "previewSave": "Perfil guardat a la previsualització de la IU. Connecta aquesta acció al teu backend quan estigui llest.",
+      "changesDiscarded": "Els canvis no guardats del perfil s'han descartat.",
+      "reviewPasswordFields": "Revisa els camps destacats de contrasenya."
+    },
+    "fields": {
+      "username": {
+        "label": "Usuari",
+        "hint": "El teu identificador d'accés.",
+        "required": "Introdueix un nom d'usuari."
+      },
+      "fullName": {
+        "label": "Nom complet",
+        "hint": "El teu nom de visualització.",
+        "required": "Introdueix el nom complet."
+      },
+      "phoneNumber": {
+        "label": "Número de telèfon",
+        "hint": "Opcional. El teu número de contacte.",
+        "countryHint": "Codi de marcatge seleccionat {{dialCode}}."
+      },
+      "email": {
+        "label": "Adreça de correu electrònic",
+        "hint": "El teu correu principal per a notificacions.",
+        "required": "Introdueix una adreça de correu electrònic.",
+        "invalid": "Introdueix una adreça de correu electrònic vàlida."
+      },
+      "location": {
+        "label": "Ubicació",
+        "hint": "Opcional. La teva adreça.",
+        "required": "Cerca la teva ubicació.",
+        "loading": "Cercant ubicacions...",
+        "resolved": "Ubicació establerta a {{location}}."
+      },
+      "errors": {
+        "usernameRequired": "Introdueix un nom d'usuari.",
+        "fullNameRequired": "Introdueix el nom complet.",
+        "phoneRequired": "Introdueix un número de telèfon amb el prefix del país.",
+        "emailRequired": "Introdueix una adreça de correu electrònic.",
+        "emailInvalid": "Introdueix una adreça de correu electrònic vàlida.",
+        "locationRequired": "Tria una ubicació de les suggerències.",
+        "passwordRequired": "Introdueix una contrasenya.",
+        "passwordMismatch": "Les contrasenyes no coincideixen."
+      },
+      "defaultLanguage": {
+        "label": "Idioma per defecte",
+        "hint": "El teu idioma preferit per a la interfície."
+      },
+      "currentPassword": {
+        "label": "Contrasenya actual",
+        "hint": "Introdueix la teva contrasenya actual per confirmar.",
+        "required": "Introdueix la teva contrasenya actual."
+      },
+      "newPassword": {
+        "label": "Nova contrasenya",
+        "hint": "Tria una nova contrasenya.",
+        "required": "Introdueix una nova contrasenya.",
+        "length": "Utilitza almenys 8 caràcters."
+      },
+      "confirmPassword": {
+        "label": "Confirma la nova contrasenya",
+        "hint": "Torna a introduir la nova contrasenya.",
+        "required": "Confirma la teva nova contrasenya.",
+        "mismatch": "Les contrasenyes no coincideixen."
+      }
+    }
+  }
+}

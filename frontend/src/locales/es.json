@@ -1,0 +1,295 @@
+{
+  "meta": {
+    "pageTitle": "Acceder a chinvat",
+    "registerPageTitle": "Crear cuenta | chinvat",
+    "resetPasswordPageTitle": "Restablecer contraseña | chinvat",
+    "profilePageTitle": "Perfil | chinvat"
+  },
+  "accessibility": {
+    "skipToContent": "Saltar al contenido principal",
+    "languageLabel": "Cambiar idioma",
+    "closeError": "Cerrar error"
+  },
+  "brand": {
+    "projectName": "chinvat",
+    "label": "Verificación de identidad"
+  },
+  "auth": {
+    "title": "Bienvenido de nuevo",
+    "intro": "Accede con tu usuario y contraseña. Si lo prefieres, continúa con tu certificado eIDAS.",
+    "divider": "o",
+    "actions": {
+      "continue": "Acceder",
+      "submitting": "Accediendo...",
+      "resetPassword": "Restablecer contraseña",
+      "continueToReset": "Continuar con la recuperación",
+      "backToSignIn": "Volver al acceso"
+    },
+    "status": {
+      "certificateOpening": "Redirigiendo al acceso eIDAS…",
+      "loginSuccess": "El acceso se ha completado correctamente.",
+      "loginError": "No hemos podido iniciar tu sesión. Revisa tus datos e inténtalo de nuevo.",
+      "networkError": "No se ha podido conectar con el servicio. Revisa tu conexión e inténtalo de nuevo."
+    },
+    "fields": {
+      "email": {
+        "label": "Dirección de correo electrónico",
+        "hint": "Usa la dirección de correo electrónico asociada a tu cuenta.",
+        "required": "Introduce una dirección de correo electrónico.",
+        "invalid": "Introduce una dirección de correo electrónico válida."
+      },
+      "password": {
+        "label": "Contraseña",
+        "hint": "La contraseña distingue mayúsculas y minúsculas.",
+        "required": "Introduce tu contraseña.",
+        "show": "Mostrar contraseña",
+        "hide": "Ocultar contraseña",
+        "capsLock": "Bloq Mayús está activado."
+      }
+    },
+    "certificate": {
+      "action": "Usar certificado eIDAS",
+      "hint": "Te llevaremos al acceso eIDAS. Si el navegador encuentra un certificado eIDAS, selecciónalo cuando te lo pida.",
+      "unavailable": "El acceso eIDAS solo está disponible en navegadores de escritorio."
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "intro": "Registra un nuevo usuario con sus datos principales, contraseña y un fichero opcional de certificado eIDAS.",
+      "footer": "La solicitud de registro crea el perfil de usuario y su registro de contraseña asociado.",
+      "levelNotice": "Los registros de autoservicio se crean con el nivel de acceso predeterminado: normal.",
+      "loginPrompt": "¿Todavía no tienes cuenta?",
+      "progress": {
+        "current": "Paso {{current}} de {{total}}"
+      },
+      "actions": {
+        "open": "Crear cuenta",
+        "next": "Continuar",
+        "back": "Volver",
+        "submit": "Crear cuenta",
+        "submitting": "Creando cuenta..."
+      },
+      "steps": {
+        "identity": {
+          "title": "Identidad de la cuenta",
+          "intro": "Empieza con los campos principales que definen al nuevo usuario."
+        },
+        "contact": {
+          "title": "Contacto y dirección",
+          "intro": "Añade el correo principal y un único campo de ubicación para que podamos normalizarlo en la base de datos."
+        },
+        "security": {
+          "title": "Contraseña y acceso",
+          "intro": "Crea el registro de contraseña para la nueva cuenta."
+        },
+        "certificate": {
+          "title": "Certificado eIDAS",
+          "intro": "Adjunta ahora un certificado eIDAS o sáltate este paso y termina el registro."
+        },
+        "done": {
+          "title": "Cuenta creada",
+          "intro": "La nueva cuenta ya está lista para iniciar sesión."
+        }
+      },
+      "status": {
+        "success": "La cuenta se ha creado correctamente. Ya puedes iniciar sesión.",
+        "error": "No hemos podido crear la cuenta. Revisa los datos e inténtalo de nuevo.",
+        "networkError": "No se ha podido conectar con el servicio de registro. Revisa tu conexión e inténtalo de nuevo."
+      },
+      "fields": {
+        "username": {
+          "label": "Usuario",
+          "hint": "Este identificador se usa para iniciar sesión y debe ser único.",
+          "required": "Introduce un nombre de usuario."
+        },
+        "fullName": {
+          "label": "Nombre completo",
+          "hint": "Introduce el nombre completo de la persona o el contacto institucional.",
+          "required": "Introduce el nombre completo."
+        },
+        "phoneNumber": {
+          "label": "Teléfono",
+          "hint": "Opcional. El prefijo del país se detecta según el idioma actual de la página y puedes cambiarlo antes de escribir el número local.",
+          "countryCodeLabel": "Prefijo internacional del teléfono",
+          "countryCodeHint": "Prefijo telefónico seleccionado: {{dialCode}}. Puedes buscar por país, código ISO o prefijo."
+        },
+        "email": {
+          "label": "Correo electrónico",
+          "hint": "Usaremos este correo para el acceso y los avisos de recuperación de cuenta.",
+          "required": "Introduce un correo electrónico.",
+          "invalid": "Introduce un correo electrónico válido."
+        },
+        "location": {
+          "label": "Ubicación",
+          "hint": "Empieza a escribir la dirección (incluye el número) y selecciona una sugerencia.",
+          "lookupLoading": "Buscando sugerencias de ubicación...",
+          "lookupResolved": "Seleccionado: {{location}}",
+          "lookupError": "Ahora mismo no hemos podido cargar sugerencias de ubicación. Puedes continuar igualmente.",
+          "selectExact": "Elige una de las sugerencias exactas que incluya número.",
+          "needsHouseNumber": "Incluye el número en la búsqueda antes de que podamos sugerir direcciones.",
+          "noExactResults": "No hemos encontrado una dirección exacta con número.",
+          "requiredExact": "Elige una dirección exacta que incluya el número."
+        },
+        "errors": {
+          "usernameRequired": "Introduce un nombre de usuario.",
+          "fullNameRequired": "Introduce el nombre completo.",
+          "phoneRequired": "Introduce un número de teléfono con el prefijo del país.",
+          "emailRequired": "Introduce un correo electrónico.",
+          "emailInvalid": "Introduce un correo electrónico válido.",
+          "locationRequired": "Elige una ubicación de las sugerencias.",
+          "passwordRequired": "Introduce una contraseña.",
+          "passwordMismatch": "Las contraseñas no coinciden."
+        },
+        "defaultLanguage": {
+          "label": "Idioma predeterminado",
+          "hint": "Este idioma se guardará como idioma preferido de la interfaz."
+        },
+        "password": {
+          "label": "Contraseña",
+          "hint": "Usa al menos 8 caracteres.",
+          "required": "Introduce una contraseña.",
+          "length": "Usa al menos {{count}} caracteres."
+        },
+        "confirmPassword": {
+          "label": "Confirmar contraseña",
+          "hint": "Vuelve a escribir la contraseña exactamente igual que arriba.",
+          "required": "Confirma la contraseña.",
+          "mismatch": "Las contraseñas no coinciden."
+        },
+        "certificate": {
+          "label": "Certificado eIDAS",
+          "hint": "Opcional. Sube ahora el fichero del certificado si esta cuenta deberá acceder más adelante con eIDAS.",
+          "empty": "No se ha seleccionado ningún certificado.",
+          "action": "Seleccionar archivo"
+        }
+      }
+    },
+    "resetPassword": {
+      "title": "Restablecer contraseña",
+      "intro": "Usa tu correo, verifica el código y establece una nueva contraseña.",
+      "progress": {
+        "label": "Pasos de recuperación de contraseña",
+        "current": "Paso {{current}} de {{total}}",
+        "email": "Correo",
+        "code": "Código",
+        "password": "Contraseña"
+      },
+      "form": {
+        "codeSent": "Hemos enviado un código de verificación a {{email}}.",
+        "emailStepTitle": "Restablece tu contraseña",
+        "emailStepIntro": "Escribe el correo vinculado a tu cuenta y te enviaremos un código de verificación.",
+        "codeStepTitle": "Introduce el código",
+        "codeStepIntro": "Revisa tu correo y pega aquí el código de verificación.",
+        "passwordStepTitle": "Crea una nueva contraseña",
+        "passwordStepIntro": "Elige una contraseña nueva que no hayas usado recientemente.",
+        "doneTitle": "Contraseña actualizada",
+        "doneIntro": "Tu contraseña ya está lista. Puedes iniciar sesión ahora.",
+        "doneBody": "Tu contraseña se ha actualizado. Ya puedes acceder con tus nuevas credenciales.",
+        "email": {
+          "label": "Correo electrónico",
+          "hint": "Usa el correo asociado a tu cuenta para que podamos enviarte un código de verificación.",
+          "required": "Introduce el correo asociado a tu cuenta.",
+          "invalid": "Introduce un correo electrónico válido.",
+          "submit": "Enviar código de verificación"
+        },
+        "code": {
+          "label": "Código de verificación",
+          "hint": "Introduce el código recibido por correo. Un único campo es más fácil de pegar y funciona mejor con tecnologías de asistencia.",
+          "required": "Introduce el código de verificación.",
+          "submit": "Continuar",
+          "changeEmail": "Probar con otro correo"
+        },
+        "password": {
+          "label": "Nueva contraseña",
+          "hint": "Usa al menos 8 caracteres. Una frase de contraseña más larga suele ser más fácil de recordar y más difícil de adivinar.",
+          "required": "Introduce una nueva contraseña.",
+          "length": "Usa al menos {{count}} caracteres.",
+          "submit": "Restablecer contraseña",
+          "back": "Volver"
+        },
+        "confirmPassword": {
+          "label": "Confirmar nueva contraseña",
+          "hint": "Vuelve a escribir la contraseña exactamente igual que arriba.",
+          "required": "Confirma tu nueva contraseña.",
+          "mismatch": "Las contraseñas no coinciden."
+        }
+      }
+    }
+  },
+  "profile": {
+    "title": "Tu perfil",
+    "intro": "Actualiza los datos de tu cuenta y preferencias.",
+    "sections": {
+      "accountDetails": "Detalles de la cuenta"
+    },
+    "actions": {
+      "save": "Guardar cambios",
+      "saving": "Guardando...",
+      "changePassword": "Cambiar contraseña",
+      "changingPassword": "Cambiando contraseña...",
+      "discard": "Descartar cambios",
+      "updatePassword": "Actualizar contraseña"
+    },
+    "status": {
+      "saveSuccess": "Perfil actualizado correctamente.",
+      "saveError": "No se pudo actualizar el perfil. Inténtalo de nuevo.",
+      "passwordChangeSuccess": "Contraseña cambiada correctamente.",
+      "passwordChangeError": "No se pudo cambiar la contraseña. Inténtalo de nuevo.",
+      "networkError": "No se pudo conectar con el servicio. Revisa la conexión e inténtalo de nuevo.",
+      "reviewFields": "Revisa los campos destacados del perfil.",
+      "previewSave": "Perfil guardado en la previsualización de la IU. Conecta esta acción a tu backend cuando esté listo.",
+      "changesDiscarded": "Los cambios no guardados del perfil fueron descartados.",
+      "reviewPasswordFields": "Revisa los campos destacados de contraseña."
+    },
+    "fields": {
+      "username": {
+        "label": "Usuario",
+        "hint": "Tu identificador de inicio de sesión.",
+        "required": "Introduce un nombre de usuario."
+      },
+      "fullName": {
+        "label": "Nombre completo",
+        "hint": "Tu nombre de visualización.",
+        "required": "Introduce el nombre completo."
+      },
+      "phoneNumber": {
+        "label": "Número de teléfono",
+        "hint": "Opcional. Tu número de contacto.",
+        "countryHint": "Código de marcado seleccionado {{dialCode}}."
+      },
+      "email": {
+        "label": "Dirección de correo electrónico",
+        "hint": "Tu correo principal para notificaciones.",
+        "required": "Introduce una dirección de correo electrónico.",
+        "invalid": "Introduce una dirección de correo electrónico válida."
+      },
+      "location": {
+        "label": "Ubicación",
+        "hint": "Opcional. Tu dirección.",
+        "required": "Busca tu ubicación.",
+        "loading": "Buscando ubicaciones...",
+        "resolved": "Ubicación establecida en {{location}}."
+      },
+      "defaultLanguage": {
+        "label": "Idioma por defecto",
+        "hint": "Tu idioma preferido para la interfaz."
+      },
+      "currentPassword": {
+        "label": "Contraseña actual",
+        "hint": "Introduce tu contraseña actual para confirmar.",
+        "required": "Introduce tu contraseña actual."
+      },
+      "newPassword": {
+        "label": "Nueva contraseña",
+        "hint": "Elige una nueva contraseña.",
+        "required": "Introduce una nueva contraseña.",
+        "length": "Utiliza al menos 8 caracteres."
+      },
+      "confirmPassword": {
+        "label": "Confirma la nueva contraseña",
+        "hint": "Vuelve a introducir la nueva contraseña.",
+        "required": "Confirma tu nueva contraseña.",
+        "mismatch": "Las contraseñas no coinciden."
+      }
+    }
+  }
+}

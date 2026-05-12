@@ -1,0 +1,302 @@
+{
+  "meta": {
+    "pageTitle": "Sign in to chinvat",
+    "registerPageTitle": "Create account | chinvat",
+    "resetPasswordPageTitle": "Reset password | chinvat",
+    "profilePageTitle": "Profile | chinvat"
+  },
+  "accessibility": {
+    "skipToContent": "Skip to main content",
+    "languageLabel": "Change language",
+    "closeError": "Close error"
+  },
+  "brand": {
+    "projectName": "chinvat",
+    "label": "Identity verification"
+  },
+  "auth": {
+    "title": "Welcome back",
+    "intro": "Use your username and password. If you prefer, continue with your eIDAS certificate.",
+    "divider": "or",
+    "actions": {
+      "continue": "Sign in",
+      "submitting": "Signing in...",
+      "resetPassword": "Reset password",
+      "continueToReset": "Continue to recovery",
+      "backToSignIn": "Back to sign in"
+    },
+    "status": {
+      "certificateOpening": "Redirecting to eIDAS sign-in…",
+      "loginSuccess": "Sign-in completed successfully.",
+      "loginError": "We couldn't sign you in. Check your details and try again.",
+      "networkError": "We couldn't reach the service. Check your connection and try again."
+    },
+    "fields": {
+      "email": {
+        "label": "Email address",
+        "hint": "Use the email address associated with your account.",
+        "required": "Enter an email address.",
+        "invalid": "Enter a valid email address."
+      },
+      "password": {
+        "label": "Password",
+        "hint": "Passwords are case-sensitive.",
+        "required": "Enter your password.",
+        "show": "Show password",
+        "hide": "Hide password",
+        "capsLock": "Caps Lock is on."
+      }
+    },
+    "certificate": {
+      "action": "Use eIDAS certificate",
+      "hint": "We'll take you to eIDAS sign-in. If your browser finds an eIDAS certificate, choose it when prompted.",
+      "unavailable": "eIDAS sign-in is only available in desktop browsers."
+    },
+    "register": {
+      "title": "Create your account",
+      "intro": "Register a new user with the core identity data, password, and an optional eIDAS certificate file.",
+      "footer": "The registration request creates the user profile and the related password record.",
+      "levelNotice": "New self-service registrations are created with the default access level: normal.",
+      "loginPrompt": "Don't have an account yet?",
+      "progress": {
+        "current": "Step {{current}} of {{total}}"
+      },
+      "actions": {
+        "open": "Create one",
+        "next": "Continue",
+        "back": "Back",
+        "submit": "Create account",
+        "submitting": "Creating account..."
+      },
+      "steps": {
+        "identity": {
+          "title": "Account identity",
+          "intro": "Start with the core identity fields used to define the user account."
+        },
+        "contact": {
+          "title": "Contact and address",
+          "intro": "Add the main contact email and a single location field that we can normalize for the database."
+        },
+        "security": {
+          "title": "Password and access",
+          "intro": "Create the password record for the new account."
+        },
+        "certificate": {
+          "title": "eIDAS certificate",
+          "intro": "Attach an eIDAS certificate now, or skip this step and finish the registration."
+        },
+        "done": {
+          "title": "Account created",
+          "intro": "The new account is ready for sign-in."
+        }
+      },
+      "status": {
+        "success": "The account was created successfully. You can sign in now.",
+        "error": "We couldn't create the account. Review the data and try again.",
+        "networkError": "We couldn't reach the registration service. Check your connection and try again."
+      },
+      "fields": {
+        "username": {
+          "label": "Username",
+          "hint": "This identifier is used for sign-in and must be unique.",
+          "required": "Enter a username."
+        },
+        "fullName": {
+          "label": "Full name",
+          "hint": "Enter the person's full name or the institutional contact name.",
+          "required": "Enter the full name."
+        },
+        "phoneNumber": {
+          "label": "Phone number",
+          "hint": "Optional. The country code defaults from the current page language, and you can change it before entering the local number.",
+          "countryCodeLabel": "Phone country code",
+          "countryCodeHint": "Selected phone prefix: {{dialCode}}. Search by country name, ISO code, or calling code."
+        },
+        "email": {
+          "label": "Email address",
+          "hint": "We'll use this address for access and account recovery notifications.",
+          "required": "Enter an email address.",
+          "invalid": "Enter a valid email address."
+        },
+        "location": {
+          "label": "Location",
+          "hint": "Start typing the street address (include house number) and select a suggestion.",
+          "lookupLoading": "Looking up location suggestions...",
+          "lookupResolved": "Selected: {{location}}",
+          "lookupError": "We couldn't load location suggestions right now. You can still continue.",
+          "selectExact": "Choose one of the exact address suggestions with a house number.",
+          "needsHouseNumber": "Include the house number in the search before we can suggest addresses.",
+          "noExactResults": "No exact address with a house number was found.",
+          "requiredExact": "Choose an exact address that includes the house number."
+        },
+        "errors": {
+          "usernameRequired": "Enter a username.",
+          "fullNameRequired": "Enter the full name.",
+          "phoneRequired": "Enter a phone number including the country prefix.",
+          "emailRequired": "Enter an email address.",
+          "emailInvalid": "Enter a valid email address.",
+          "locationRequired": "Choose a location from the suggestions.",
+          "passwordRequired": "Enter a password.",
+          "passwordMismatch": "The passwords do not match."
+        },
+        "defaultLanguage": {
+          "label": "Default language",
+          "hint": "This language will be stored as the preferred interface language."
+        },
+        "password": {
+          "label": "Password",
+          "hint": "Use at least 8 characters.",
+          "required": "Enter a password.",
+          "length": "Use at least {{count}} characters."
+        },
+        "confirmPassword": {
+          "label": "Confirm password",
+          "hint": "Re-enter the password exactly as you typed it above.",
+          "required": "Confirm the password.",
+          "mismatch": "The passwords do not match."
+        },
+        "certificate": {
+          "label": "eIDAS certificate",
+          "hint": "Optional. Upload a certificate file now if this account should later sign in with eIDAS.",
+          "empty": "No certificate selected.",
+          "action": "Select file"
+        }
+      }
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "intro": "Use your email, verify the code, and set a new password.",
+      "progress": {
+        "label": "Password recovery steps",
+        "current": "Step {{current}} of {{total}}",
+        "email": "Email",
+        "code": "Code",
+        "password": "Password"
+      },
+      "form": {
+        "codeSent": "We sent a verification code to {{email}}.",
+        "emailStepTitle": "Reset your password",
+        "emailStepIntro": "Enter the email linked to your account and we'll send you a verification code.",
+        "codeStepTitle": "Enter the code",
+        "codeStepIntro": "Check your email and paste the verification code here.",
+        "passwordStepTitle": "Create a new password",
+        "passwordStepIntro": "Choose a new password you haven't used recently.",
+        "doneTitle": "Password updated",
+        "doneIntro": "Your password has been updated. You can sign in now.",
+        "doneBody": "Your password has been updated. You can now sign in with your new credentials.",
+        "email": {
+          "label": "Email address",
+          "hint": "Use the email associated with your account so we can send you a verification code.",
+          "required": "Enter the email address associated with your account.",
+          "invalid": "Enter a valid email address.",
+          "submit": "Send verification code"
+        },
+        "code": {
+          "label": "Verification code",
+          "hint": "Enter the code from your email. A single input is easier to paste and works better with assistive technology.",
+          "required": "Enter the verification code.",
+          "submit": "Continue",
+          "changeEmail": "Try another email"
+        },
+        "password": {
+          "label": "New password",
+          "hint": "Use at least 8 characters. A longer passphrase is usually easier to remember and harder to guess.",
+          "required": "Enter a new password.",
+          "length": "Use at least {{count}} characters.",
+          "submit": "Reset password",
+          "back": "Back"
+        },
+        "confirmPassword": {
+          "label": "Confirm new password",
+          "hint": "Re-enter the password exactly as you typed it above.",
+          "required": "Confirm your new password.",
+          "mismatch": "The passwords do not match."
+        }
+      }
+    }
+  },
+  "profile": {
+    "title": "Your profile",
+    "intro": "Update your account details and preferences.",
+    "sections": {
+      "accountDetails": "Account details"
+    },
+    "actions": {
+      "save": "Save changes",
+      "saving": "Saving...",
+      "changePassword": "Change password",
+      "changingPassword": "Changing password...",
+      "discard": "Discard changes",
+      "updatePassword": "Update password"
+    },
+    "status": {
+      "saveSuccess": "Profile updated successfully.",
+      "saveError": "We couldn't update your profile. Try again.",
+      "passwordChangeSuccess": "Password changed successfully.",
+      "passwordChangeError": "We couldn't change your password. Try again.",
+      "networkError": "We couldn't reach the service. Check your connection and try again.",
+      "reviewFields": "Review the highlighted profile fields.",
+      "previewSave": "Profile saved in the UI preview. Connect this action to your backend when ready.",
+      "changesDiscarded": "Unsaved profile changes were discarded.",
+      "reviewPasswordFields": "Review the highlighted password fields."
+    },
+    "fields": {
+      "username": {
+        "label": "Username",
+        "hint": "Your sign-in identifier.",
+        "required": "Enter a username."
+      },
+      "fullName": {
+        "label": "Full name",
+        "hint": "Your display name.",
+        "required": "Enter a full name."
+      },
+      "phoneNumber": {
+        "label": "Phone number",
+        "hint": "Optional. Your contact number.",
+        "countryHint": "Selected dial code {{dialCode}}."
+      },
+      "email": {
+        "label": "Email address",
+        "hint": "Your primary email for notifications.",
+        "required": "Enter an email address.",
+        "invalid": "Enter a valid email address."
+      },
+      "location": {
+        "label": "Location",
+        "hint": "Optional. Your address.",
+        "required": "Search for your location.",
+        "loading": "Searching locations...",
+        "resolved": "Location set to {{location}}.",
+        "noResults": "No locations found."
+      },
+      "defaultLanguage": {
+        "label": "Default language",
+        "hint": "Your preferred interface language."
+      },
+      "currentPassword": {
+        "label": "Current password",
+        "hint": "Enter your current password to confirm.",
+        "required": "Enter your current password.",
+        "hide": "Hide current password",
+        "show": "Show current password"
+      },
+      "newPassword": {
+        "label": "New password",
+        "hint": "Choose a new password.",
+        "required": "Enter a new password.",
+        "length": "Use at least 8 characters.",
+        "hide": "Hide new password",
+        "show": "Show new password"
+      },
+      "confirmPassword": {
+        "label": "Confirm new password",
+        "hint": "Re-enter the new password.",
+        "required": "Confirm your new password.",
+        "mismatch": "The passwords do not match.",
+        "hide": "Hide confirm password",
+        "show": "Show confirm password"
+      }
+    }
+  }
+}
