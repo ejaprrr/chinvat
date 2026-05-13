@@ -24,6 +24,22 @@ public interface UsersFacade {
 
   void deleteUser(UUID id, String actor);
 
+  /**
+   * Restore a soft-deleted user account.
+   * @param id user ID to restore
+   * @param actor who is performing the restoration (for audit)
+   * @return restored user view
+   */
+  UserView restoreUser(UUID id, String actor);
+
+  /**
+   * Permanently delete a user account (hard delete - irreversible).
+   * Admin-only operation after compliance review.
+   * @param id user ID to permanently delete
+   * @param actor who is performing the deletion (for audit)
+   */
+  void permanentlyDeleteUser(UUID id, String actor);
+
   Optional<UserSecurityView> findSecurityViewByEmail(String email);
 
   Optional<UserSecurityView> findSecurityViewById(UUID id);

@@ -77,7 +77,13 @@ class UsersControllerIT {
             post("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(VALID_REQUEST))
-        .andExpect(status().isConflict());
+      .andExpect(status().isConflict())
+      .andExpect(jsonPath("$.errorCode").value("USR-409-001"))
+      .andExpect(jsonPath("$.messageKey").value("error.users.already-exists"))
+      .andExpect(jsonPath("$.message").value("exists"))
+      .andExpect(jsonPath("$.timestamp").isString())
+      .andExpect(jsonPath("$.path").value("/api/v1/users"))
+      .andExpect(jsonPath("$.details").isArray());
   }
 
   @Test
@@ -98,7 +104,12 @@ class UsersControllerIT {
                       "defaultLanguage": "en"
                     }
                     """))
-        .andExpect(status().isBadRequest());
+                  .andExpect(status().isBadRequest())
+                  .andExpect(jsonPath("$.errorCode").value("API-400-001"))
+                  .andExpect(jsonPath("$.messageKey").value("error.common.validation-failed"))
+                  .andExpect(jsonPath("$.timestamp").isString())
+                  .andExpect(jsonPath("$.path").value("/api/v1/users"))
+                  .andExpect(jsonPath("$.details[0].field").exists());
   }
 
   @Test

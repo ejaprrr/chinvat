@@ -1,12 +1,17 @@
 package eu.alboranplus.chinvat.security;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import eu.alboranplus.chinvat.auth.api.dto.LoginRequest;
+import eu.alboranplus.chinvat.auth.application.facade.AuthFacade;
+import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
 import java.util.concurrent.CountDownLatch;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
@@ -26,17 +32,20 @@ import org.springframework.test.web.servlet.MockMvc;
  * 3. Proper 429 response with Retry-After header
  * 4. Rate limit counters in Redis
  */
-@SpringBootTest
+@SpringBootTest(properties = "app.rate-limiting.redis-enabled=false")
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@ActiveProfiles("local")
 @DisplayName("Rate Limiting Filter Tests")
 class RateLimitingFilterTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private ObjectMapper objectMapper;
+    @MockitoBean private AuthFacade authFacade;
 
   @BeforeEach
   void setUp() throws Exception {
+        given(authFacade.validateAccessToken(any())).willReturn(Optional.empty());
+        given(authFacade.login(any())).willThrow(new InvalidAuthenticationException("Invalid email or password"));
     // Clear any cached rate limit data before each test
     // In real scenarios, this would clear Redis keys
   }
@@ -91,7 +100,10 @@ class RateLimitingFilterTest {
         .andExpect(status().isTooManyRequests()) // 429
         .andExpect(header().exists("Retry-After"))
         .andExpect(header().exists("X-Rate-Limit-Reset-After-Millis"))
-        .andExpect(jsonPath("$.error").value("Rate limit exceeded"))
+        .andExpect(jsonPath("$.errorCode").value("API-429-001"))
+        .andExpect(jsonPath("$.messageKey").value("error.common.rate-limit-exceeded"))
+        .andExpect(jsonPath("$.message").value("Rate limit exceeded"))
+        .andExpect(jsonPath("$.details[0].field").value("retryAfterSeconds"))
         .andReturn();
   }
 
@@ -205,7 +217,8 @@ class RateLimitingFilterTest {
         .andExpect(status().isTooManyRequests())
         .andExpect(header().exists("Retry-After"))
         .andExpect(header().exists("X-Rate-Limit-Reset-After-Millis"))
-        .andExpect(jsonPath("$.retryAfterSeconds").isNumber())
+        .andExpect(jsonPath("$.details[0].field").value("retryAfterSeconds"))
+        .andExpect(jsonPath("$.details[0].rejectedValue").isNotEmpty())
         .andReturn();
   }
 

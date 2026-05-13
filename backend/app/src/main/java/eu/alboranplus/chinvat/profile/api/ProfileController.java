@@ -1,5 +1,6 @@
 package eu.alboranplus.chinvat.profile.api;
 
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import eu.alboranplus.chinvat.profile.api.dto.AddProfileCertificateRequest;
 import eu.alboranplus.chinvat.profile.api.dto.CompleteEidasProfileRequest;
 import eu.alboranplus.chinvat.profile.api.dto.CompleteEidasProfileResponse;
@@ -52,8 +53,11 @@ public class ProfileController {
     @ApiResponse(
         responseCode = "400",
         description = "Validation failed",
-        content = @Content(mediaType = "application/json", schema = @Schema(hidden = true))),
-    @ApiResponse(responseCode = "404", description = "Pending external identity not found")
+      content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+    @ApiResponse(
+      responseCode = "404",
+      description = "Pending external identity not found",
+      content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/eidas/complete")
   public ResponseEntity<CompleteEidasProfileResponse> completeEidasProfile(
@@ -127,7 +131,10 @@ public class ProfileController {
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Certificate revoked"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
-    @ApiResponse(responseCode = "400", description = "Validation failed")
+    @ApiResponse(
+        responseCode = "400",
+        description = "Validation failed",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PreAuthorize("hasAuthority('PROFILE:WRITE')")
   @SecurityRequirement(name = "bearerAuth")
@@ -144,7 +151,10 @@ public class ProfileController {
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Primary certificate updated"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
-    @ApiResponse(responseCode = "400", description = "Validation failed")
+    @ApiResponse(
+        responseCode = "400",
+        description = "Validation failed",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @SecurityRequirement(name = "bearerAuth")
   @PreAuthorize("hasAuthority('PROFILE:WRITE')")

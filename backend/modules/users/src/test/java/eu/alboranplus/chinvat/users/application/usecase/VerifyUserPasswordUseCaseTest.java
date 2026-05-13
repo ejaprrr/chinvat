@@ -38,7 +38,7 @@ class VerifyUserPasswordUseCaseTest {
           TEST_UUID, "alice", "Alice Smith", null,
           UserEmail.of("alice@example.com"),
           UserType.INDIVIDUAL, AccessLevel.NORMAL,
-          null, null, null, null, "en", NOW, NOW);
+        null, null, null, null, "en", NOW, NOW, null);
 
   @Test
   void execute_correctPassword_returnsTrue() {

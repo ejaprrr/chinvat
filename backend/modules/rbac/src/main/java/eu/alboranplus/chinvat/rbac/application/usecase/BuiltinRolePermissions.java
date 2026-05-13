@@ -7,7 +7,7 @@ public final class BuiltinRolePermissions {
 
   private static final Map<String, Set<String>> BUILTIN =
       Map.of(
-          "USER", Set.of("PROFILE:READ"),
+      "USER", Set.of("PROFILE:READ", "PROFILE:WRITE"),
           "ADMIN", Set.of("PROFILE:READ", "PROFILE:WRITE", "USERS:MANAGE"),
           "SUPERADMIN",
               Set.of(

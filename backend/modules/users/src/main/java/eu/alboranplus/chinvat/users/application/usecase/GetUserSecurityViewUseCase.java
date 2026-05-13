@@ -47,7 +47,7 @@ public class GetUserSecurityViewUseCase {
         user.email().value(),
         user.fullName(),
         Set.copyOf(roles),
-        true);
+        user.isActive());
   }
 }
 

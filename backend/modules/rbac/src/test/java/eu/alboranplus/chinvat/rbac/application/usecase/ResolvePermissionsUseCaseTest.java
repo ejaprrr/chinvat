@@ -25,7 +25,7 @@ class ResolvePermissionsUseCaseTest {
 
     Set<String> perms = sut.execute(Set.of("USER"));
 
-    assertThat(perms).containsExactly("PROFILE:READ");
+    assertThat(perms).containsExactlyInAnyOrder("PROFILE:READ", "PROFILE:WRITE");
   }
 
   @Test
@@ -35,7 +35,8 @@ class ResolvePermissionsUseCaseTest {
 
     Set<String> perms = sut.execute(Set.of("USER"));
 
-    assertThat(perms).containsExactlyInAnyOrder("PROFILE:READ", "CUSTOM:PERM");
+    assertThat(perms)
+        .containsExactlyInAnyOrder("PROFILE:READ", "PROFILE:WRITE", "CUSTOM:PERM");
   }
 
   @Test
@@ -68,7 +69,7 @@ class ResolvePermissionsUseCaseTest {
 
     Set<String> perms = sut.execute(Set.of("user"));
 
-    assertThat(perms).containsExactly("PROFILE:READ");
+    assertThat(perms).containsExactlyInAnyOrder("PROFILE:READ", "PROFILE:WRITE");
   }
 
   @Test

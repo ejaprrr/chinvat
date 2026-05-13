@@ -324,7 +324,12 @@ class ProfileControllerIT {
             post("/api/v1/profile/certificates/" + UUID_999 + "/primary")
                 .header("Authorization", "Bearer token"))
         .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.message").value("Certificate credential not found: " + UUID_999));
+        .andExpect(jsonPath("$.errorCode").value("PRF-404-001"))
+        .andExpect(jsonPath("$.messageKey").value("error.profile.credential-not-found"))
+        .andExpect(jsonPath("$.message").value("Certificate credential not found: " + UUID_999))
+        .andExpect(jsonPath("$.timestamp").isString())
+        .andExpect(jsonPath("$.path").value("/api/v1/profile/certificates/" + UUID_999 + "/primary"))
+        .andExpect(jsonPath("$.details").isArray());
   }
 
   @Test
@@ -349,6 +354,31 @@ class ProfileControllerIT {
             post("/api/v1/profile/certificates/" + UUID_501 + "/primary")
                 .header("Authorization", "Bearer token"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.message").value("Only ACTIVE credentials can be primary"));
+        .andExpect(jsonPath("$.errorCode").value("PRF-400-002"))
+        .andExpect(jsonPath("$.messageKey").value("error.profile.invalid-state"))
+        .andExpect(jsonPath("$.message").value("Only ACTIVE credentials can be primary"))
+        .andExpect(jsonPath("$.timestamp").isString())
+        .andExpect(jsonPath("$.path").value("/api/v1/profile/certificates/" + UUID_501 + "/primary"));
   }
+
+    @Test
+    void addCertificate_withoutToken_returns401UnifiedPayload() throws Exception {
+        mockMvc
+                .perform(
+                        post("/api/v1/profile/certificates")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
+                                        {
+                                            "certificatePem": "-----BEGIN CERTIFICATE-----MIIB...-----END CERTIFICATE-----",
+                                            "providerCode": "FNMT",
+                                            "assuranceLevel": "high"
+                                        }
+                                        """))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.errorCode").value("API-401-001"))
+                .andExpect(jsonPath("$.messageKey").value("error.common.unauthorized"))
+                .andExpect(jsonPath("$.timestamp").isString())
+                .andExpect(jsonPath("$.path").value("/api/v1/profile/certificates"));
+    }
 }

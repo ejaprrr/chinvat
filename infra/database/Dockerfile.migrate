@@ -7,7 +7,7 @@ RUN apk add --no-cache openssl libc6-compat
 
 # Install deps
 COPY prisma/package.json ./
-RUN npm install --omit=dev
+RUN npm install
 
 # Copy Prisma schema + migrations
 COPY prisma/schema.prisma ./prisma/schema.prisma

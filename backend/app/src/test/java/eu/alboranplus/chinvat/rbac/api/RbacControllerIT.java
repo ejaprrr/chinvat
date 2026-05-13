@@ -70,7 +70,11 @@ class RbacControllerIT {
 
     mockMvc
         .perform(get("/api/v1/rbac/roles/USER"))
-        .andExpect(status().isUnauthorized());
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.errorCode").value("API-401-001"))
+        .andExpect(jsonPath("$.messageKey").value("error.common.unauthorized"))
+        .andExpect(jsonPath("$.timestamp").isString())
+        .andExpect(jsonPath("$.path").value("/api/v1/rbac/roles/USER"));
   }
 
   @Test
@@ -83,7 +87,12 @@ class RbacControllerIT {
         .perform(
             get("/api/v1/rbac/roles/UNKNOWN")
                 .header("Authorization", "Bearer valid-token"))
-        .andExpect(status().is4xxClientError());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.errorCode").value("RBAC-404-001"))
+        .andExpect(jsonPath("$.messageKey").value("error.rbac.role-not-found"))
+        .andExpect(jsonPath("$.message").value("Role not found: UNKNOWN"))
+        .andExpect(jsonPath("$.timestamp").isString())
+        .andExpect(jsonPath("$.path").value("/api/v1/rbac/roles/UNKNOWN"));
   }
 
   @Test
@@ -102,7 +111,11 @@ class RbacControllerIT {
                       "description": "Export RBAC data"
                     }
                     """))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.errorCode").value("API-403-001"))
+        .andExpect(jsonPath("$.messageKey").value("error.common.forbidden"))
+        .andExpect(jsonPath("$.timestamp").isString())
+        .andExpect(jsonPath("$.path").value("/api/v1/rbac/permissions"));
   }
 
     @Test

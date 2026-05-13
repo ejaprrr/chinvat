@@ -1,9 +1,9 @@
 package eu.alboranplus.chinvat.trust.api.controller;
 
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import eu.alboranplus.chinvat.trust.api.dto.BindCertificateCredentialRequest;
 import eu.alboranplus.chinvat.trust.api.dto.CertificateCredentialResponse;
 import eu.alboranplus.chinvat.trust.api.dto.RevokeCertificateCredentialRequest;
-import eu.alboranplus.chinvat.trust.api.dto.TrustApiErrorResponse;
 import eu.alboranplus.chinvat.trust.api.mapper.TrustApiMapper;
 import eu.alboranplus.chinvat.trust.application.facade.TrustFacade;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,7 +53,7 @@ public class AdminCredentialsController {
     @ApiResponse(
         responseCode = "400",
         description = "Validation failed",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = TrustApiErrorResponse.class)))
+      content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping
@@ -89,7 +89,7 @@ public class AdminCredentialsController {
     @ApiResponse(
         responseCode = "404",
         description = "Credential not found",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = TrustApiErrorResponse.class)))
+      content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping("/{credentialId}/revoke")

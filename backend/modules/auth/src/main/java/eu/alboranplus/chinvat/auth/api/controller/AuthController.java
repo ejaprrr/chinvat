@@ -1,9 +1,9 @@
 package eu.alboranplus.chinvat.auth.api.controller;
 
-import eu.alboranplus.chinvat.auth.api.dto.AuthApiErrorResponse;
 import eu.alboranplus.chinvat.auth.api.dto.AuthResponse;
 import eu.alboranplus.chinvat.auth.api.dto.AuthSessionResponse;
 import eu.alboranplus.chinvat.auth.api.dto.AuthMeResponse;
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordChangeRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetConfirmRequest;
 import eu.alboranplus.chinvat.auth.api.dto.PasswordResetRequest;
@@ -79,14 +79,14 @@ public class AuthController {
         content =
             @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = AuthApiErrorResponse.class))),
+                schema = @Schema(implementation = ApiErrorResponse.class))),
     @ApiResponse(
         responseCode = "401",
         description = "Invalid credentials",
         content =
             @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = AuthApiErrorResponse.class)))
+                schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/login")
   public ResponseEntity<AuthResponse> login(
@@ -117,7 +117,7 @@ public class AuthController {
                 content =
                         @Content(
                                 mediaType = "application/json",
-                                schema = @Schema(implementation = AuthApiErrorResponse.class)))
+                                schema = @Schema(implementation = ApiErrorResponse.class)))
     })
             @PostMapping("/certificates/login")
             public ResponseEntity<AuthResponse> loginWithCertificate(HttpServletRequest httpRequest) {
@@ -149,7 +149,7 @@ public class AuthController {
                 content =
                     @Content(
                         mediaType = "application/json",
-                        schema = @Schema(implementation = AuthApiErrorResponse.class)))
+                        schema = @Schema(implementation = ApiErrorResponse.class)))
             })
     @PostMapping("/fnmt/login")
             public ResponseEntity<AuthResponse> loginWithFnmtAlias(HttpServletRequest httpRequest) {
@@ -168,11 +168,11 @@ public class AuthController {
     @ApiResponse(
         responseCode = "400",
         description = "Validation failed",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthApiErrorResponse.class))),
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
     @ApiResponse(
         responseCode = "409",
         description = "Email or username already registered",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthApiErrorResponse.class)))
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/register")
   public ResponseEntity<AuthResponse> register(
@@ -195,7 +195,7 @@ public class AuthController {
     @ApiResponse(
         responseCode = "400",
         description = "Validation failed",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthApiErrorResponse.class)))
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/password-reset/request")
   public ResponseEntity<PasswordResetRequestResponse> requestPasswordReset(
@@ -223,7 +223,7 @@ public class AuthController {
     @ApiResponse(
         responseCode = "401",
         description = "Invalid or expired reset code",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthApiErrorResponse.class)))
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/password-reset/confirm")
   public ResponseEntity<Void> confirmPasswordReset(
@@ -244,11 +244,11 @@ public class AuthController {
         @ApiResponse(
                 responseCode = "400",
                 description = "Validation failed",
-                content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthApiErrorResponse.class))),
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
         @ApiResponse(
                 responseCode = "401",
                 description = "Current password invalid",
-                content = @Content(mediaType = "application/json", schema = @Schema(implementation = AuthApiErrorResponse.class)))
+                content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     })
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/password/change")
@@ -278,14 +278,14 @@ public class AuthController {
         content =
             @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = AuthApiErrorResponse.class))),
+                schema = @Schema(implementation = ApiErrorResponse.class))),
     @ApiResponse(
         responseCode = "401",
         description = "Refresh token invalid or expired",
         content =
             @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = AuthApiErrorResponse.class)))
+                schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/refresh")
   public ResponseEntity<AuthResponse> refresh(
@@ -308,7 +308,7 @@ public class AuthController {
         content =
             @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = AuthApiErrorResponse.class))),
+                schema = @Schema(implementation = ApiErrorResponse.class))),
     @ApiResponse(
         responseCode = "401",
         description = "Unauthorized",

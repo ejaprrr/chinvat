@@ -2,6 +2,7 @@ package eu.alboranplus.chinvat.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,7 @@ import java.util.Optional;
  * Ensures rate limits are enforced globally, not per-instance.
  */
 @Component
+@ConditionalOnProperty(name = "app.rate-limiting.redis-enabled", havingValue = "true", matchIfMissing = true)
 public class RedisRateLimitingStore {
 
   private static final Logger logger = LoggerFactory.getLogger(RedisRateLimitingStore.class);

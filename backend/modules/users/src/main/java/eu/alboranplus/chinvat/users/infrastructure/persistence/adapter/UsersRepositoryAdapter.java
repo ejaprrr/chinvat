@@ -63,14 +63,14 @@ public class UsersRepositoryAdapter implements UsersRepositoryPort {
 
   @Override
   public List<UserAccount> findAll() {
-    return userAccountJpaRepository.findAll().stream()
+    return userAccountJpaRepository.findAllActive().stream()
         .map(userAccountJpaMapper::toDomain)
         .toList();
   }
 
   @Override
   public Page<UserAccount> findAll(Pageable pageable) {
-    return userAccountJpaRepository.findAll(pageable).map(userAccountJpaMapper::toDomain);
+    return userAccountJpaRepository.findAllActive(pageable).map(userAccountJpaMapper::toDomain);
   }
 
   @Override

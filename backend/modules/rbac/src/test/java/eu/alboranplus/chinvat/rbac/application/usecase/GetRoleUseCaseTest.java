@@ -41,7 +41,7 @@ class GetRoleUseCaseTest {
     RoleView result = sut.execute("USER");
 
     assertThat(result.roleName()).isEqualTo("USER");
-    assertThat(result.permissions()).containsExactly("PROFILE:READ");
+    assertThat(result.permissions()).containsExactlyInAnyOrder("PROFILE:READ", "PROFILE:WRITE");
   }
 
   @Test

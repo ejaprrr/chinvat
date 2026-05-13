@@ -25,7 +25,7 @@ class UserAccountJpaMapperTest {
             UserEmail.of("alice@example.com"),
             UserType.INDIVIDUAL, AccessLevel.GOLD,
             "Street 1", "29001", "Malaga", "Spain", "es",
-            NOW, NOW);
+        NOW, NOW, null);
 
     UserAccountJpaEntity entity = mapper.toEntity(domain);
 
@@ -43,6 +43,7 @@ class UserAccountJpaMapperTest {
     assertThat(entity.getDefaultLanguage()).isEqualTo("es");
     assertThat(entity.getCreatedAt()).isEqualTo(NOW);
     assertThat(entity.getUpdatedAt()).isEqualTo(NOW);
+    assertThat(entity.getDeletedAt()).isNull();
   }
 
   @Test
@@ -63,6 +64,7 @@ class UserAccountJpaMapperTest {
     entity.setDefaultLanguage("en");
     entity.setCreatedAt(NOW);
     entity.setUpdatedAt(NOW);
+    entity.setDeletedAt(null);
 
     UserAccount domain = mapper.toDomain(entity);
 
@@ -75,6 +77,7 @@ class UserAccountJpaMapperTest {
     assertThat(domain.defaultLanguage()).isEqualTo("en");
     assertThat(domain.createdAt()).isEqualTo(NOW);
     assertThat(domain.updatedAt()).isEqualTo(NOW);
+    assertThat(domain.deletedAt()).isNull();
   }
 
   @Test
@@ -86,7 +89,7 @@ class UserAccountJpaMapperTest {
             UserEmail.of("roundtrip@example.com"),
             UserType.INDIVIDUAL, AccessLevel.PREMIUM,
             null, null, null, null, "cs",
-            NOW, NOW);
+        NOW, NOW, null);
 
     UserAccount roundtripped = mapper.toDomain(mapper.toEntity(original));
 

@@ -9,8 +9,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 class BuiltinRolePermissionsTest {
 
   @Test
-  void user_hasProfileRead() {
-    assertThat(BuiltinRolePermissions.permissionsFor("USER")).containsExactly("PROFILE:READ");
+  void user_hasProfileReadAndWrite() {
+    assertThat(BuiltinRolePermissions.permissionsFor("USER"))
+        .containsExactlyInAnyOrder("PROFILE:READ", "PROFILE:WRITE");
   }
 
   @Test
@@ -29,7 +30,7 @@ class BuiltinRolePermissionsTest {
   @Test
   void permissionsFor_isCaseInsensitive_lowercaseInput() {
     assertThat(BuiltinRolePermissions.permissionsFor("user"))
-        .containsExactly("PROFILE:READ");
+      .containsExactlyInAnyOrder("PROFILE:READ", "PROFILE:WRITE");
   }
 
   @ParameterizedTest

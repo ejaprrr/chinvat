@@ -19,7 +19,7 @@
 5. ❌ **Minimal Test Coverage** – 52 tests but ~15% coverage (target 80%+)
 6. ⚠️  **No API Versioning Strategy** – Will break clients on schema changes
 7. ⚠️  **Certificate CRUD** – Incomplete lifecycle management
-8. ⚠️  **eIDAS State Management** – TTL-based Redis store is temporary; persistence needed
+8. ⚠️  **eIDAS State Management** – TTL-based Redis state is intentionally short-lived; keep it isolated in the auth Redis namespace/db
 
 ---
 

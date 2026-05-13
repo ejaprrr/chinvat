@@ -2,10 +2,10 @@ package eu.alboranplus.chinvat.users.api.controller;
 
 import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import eu.alboranplus.chinvat.users.api.dto.CreateUserRequest;
 import eu.alboranplus.chinvat.users.api.dto.UpdateUserRequest;
 import eu.alboranplus.chinvat.users.api.dto.UserResponse;
-import eu.alboranplus.chinvat.users.api.exception.UsersApiExceptionHandler.UsersErrorResponse;
 import eu.alboranplus.chinvat.users.api.mapper.UsersApiMapper;
 import eu.alboranplus.chinvat.users.application.dto.UserView;
 import eu.alboranplus.chinvat.users.application.facade.UsersFacade;
@@ -58,12 +58,12 @@ public class UsersController {
         responseCode = "400",
         description = "Validation failed",
         content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = UsersErrorResponse.class))),
+          schema = @Schema(implementation = ApiErrorResponse.class))),
     @ApiResponse(
         responseCode = "409",
         description = "Email or username already registered",
         content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = UsersErrorResponse.class)))
+          schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping
   public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
@@ -82,7 +82,7 @@ public class UsersController {
         responseCode = "400",
         description = "Invalid pagination parameters",
         content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = UsersErrorResponse.class)))
+          schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @GetMapping
   public ResponseEntity<PageResponse<UserResponse>> getAllUsers(
@@ -107,7 +107,7 @@ public class UsersController {
       content = @Content(schema = @Schema(hidden = true))),
     @ApiResponse(responseCode = "404", description = "User not found",
         content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = UsersErrorResponse.class)))
+        schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @GetMapping("/{id}")
   public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
@@ -123,10 +123,10 @@ public class UsersController {
       content = @Content(schema = @Schema(hidden = true))),
     @ApiResponse(responseCode = "404", description = "User not found",
         content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = UsersErrorResponse.class))),
+        schema = @Schema(implementation = ApiErrorResponse.class))),
     @ApiResponse(responseCode = "409", description = "Username already taken",
         content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = UsersErrorResponse.class)))
+        schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PutMapping("/{id}")
   public ResponseEntity<UserResponse> updateUser(
@@ -139,18 +139,64 @@ public class UsersController {
 
   @Operation(summary = "Delete user")
   @ApiResponses({
-    @ApiResponse(responseCode = "204", description = "User deleted"),
+    @ApiResponse(responseCode = "204", description = "User deleted (soft delete)"),
     @ApiResponse(
       responseCode = "401",
       description = "Unauthorized — missing or invalid bearer token",
       content = @Content(schema = @Schema(hidden = true))),
     @ApiResponse(responseCode = "404", description = "User not found",
         content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = UsersErrorResponse.class)))
+        schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteUser(@PathVariable UUID id, Authentication authentication) {
     usersFacade.deleteUser(id, actor(authentication));
+    return ResponseEntity.noContent().build();
+  }
+
+  @Operation(
+      summary = "Restore a soft-deleted user",
+      description = "Re-activates a previously deleted user account. Returns the restored user.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "User restored successfully",
+        content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = UserResponse.class))),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(responseCode = "404", description = "User not found or not deleted",
+        content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = ApiErrorResponse.class))),
+    @ApiResponse(responseCode = "409", description = "User is already active",
+        content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  @PostMapping("/{id}/restore")
+  public ResponseEntity<UserResponse> restoreUser(@PathVariable UUID id, Authentication authentication) {
+    UserView userView = usersFacade.restoreUser(id, actor(authentication));
+    return ResponseEntity.ok(usersApiMapper.toResponse(userView));
+  }
+
+  @Operation(
+      summary = "Permanently delete a user (hard delete)",
+      description = "⚠️ IRREVERSIBLE OPERATION. Permanently removes all user data. Admin-only. Use only after compliance review.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "User permanently deleted"),
+    @ApiResponse(
+      responseCode = "401",
+      description = "Unauthorized — missing or invalid bearer token",
+      content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(responseCode = "403", description = "Admin-only operation",
+        content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = ApiErrorResponse.class))),
+    @ApiResponse(responseCode = "404", description = "User not found",
+        content = @Content(mediaType = "application/json",
+        schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  @DeleteMapping("/{id}/permanent")
+  public ResponseEntity<Void> permanentlyDeleteUser(@PathVariable UUID id, Authentication authentication) {
+    usersFacade.permanentlyDeleteUser(id, actor(authentication));
     return ResponseEntity.noContent().build();
   }
 

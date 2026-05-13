@@ -78,7 +78,13 @@ class AuthControllerIT {
             post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"alice@example.com\",\"password\":\"WrongPass1!\"}"))
-        .andExpect(status().isUnauthorized());
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.errorCode").value("AUTH-401-001"))
+        .andExpect(jsonPath("$.messageKey").value("error.auth.invalid-authentication"))
+        .andExpect(jsonPath("$.message").value("Invalid email or password"))
+        .andExpect(jsonPath("$.timestamp").isString())
+        .andExpect(jsonPath("$.path").value("/api/v1/auth/login"))
+        .andExpect(jsonPath("$.details").isArray());
   }
 
   @Test
@@ -90,7 +96,13 @@ class AuthControllerIT {
             post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"\",\"password\":\"SecretPass1!\"}"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errorCode").value("API-400-001"))
+        .andExpect(jsonPath("$.messageKey").value("error.common.validation-failed"))
+        .andExpect(jsonPath("$.timestamp").isString())
+        .andExpect(jsonPath("$.path").value("/api/v1/auth/login"))
+        .andExpect(jsonPath("$.details[0].field").exists())
+        .andExpect(jsonPath("$.details[0].message").exists());
   }
 
   @Test

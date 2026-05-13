@@ -1,45 +1,48 @@
 package eu.alboranplus.chinvat.profile.api;
 
+import eu.alboranplus.chinvat.common.api.error.ApiErrorCode;
+import eu.alboranplus.chinvat.common.api.error.ApiErrorFactory;
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import eu.alboranplus.chinvat.profile.application.ProfileValidationException;
 import eu.alboranplus.chinvat.trust.domain.exception.CertificateCredentialNotFoundException;
-import java.time.Instant;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
+@RestControllerAdvice(assignableTypes = ProfileController.class)
 public class ProfileApiExceptionHandler {
 
   @ExceptionHandler(ProfileValidationException.class)
-  public ResponseEntity<ProfileErrorResponse> handleValidation(ProfileValidationException exception) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(new ProfileErrorResponse(exception.getMessage(), Instant.now()));
+  public ResponseEntity<ApiErrorResponse> handleValidation(
+      ProfileValidationException exception, HttpServletRequest request) {
+    return ApiErrorFactory.build(
+        HttpStatus.BAD_REQUEST, ApiErrorCode.PROFILE_VALIDATION_FAILED, exception.getMessage(), request);
   }
 
   @ExceptionHandler({IllegalStateException.class, IllegalArgumentException.class})
-  public ResponseEntity<ProfileErrorResponse> handleDomainState(RuntimeException exception) {
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(new ProfileErrorResponse(exception.getMessage(), Instant.now()));
+  public ResponseEntity<ApiErrorResponse> handleDomainState(
+      RuntimeException exception, HttpServletRequest request) {
+    return ApiErrorFactory.build(
+        HttpStatus.BAD_REQUEST, ApiErrorCode.PROFILE_INVALID_STATE, exception.getMessage(), request);
   }
 
   @ExceptionHandler(CertificateCredentialNotFoundException.class)
-  public ResponseEntity<ProfileErrorResponse> handleCredentialNotFound(
-      CertificateCredentialNotFoundException exception) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(new ProfileErrorResponse(exception.getMessage(), Instant.now()));
+  public ResponseEntity<ApiErrorResponse> handleCredentialNotFound(
+      CertificateCredentialNotFoundException exception, HttpServletRequest request) {
+    return ApiErrorFactory.build(
+        HttpStatus.NOT_FOUND, ApiErrorCode.PROFILE_CREDENTIAL_NOT_FOUND, exception.getMessage(), request);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ProfileErrorResponse> handleMethodValidation(
-      MethodArgumentNotValidException exception) {
-    FieldError firstError = exception.getFieldErrors().stream().findFirst().orElse(null);
-    String message = firstError == null ? "Validation failed" : firstError.getDefaultMessage();
-    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-        .body(new ProfileErrorResponse(message, Instant.now()));
+  public ResponseEntity<ApiErrorResponse> handleMethodValidation(
+      MethodArgumentNotValidException exception, HttpServletRequest request) {
+    return ApiErrorFactory.buildValidation(
+        exception, ApiErrorCode.COMMON_VALIDATION_FAILED, request, HttpStatus.BAD_REQUEST);
   }
-
-  public record ProfileErrorResponse(String message, Instant timestamp) {}
 }

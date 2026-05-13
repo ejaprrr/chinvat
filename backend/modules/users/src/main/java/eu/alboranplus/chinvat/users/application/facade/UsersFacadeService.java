@@ -17,6 +17,8 @@ import eu.alboranplus.chinvat.users.application.usecase.GetAllUsersPagedUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetAllUsersUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetUserByIdUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetUserSecurityViewUseCase;
+import eu.alboranplus.chinvat.users.application.usecase.PermanentDeleteUserUseCase;
+import eu.alboranplus.chinvat.users.application.usecase.RestoreUserUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.UpdateUserUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.VerifyUserPasswordUseCase;
 import eu.alboranplus.chinvat.users.domain.model.UserAccount;
@@ -41,6 +43,8 @@ public class UsersFacadeService implements UsersFacade {
   private final GetAllUsersPagedUseCase getAllUsersPagedUseCase;
   private final UpdateUserUseCase updateUserUseCase;
   private final DeleteUserUseCase deleteUserUseCase;
+  private final RestoreUserUseCase restoreUserUseCase;
+  private final PermanentDeleteUserUseCase permanentDeleteUserUseCase;
   private final GetUserSecurityViewUseCase getUserSecurityViewUseCase;
   private final VerifyUserPasswordUseCase verifyUserPasswordUseCase;
   private final ChangePasswordUseCase changePasswordUseCase;
@@ -54,6 +58,8 @@ public class UsersFacadeService implements UsersFacade {
       GetAllUsersPagedUseCase getAllUsersPagedUseCase,
       UpdateUserUseCase updateUserUseCase,
       DeleteUserUseCase deleteUserUseCase,
+      RestoreUserUseCase restoreUserUseCase,
+      PermanentDeleteUserUseCase permanentDeleteUserUseCase,
       GetUserSecurityViewUseCase getUserSecurityViewUseCase,
       VerifyUserPasswordUseCase verifyUserPasswordUseCase,
       ChangePasswordUseCase changePasswordUseCase,
@@ -65,6 +71,8 @@ public class UsersFacadeService implements UsersFacade {
     this.getAllUsersPagedUseCase = getAllUsersPagedUseCase;
     this.updateUserUseCase = updateUserUseCase;
     this.deleteUserUseCase = deleteUserUseCase;
+    this.restoreUserUseCase = restoreUserUseCase;
+    this.permanentDeleteUserUseCase = permanentDeleteUserUseCase;
     this.getUserSecurityViewUseCase = getUserSecurityViewUseCase;
     this.verifyUserPasswordUseCase = verifyUserPasswordUseCase;
     this.changePasswordUseCase = changePasswordUseCase;
@@ -137,7 +145,48 @@ public class UsersFacadeService implements UsersFacade {
     deleteUserUseCase.execute(id);
     permissionCacheFacade.evictUserPermissions(id);
     auditFacade.log(
-        "USER_DELETED", actor, id, AuditDetails.builder().add("userId", id).build());
+        "USER_SOFT_DELETED", actor, id, 
+        AuditDetails.builder()
+            .add("userId", id)
+            .add("deletionType", "soft")
+            .build());
+  }
+
+  @Override
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = USERS_BY_ID_CACHE, key = "#id"),
+        @CacheEvict(cacheNames = USERS_ALL_CACHE, allEntries = true)
+      })
+  public UserView restoreUser(UUID id, String actor) {
+    UserAccount restored = restoreUserUseCase.execute(id);
+    permissionCacheFacade.evictUserPermissions(id);
+    UserView result = toView(restored);
+    auditFacade.log(
+        "USER_RESTORED", actor, id,
+        AuditDetails.builder()
+            .add("userId", id)
+            .add("email", result.email())
+            .build());
+    return result;
+  }
+
+  @Override
+  @Caching(
+      evict = {
+        @CacheEvict(cacheNames = USERS_BY_ID_CACHE, key = "#id"),
+        @CacheEvict(cacheNames = USERS_ALL_CACHE, allEntries = true)
+      })
+  public void permanentlyDeleteUser(UUID id, String actor) {
+    permanentDeleteUserUseCase.execute(id);
+    permissionCacheFacade.evictUserPermissions(id);
+    auditFacade.log(
+        "USER_PERMANENTLY_DELETED", actor, id,
+        AuditDetails.builder()
+            .add("userId", id)
+            .add("deletionType", "permanent")
+            .add("warning", "This action is irreversible")
+            .build());
   }
 
   @Override

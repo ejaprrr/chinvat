@@ -14,6 +14,7 @@ VALUES
     
     -- User profile management
     ('PROFILE:READ', 'View own profile'),
+    ('PROFILE:WRITE', 'Update own profile and profile certificates'),
     ('PROFILE:EDIT', 'Edit own profile'),
     ('PROFILE:VIEW_DETAILS', 'View user profile details'),
     
@@ -70,7 +71,7 @@ SELECT r."id", p."id"
 FROM "rbac_role" r
 JOIN "rbac_permission" p ON p."permission_code" IN (
     'AUTH:LOGIN', 'AUTH:LOGOUT', 'AUTH:REFRESH', 'AUTH:CHANGE_PASSWORD',
-    'PROFILE:READ', 'PROFILE:EDIT', 'PROFILE:VIEW_DETAILS',
+    'PROFILE:READ', 'PROFILE:WRITE', 'PROFILE:EDIT', 'PROFILE:VIEW_DETAILS',
     'USERS:LIST', 'USERS:VIEW', 'USERS:CREATE', 'USERS:EDIT', 'USERS:DELETE', 'USERS:MANAGE', 'USERS:ASSIGN_ROLES',
     'RBAC:VIEW_ROLES', 'RBAC:VIEW_PERMISSIONS', 'RBAC:CREATE_ROLE', 'RBAC:EDIT_ROLE', 
     'RBAC:CREATE_PERMISSION', 'RBAC:EDIT_PERMISSION', 'RBAC:ASSIGN_PERMISSIONS', 'RBAC:MANAGE',
@@ -85,7 +86,7 @@ SELECT r."id", p."id"
 FROM "rbac_role" r
 JOIN "rbac_permission" p ON p."permission_code" IN (
     'AUTH:LOGIN', 'AUTH:LOGOUT', 'AUTH:REFRESH', 'AUTH:CHANGE_PASSWORD',
-    'PROFILE:READ', 'PROFILE:EDIT', 'PROFILE:VIEW_DETAILS',
+    'PROFILE:READ', 'PROFILE:WRITE', 'PROFILE:EDIT', 'PROFILE:VIEW_DETAILS',
     'USERS:LIST', 'USERS:VIEW', 'USERS:ASSIGN_ROLES'
 )
 WHERE r."role_name" = 'MANAGER'
@@ -97,7 +98,7 @@ SELECT r."id", p."id"
 FROM "rbac_role" r
 JOIN "rbac_permission" p ON p."permission_code" IN (
     'AUTH:LOGIN', 'AUTH:LOGOUT', 'AUTH:REFRESH', 'AUTH:CHANGE_PASSWORD',
-    'PROFILE:READ', 'PROFILE:EDIT'
+    'PROFILE:READ', 'PROFILE:WRITE', 'PROFILE:EDIT'
 )
 WHERE r."role_name" = 'USER'
 ON CONFLICT ("role_id", "permission_id") DO NOTHING;

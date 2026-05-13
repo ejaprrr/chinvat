@@ -37,7 +37,7 @@ class GetUserSecurityViewUseCaseTest {
           TEST_UUID, "alice", "Alice Smith", null,
           UserEmail.of("alice@example.com"),
           UserType.INDIVIDUAL, AccessLevel.GOLD,
-          null, null, null, null, "en", NOW, NOW);
+        null, null, null, null, "en", NOW, NOW, null);
 
   @Test
   void execute_byEmail_found_returnsMappedView() {

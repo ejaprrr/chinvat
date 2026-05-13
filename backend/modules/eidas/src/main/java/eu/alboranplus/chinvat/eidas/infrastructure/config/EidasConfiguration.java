@@ -15,7 +15,7 @@ public class EidasConfiguration {
 	@Bean
 	@ConditionalOnMissingBean(ObjectMapper.class)
 	public ObjectMapper eidasObjectMapper() {
-		return new ObjectMapper();
+		return new ObjectMapper().findAndRegisterModules();
 	}
 
 	@Bean

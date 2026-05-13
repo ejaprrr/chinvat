@@ -1,39 +1,42 @@
 package eu.alboranplus.chinvat.users.api.exception;
 
+import eu.alboranplus.chinvat.common.api.error.ApiErrorCode;
+import eu.alboranplus.chinvat.common.api.error.ApiErrorFactory;
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import eu.alboranplus.chinvat.users.domain.exception.UserAlreadyExistsException;
 import eu.alboranplus.chinvat.users.domain.exception.UserNotFoundException;
-import java.time.Instant;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class UsersApiExceptionHandler {
 
   @ExceptionHandler(UserAlreadyExistsException.class)
-  public ResponseEntity<UsersErrorResponse> handleAlreadyExists(
-      UserAlreadyExistsException exception) {
-    return ResponseEntity.status(HttpStatus.CONFLICT)
-        .body(new UsersErrorResponse(exception.getMessage(), Instant.now()));
+  public ResponseEntity<ApiErrorResponse> handleAlreadyExists(
+      UserAlreadyExistsException exception, HttpServletRequest request) {
+    return ApiErrorFactory.build(
+        HttpStatus.CONFLICT, ApiErrorCode.USERS_ALREADY_EXISTS, exception.getMessage(), request);
   }
 
   @ExceptionHandler(UserNotFoundException.class)
-  public ResponseEntity<UsersErrorResponse> handleNotFound(UserNotFoundException exception) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-        .body(new UsersErrorResponse(exception.getMessage(), Instant.now()));
+  public ResponseEntity<ApiErrorResponse> handleNotFound(
+      UserNotFoundException exception, HttpServletRequest request) {
+    return ApiErrorFactory.build(
+        HttpStatus.NOT_FOUND, ApiErrorCode.USERS_NOT_FOUND, exception.getMessage(), request);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<UsersErrorResponse> handleValidation(
-      MethodArgumentNotValidException exception) {
-    FieldError firstError = exception.getFieldErrors().stream().findFirst().orElse(null);
-    String message = firstError == null ? "Validation failed" : firstError.getDefaultMessage();
-    return ResponseEntity.badRequest().body(new UsersErrorResponse(message, Instant.now()));
+  public ResponseEntity<ApiErrorResponse> handleValidation(
+      MethodArgumentNotValidException exception, HttpServletRequest request) {
+    return ApiErrorFactory.buildValidation(
+        exception, ApiErrorCode.COMMON_VALIDATION_FAILED, request, HttpStatus.BAD_REQUEST);
   }
-
-  public record UsersErrorResponse(String message, Instant timestamp) {}
 }
 

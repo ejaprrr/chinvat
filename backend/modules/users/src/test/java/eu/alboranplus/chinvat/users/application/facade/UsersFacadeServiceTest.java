@@ -15,6 +15,8 @@ import eu.alboranplus.chinvat.users.application.usecase.GetAllUsersPagedUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetAllUsersUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetUserByIdUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.GetUserSecurityViewUseCase;
+import eu.alboranplus.chinvat.users.application.usecase.PermanentDeleteUserUseCase;
+import eu.alboranplus.chinvat.users.application.usecase.RestoreUserUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.UpdateUserUseCase;
 import eu.alboranplus.chinvat.users.application.usecase.VerifyUserPasswordUseCase;
 import eu.alboranplus.chinvat.users.domain.model.AccessLevel;
@@ -39,6 +41,8 @@ class UsersFacadeServiceTest {
   @Mock private GetAllUsersPagedUseCase getAllUsersPagedUseCase;
   @Mock private UpdateUserUseCase updateUserUseCase;
   @Mock private DeleteUserUseCase deleteUserUseCase;
+  @Mock private RestoreUserUseCase restoreUserUseCase;
+  @Mock private PermanentDeleteUserUseCase permanentDeleteUserUseCase;
   @Mock private GetUserSecurityViewUseCase getUserSecurityViewUseCase;
   @Mock private VerifyUserPasswordUseCase verifyUserPasswordUseCase;
   @Mock private ChangePasswordUseCase changePasswordUseCase;
@@ -57,6 +61,8 @@ class UsersFacadeServiceTest {
             getAllUsersPagedUseCase,
             updateUserUseCase,
             deleteUserUseCase,
+            restoreUserUseCase,
+            permanentDeleteUserUseCase,
             getUserSecurityViewUseCase,
             verifyUserPasswordUseCase,
             changePasswordUseCase,
@@ -150,6 +156,7 @@ class UsersFacadeServiceTest {
         null,
         "en",
         Instant.parse("2026-01-01T00:00:00Z"),
-        Instant.parse("2026-01-01T00:00:00Z"));
+        Instant.parse("2026-01-01T00:00:00Z"),
+        null);
   }
 }

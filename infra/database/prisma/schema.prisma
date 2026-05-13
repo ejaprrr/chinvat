@@ -48,6 +48,7 @@ model User {
   defaultLanguage String      @db.VarChar(12)
   createdAt       DateTime    @default(now()) @db.Timestamptz
   updatedAt       DateTime    @default(now()) @db.Timestamptz
+  deletedAt       DateTime?   @db.Timestamptz
 
   password      UserPassword?
   certificates  UserCertificate[]
@@ -60,6 +61,7 @@ model User {
   auditEvents   AuthAuditEvent[]
   userRoles     UserRole[]
 
+  @@index([deletedAt], name: "idx_user_deleted_at")
   @@map("user")
 }
 

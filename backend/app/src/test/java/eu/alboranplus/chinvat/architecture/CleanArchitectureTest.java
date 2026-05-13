@@ -25,6 +25,7 @@ class CleanArchitectureTest {
               "..application..",
               "..domain..",
               "..contracts..",
+              "..common.pagination..",
               "java..",
               "jakarta..",
               "org.springframework..",

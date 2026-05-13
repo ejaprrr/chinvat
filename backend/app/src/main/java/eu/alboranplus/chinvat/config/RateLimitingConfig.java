@@ -26,7 +26,7 @@ public class RateLimitingConfig {
         // 3 password reset requests per hour (account takeover prevention)
         new RateLimit(3, Duration.ofHours(1));
       case "CERTIFICATE_BIND" -> 
-        // 5 certificate bindings per hour (admin action audit)
+        // 5 certificate bindings per hour (self-service anti-abuse guard)
         new RateLimit(5, Duration.ofHours(1));
       case "EIDAS_LOGIN" -> 
         // 10 eIDAS login attempts per hour

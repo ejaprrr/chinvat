@@ -1,6 +1,8 @@
 package eu.alboranplus.chinvat.security;
 
 import eu.alboranplus.chinvat.auth.application.dto.TokenPrincipal;
+import eu.alboranplus.chinvat.common.api.error.ApiErrorCode;
+import eu.alboranplus.chinvat.common.api.error.ApiErrorDetail;
 import eu.alboranplus.chinvat.config.RateLimitingConfig;
 import eu.alboranplus.chinvat.config.RateLimitingConfig.RateLimit;
 import jakarta.servlet.FilterChain;
@@ -10,12 +12,13 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -37,13 +40,18 @@ public class RateLimitingFilter extends OncePerRequestFilter {
   private final Map<String, TokenBucket> localBuckets = new ConcurrentHashMap<>();
   private final RateLimitingConfig config;
   private final Optional<RedisRateLimitingStore> redisStore;
+  private final ApiSecurityErrorWriter errorWriter;
   private volatile Instant lastCleanup = Instant.now();
   private static final Duration CLEANUP_INTERVAL = Duration.ofMinutes(5);
   private static final Duration BUCKET_EXPIRY = Duration.ofHours(1);
 
-  public RateLimitingFilter(RateLimitingConfig config, Optional<RedisRateLimitingStore> redisStore) {
+  public RateLimitingFilter(
+      RateLimitingConfig config,
+      Optional<RedisRateLimitingStore> redisStore,
+      ApiSecurityErrorWriter errorWriter) {
     this.config = config;
     this.redisStore = redisStore;
+    this.errorWriter = errorWriter;
   }
 
   @Override
@@ -81,10 +89,14 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     } else {
       long waitSecs = bucket.getResetMs() / 1000;
       response.addHeader("Retry-After", String.valueOf(waitSecs));
-      response.setStatus(429);
-      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-      response.getWriter().write(
-          "{\"error\": \"Rate limit exceeded\", \"retryAfterSeconds\": " + waitSecs + "}");
+      response.addHeader("X-Rate-Limit-Reset-After-Millis", String.valueOf(bucket.getResetMs()));
+      errorWriter.write(
+          response,
+          HttpStatus.TOO_MANY_REQUESTS,
+          ApiErrorCode.COMMON_RATE_LIMIT_EXCEEDED,
+          "Rate limit exceeded",
+          request.getRequestURI(),
+          List.of(new ApiErrorDetail("retryAfterSeconds", "Retry after this amount of seconds", String.valueOf(waitSecs))));
     }
   }
 
@@ -142,7 +154,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
   }
 
   private boolean isOperationalEndpoint(String path) {
-    return path.startsWith("/actuator") || path.startsWith("/health") ||
+    return path.startsWith("/actuator") || path.startsWith("/health") || path.contains("/health") ||
         path.contains("/swagger") || path.contains("/v3/api-docs") ||
         path.contains("/h2-console");
   }
