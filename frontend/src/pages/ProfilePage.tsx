@@ -1,47 +1,31 @@
+import { useEffect, useId, useMemo, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { Languages, Mail, MapPin, Save, ShieldCheck, UserRound } from 'lucide-react';
+import { getCountries, getCountryCallingCode, type CountryCode } from 'libphonenumber-js/min';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/shared/auth';
+import { languageLabels, type Locale } from '@/shared/i18n';
+import { ActionButton } from '@/shared/ui/Action';
+import FormPage from '@/shared/ui/FormPage';
+import { FlowForm, FlowFormSection, FormActions } from '@/shared/ui/FlowForm';
+import FormField from '@/shared/ui/FormField';
+import LocationLookup, { type LocationSuggestion } from '@/shared/ui/LocationLookup';
+import PasswordField from '@/shared/ui/PasswordField';
+import PhoneNumberField from '@/shared/ui/PhoneNumberField';
+import type { PhoneCountryOption } from '@/shared/ui/PhoneCountrySelect';
+import TextInput from '@/shared/ui/TextInput';
+import LanguageSwitcher from '@/shared/ui/LanguageSwitcher';
+import { useDocumentTitle } from '@/shared/lib/documentTitle';
+import { useGeocoding } from '@/shared/hooks/useGeocoding';
+import { useProfile } from '@/features/profile/useProfile';
+import { getErrorDisplay } from '@/shared/api/errors';
+import { isPasswordLongEnough } from '@/shared/lib/validation/password';
 import {
-  useEffect,
-  useId,
-  useMemo,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
-} from "react";
-import {
-  Languages,
-  Mail,
-  MapPin,
-  Save,
-  ShieldCheck,
-  UserRound,
-} from "lucide-react";
-import {
-  getCountries,
-  getCountryCallingCode,
-  type CountryCode,
-} from "libphonenumber-js/min";
-import { useTranslation } from "react-i18next";
-import { useAuth } from "../auth/useAuth";
-import { languageLabels, type Locale } from "../i18n";
-import { ActionButton } from "../components/forms/Action";
-import AuthPage from "../components/auth/AuthPage";
-import {
-  AuthForm,
-  AuthFormSection,
-  FormActions,
-} from "../components/auth/AuthForm";
-import FormField from "../components/forms/FormField";
-import LocationLookup, {
-  type LocationSuggestion,
-} from "../components/forms/LocationLookup";
-import PasswordField from "../components/forms/PasswordField";
-import PhoneNumberField from "../components/forms/PhoneNumberField";
-import type { PhoneCountryOption } from "../components/forms/PhoneCountrySelect";
-import TextInput from "../components/forms/TextInput";
-import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
-import useDocumentTitle from "../hooks/useDocumentTitle";
-import { useGeocoding } from "../hooks/useGeocoding";
-import { useProfile } from "../hooks/useProfile";
-
+  EMAIL_MAX_LENGTH,
+  FULL_NAME_MAX_LENGTH,
+  PHONE_MAX_LENGTH,
+  USERNAME_MAX_LENGTH,
+  isWellFormedEmail,
+} from '@/shared/lib/validation/user';
 type ProfileForm = {
   username: string;
   fullName: string;
@@ -54,31 +38,25 @@ type ProfileForm = {
 type ProfileErrors = Partial<Record<keyof ProfileForm, string>>;
 
 type PasswordErrors = Partial<
-  Record<"currentPassword" | "newPassword" | "confirmPassword", string>
+  Record<'currentPassword' | 'newPassword' | 'confirmPassword', string>
 >;
 
 const initialProfile: ProfileForm = {
-  username: "",
-  fullName: "",
-  phoneNumber: "",
-  email: "",
-  defaultLanguage: "en",
-  locationQuery: "",
+  username: '',
+  fullName: '',
+  phoneNumber: '',
+  email: '',
+  defaultLanguage: 'en',
+  locationQuery: '',
 };
 
-function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
 function countryCodeToFlag(countryCode: CountryCode) {
-  return countryCode.replace(/./g, (char) =>
-    String.fromCodePoint(127397 + char.charCodeAt(0)),
-  );
+  return countryCode.replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
 }
 
 function buildPhoneCountryOptions(language: string) {
-  const displayNames = new Intl.DisplayNames([language, "en"], {
-    type: "region",
+  const displayNames = new Intl.DisplayNames([language, 'en'], {
+    type: 'region',
   });
 
   return getCountries()
@@ -93,22 +71,22 @@ function buildPhoneCountryOptions(language: string) {
 
 function getDefaultPhoneCountry(language: string | undefined): CountryCode {
   try {
-    const locale = new Intl.Locale(language || "en").maximize();
+    const locale = new Intl.Locale(language || 'en').maximize();
     const region = locale.region as CountryCode | undefined;
 
     if (region && getCountries().includes(region)) {
       return region;
     }
   } catch {
-    return "ES";
+    return 'ES';
   }
 
-  return "ES";
+  return 'ES';
 }
 
 function ProfilePage() {
   const { t } = useTranslation();
-  const { user, changePassword } = useAuth();
+  const { user, changePassword, error: authError, reportError, clearError } = useAuth();
   const { profile: backendProfile, saveProfile } = useProfile(user?.id);
   const uid = useId();
   const [profile, setProfile] = useState<ProfileForm>(initialProfile);
@@ -116,20 +94,19 @@ function ProfilePage() {
   const [profileErrors, setProfileErrors] = useState<ProfileErrors>({});
   const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
   const [statusMessage, setStatusMessage] = useState<{
-    tone: "default" | "critical" | "warning";
+    tone: 'default' | 'critical' | 'warning';
     text: string;
   } | null>(null);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [phoneCountryCode, setPhoneCountryCode] = useState<CountryCode>(() =>
     getDefaultPhoneCountry(initialProfile.defaultLanguage),
   );
-  const [resolvedLocation, setResolvedLocation] =
-    useState<LocationSuggestion | null>(null);
+  const [resolvedLocation, setResolvedLocation] = useState<LocationSuggestion | null>(null);
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
 
   useEffect(() => {
@@ -139,26 +116,20 @@ function ProfilePage() {
 
     const timer = window.setTimeout(() => {
       const nextProfile: ProfileForm = {
-        username: backendProfile.username ?? "",
-        fullName: backendProfile.fullName ?? "",
-        phoneNumber: backendProfile.phoneNumber ?? "",
-        email: backendProfile.email ?? "",
-        defaultLanguage: (backendProfile.defaultLanguage as Locale) ?? "en",
-        locationQuery: [
-          backendProfile.addressLine,
-          backendProfile.city,
-          backendProfile.country,
-        ]
+        username: backendProfile.username ?? '',
+        fullName: backendProfile.fullName ?? '',
+        phoneNumber: backendProfile.phoneNumber ?? '',
+        email: backendProfile.email ?? '',
+        defaultLanguage: (backendProfile.defaultLanguage as Locale) ?? 'en',
+        locationQuery: [backendProfile.addressLine, backendProfile.city, backendProfile.country]
           .filter(Boolean)
-          .join(", "),
+          .join(', '),
       };
 
       setProfile(nextProfile);
       setSavedProfile(nextProfile);
       setResolvedLocation(
-        backendProfile.addressLine ||
-          backendProfile.city ||
-          backendProfile.country
+        backendProfile.addressLine || backendProfile.city || backendProfile.country
           ? {
               displayName: nextProfile.locationQuery,
               address: backendProfile.addressLine,
@@ -196,21 +167,21 @@ function ProfilePage() {
 
   const phoneCountryOptionsByCode = useMemo(
     () =>
-      Object.fromEntries(
-        phoneCountryOptions.map((option) => [option.code, option]),
-      ) as Record<string, PhoneCountryOption>,
+      Object.fromEntries(phoneCountryOptions.map((option) => [option.code, option])) as Record<
+        string,
+        PhoneCountryOption
+      >,
     [phoneCountryOptions],
   );
 
   const selectedPhoneCountry =
     phoneCountryOptionsByCode[phoneCountryCode] ?? phoneCountryOptions[0];
 
-  useDocumentTitle("meta.profilePageTitle");
+  useDocumentTitle('meta.profilePageTitle');
 
   const geocodingQuery =
-    resolvedLocation &&
-    profile.locationQuery.trim() === resolvedLocation.displayName
-      ? ""
+    resolvedLocation && profile.locationQuery.trim() === resolvedLocation.displayName
+      ? ''
       : profile.locationQuery;
 
   const {
@@ -234,28 +205,18 @@ function ProfilePage() {
       return null;
     }
 
-    return locationSuggestions.length
-      ? null
-      : t("profile.fields.location.noResults");
-  }, [
-    locationLookupError,
-    locationSuggestions.length,
-    profile.locationQuery,
-    resolvedLocation,
-    t,
-  ]);
+    return locationSuggestions.length ? null : t('profile.fields.location.noResults');
+  }, [locationLookupError, locationSuggestions.length, profile.locationQuery, resolvedLocation, t]);
 
   const fieldId = (name: string) => `${uid}-${name}`;
 
-  const locationHintId = fieldId("location-hint");
-  const locationErrorId = fieldId("location-error");
-  const locationStatusId = fieldId("location-status");
-  const locationListId = fieldId("location-list");
-  const phoneCountryControlId = fieldId("phone-country");
-  const phoneCountryHintId = fieldId("phone-country-hint");
-  const getLocationSuggestionId = (index: number) =>
-    `${locationListId}-option-${index}`;
-
+  const locationHintId = fieldId('location-hint');
+  const locationErrorId = fieldId('location-error');
+  const locationStatusId = fieldId('location-status');
+  const locationListId = fieldId('location-list');
+  const phoneCountryControlId = fieldId('phone-country');
+  const phoneCountryHintId = fieldId('phone-country-hint');
+  const getLocationSuggestionId = (index: number) => `${locationListId}-option-${index}`;
   const updateProfileField = <Field extends keyof ProfileForm>(
     field: Field,
     value: ProfileForm[Field],
@@ -263,32 +224,38 @@ function ProfilePage() {
     setProfile((current) => ({ ...current, [field]: value }));
     setProfileErrors((current) => ({ ...current, [field]: undefined }));
     setStatusMessage(null);
+    clearError();
   };
 
   const validateProfile = () => {
     const errors: ProfileErrors = {};
 
-    if (!profile.username.trim())
-      errors.username = t("profile.fields.username.required");
-    if (!profile.fullName.trim())
-      errors.fullName = t("profile.fields.fullName.required");
+    if (!profile.username.trim()) errors.username = t('profile.fields.username.required');
+    else if (profile.username.trim().length > USERNAME_MAX_LENGTH)
+      errors.username = t('profile.fields.username.required');
+
+    if (!profile.fullName.trim()) errors.fullName = t('profile.fields.fullName.required');
+    else if (profile.fullName.trim().length > FULL_NAME_MAX_LENGTH)
+      errors.fullName = t('profile.fields.fullName.required');
 
     if (!profile.email.trim()) {
-      errors.email = t("profile.fields.email.required");
-    } else if (!isValidEmail(profile.email)) {
-      errors.email = t("profile.fields.email.invalid");
+      errors.email = t('profile.fields.email.required');
+    } else if (
+      !isWellFormedEmail(profile.email.trim()) ||
+      profile.email.trim().length > EMAIL_MAX_LENGTH
+    ) {
+      errors.email = t('profile.fields.email.invalid');
     }
 
-    if (!profile.locationQuery.trim()) {
-      errors.locationQuery = t("profile.fields.location.required");
+    if (profile.phoneNumber.trim().length > PHONE_MAX_LENGTH) {
+      errors.phoneNumber = t('profile.fields.phoneNumber.hint');
     }
 
     return errors;
   };
 
   const handleLocationInputChange = (value: string) => {
-    updateProfileField("locationQuery", value);
-
+    updateProfileField('locationQuery', value);
     if (resolvedLocation && value.trim() !== resolvedLocation.displayName) {
       setResolvedLocation(null);
     }
@@ -318,7 +285,7 @@ function ProfilePage() {
       return;
     }
 
-    if (event.key === "ArrowDown") {
+    if (event.key === 'ArrowDown') {
       event.preventDefault();
       setActiveSuggestionIndex((current) =>
         current < locationSuggestions.length - 1 ? current + 1 : 0,
@@ -326,7 +293,7 @@ function ProfilePage() {
       return;
     }
 
-    if (event.key === "ArrowUp") {
+    if (event.key === 'ArrowUp') {
       event.preventDefault();
       setActiveSuggestionIndex((current) =>
         current > 0 ? current - 1 : locationSuggestions.length - 1,
@@ -334,15 +301,13 @@ function ProfilePage() {
       return;
     }
 
-    if (event.key === "Enter" && activeSuggestionIndex >= 0) {
+    if (event.key === 'Enter' && activeSuggestionIndex >= 0) {
       event.preventDefault();
-      handleLocationSuggestionSelect(
-        locationSuggestions[activeSuggestionIndex],
-      );
+      handleLocationSuggestionSelect(locationSuggestions[activeSuggestionIndex]);
       return;
     }
 
-    if (event.key === "Escape") {
+    if (event.key === 'Escape') {
       setActiveSuggestionIndex(-1);
     }
   };
@@ -358,8 +323,8 @@ function ProfilePage() {
 
     if (Object.keys(nextErrors).length > 0) {
       setStatusMessage({
-        tone: "critical",
-        text: t("profile.status.reviewFields"),
+        tone: 'critical',
+        text: t('profile.status.reviewFields'),
       });
       return;
     }
@@ -367,15 +332,15 @@ function ProfilePage() {
     void (async () => {
       try {
         if (!user?.id) {
-          throw new Error("User not authenticated");
+          throw new Error('User not authenticated');
         }
 
         const updated = await saveProfile({
           username: profile.username.trim(),
           fullName: profile.fullName.trim(),
           phoneNumber: profile.phoneNumber.trim() || undefined,
-          userType: "INDIVIDUAL",
-          accessLevel: "NORMAL",
+          userType: 'INDIVIDUAL',
+          accessLevel: 'NORMAL',
           addressLine: resolvedLocation?.address,
           postalCode: resolvedLocation?.postalCode,
           city: resolvedLocation?.city,
@@ -386,28 +351,30 @@ function ProfilePage() {
         const nextProfile: ProfileForm = {
           username: updated.username,
           fullName: updated.fullName,
-          phoneNumber: updated.phoneNumber ?? "",
+          phoneNumber: updated.phoneNumber ?? '',
           email: updated.email,
           defaultLanguage: updated.defaultLanguage as Locale,
           locationQuery: [updated.addressLine, updated.city, updated.country]
             .filter(Boolean)
-            .join(", "),
+            .join(', '),
         };
 
         setProfile(nextProfile);
         setSavedProfile(nextProfile);
         setStatusMessage({
-          tone: "default",
-          text: t("profile.status.saveSuccess"),
+          tone: 'default',
+          text: t('profile.status.saveSuccess'),
         });
       } catch (error) {
-        setStatusMessage({
-          tone: "critical",
-          text:
-            error instanceof Error
-              ? error.message
-              : t("profile.status.saveError"),
+        const detail = getErrorDisplay(error, {
+          fallbackCode: 'PROFILE_UPDATE_FAILED',
+          fallbackMessage: t('profile.status.saveError'),
         });
+        setStatusMessage({
+          tone: 'critical',
+          text: detail.message,
+        });
+        reportError(detail.message);
       }
     })();
   };
@@ -416,8 +383,8 @@ function ProfilePage() {
     setProfile(savedProfile);
     setProfileErrors({});
     setStatusMessage({
-      tone: "warning",
-      text: t("profile.status.changesDiscarded"),
+      tone: 'warning',
+      text: t('profile.status.changesDiscarded'),
     });
   };
 
@@ -425,23 +392,22 @@ function ProfilePage() {
     event.preventDefault();
     const nextErrors: PasswordErrors = {};
 
-    if (!currentPassword)
-      nextErrors.currentPassword = t("profile.fields.currentPassword.required");
+    if (!currentPassword) nextErrors.currentPassword = t('profile.fields.currentPassword.required');
     if (!newPassword) {
-      nextErrors.newPassword = t("profile.fields.newPassword.required");
-    } else if (newPassword.length < 8) {
-      nextErrors.newPassword = t("profile.fields.newPassword.length");
+      nextErrors.newPassword = t('profile.fields.newPassword.required');
+    } else if (!isPasswordLongEnough(newPassword)) {
+      nextErrors.newPassword = t('profile.fields.newPassword.length');
     }
     if (newPassword !== confirmPassword) {
-      nextErrors.confirmPassword = t("profile.fields.confirmPassword.mismatch");
+      nextErrors.confirmPassword = t('profile.fields.confirmPassword.mismatch');
     }
 
     setPasswordErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
       setStatusMessage({
-        tone: "critical",
-        text: t("profile.status.reviewPasswordFields"),
+        tone: 'critical',
+        text: t('profile.status.reviewPasswordFields'),
       });
       return;
     }
@@ -449,21 +415,23 @@ function ProfilePage() {
     void (async () => {
       try {
         await changePassword(currentPassword, newPassword);
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
         setStatusMessage({
-          tone: "default",
-          text: t("profile.status.passwordChangeSuccess"),
+          tone: 'default',
+          text: t('profile.status.passwordChangeSuccess'),
         });
       } catch (error) {
-        setStatusMessage({
-          tone: "critical",
-          text:
-            error instanceof Error
-              ? error.message
-              : t("profile.status.passwordChangeError"),
+        const detail = getErrorDisplay(error, {
+          fallbackCode: 'AUTH_PASSWORD_CHANGE_FAILED',
+          fallbackMessage: t('profile.status.passwordChangeError'),
         });
+        setStatusMessage({
+          tone: 'critical',
+          text: detail.message,
+        });
+        reportError(detail.message);
       }
     })();
   };
@@ -471,93 +439,82 @@ function ProfilePage() {
   return (
     <main className="auth-popup-shell items-center bg-canvas py-6 lg:py-8">
       <section className="auth-popup max-w-6xl p-4 sm:p-5 lg:p-6">
-        <AuthPage
-          aria-labelledby={fieldId("title")}
+        <FormPage
+          aria-labelledby={fieldId('title')}
           action={
             <div className="auth-floating-language">
               <LanguageSwitcher />
             </div>
           }
-          titleId={fieldId("title")}
-          title={t("profile.title")}
-          intro={t("profile.intro")}
+          titleId={fieldId('title')}
+          title={t('profile.title')}
+          intro={t('profile.intro')}
           status={
-            statusMessage
+            statusMessage || authError
               ? {
-                  content: statusMessage.text,
-                  tone: statusMessage.tone,
+                  content: statusMessage?.text || authError,
+                  tone: statusMessage?.tone || 'critical',
                 }
               : null
           }
         >
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-stretch xl:grid-cols-[minmax(0,1fr)_21rem]">
-            <AuthForm
-              className="flex min-w-0 flex-col gap-4"
-              onSubmit={handleProfileSubmit}
-            >
-              <AuthFormSection className="grid gap-3.5 md:grid-cols-2">
+            <FlowForm className="flex min-w-0 flex-col gap-4" onSubmit={handleProfileSubmit}>
+              <FlowFormSection className="grid gap-3.5 md:grid-cols-2">
                 <div className="flex flex-col gap-1 md:col-span-2">
-                  <p className="auth-progress-text">Account details</p>
+                  <p className="auth-progress-text">{t('profile.sections.accountDetails')}</p>
                 </div>
 
                 <TextInput
-                  id={fieldId("username")}
+                  id={fieldId('username')}
                   name="username"
-                  label={t("profile.fields.username.label")}
+                  label={t('profile.fields.username.label')}
                   value={profile.username}
-                  onChange={(event) =>
-                    updateProfileField("username", event.target.value)
-                  }
+                  onChange={(event) => updateProfileField('username', event.target.value)}
                   error={Boolean(profileErrors.username)}
                   fieldError={profileErrors.username}
-                  errorId={fieldId("username-error")}
+                  errorId={fieldId('username-error')}
                   required
                   trailingIcon={<UserRound size={16} aria-hidden="true" />}
                 />
 
                 <TextInput
-                  id={fieldId("full-name")}
+                  id={fieldId('full-name')}
                   name="fullName"
-                  label={t("profile.fields.fullName.label")}
+                  label={t('profile.fields.fullName.label')}
                   value={profile.fullName}
-                  onChange={(event) =>
-                    updateProfileField("fullName", event.target.value)
-                  }
+                  onChange={(event) => updateProfileField('fullName', event.target.value)}
                   error={Boolean(profileErrors.fullName)}
                   fieldError={profileErrors.fullName}
-                  errorId={fieldId("full-name-error")}
+                  errorId={fieldId('full-name-error')}
                   required
                 />
 
                 <TextInput
-                  id={fieldId("email")}
+                  id={fieldId('email')}
                   name="email"
                   type="email"
-                  label={t("profile.fields.email.label")}
+                  label={t('profile.fields.email.label')}
                   value={profile.email}
-                  onChange={(event) =>
-                    updateProfileField("email", event.target.value)
-                  }
+                  onChange={(event) => updateProfileField('email', event.target.value)}
                   error={Boolean(profileErrors.email)}
                   fieldError={profileErrors.email}
-                  errorId={fieldId("email-error")}
+                  errorId={fieldId('email-error')}
                   required
                   trailingIcon={<Mail size={16} aria-hidden="true" />}
                 />
 
                 <PhoneNumberField
-                  id={fieldId("phone")}
+                  id={fieldId('phone')}
                   name="phoneNumber"
-                  label={t("profile.fields.phoneNumber.label")}
-                  hint={t("profile.fields.phoneNumber.hint")}
-                  hintId={fieldId("phone-hint")}
+                  label={t('profile.fields.phoneNumber.label')}
+                  hint={t('profile.fields.phoneNumber.hint')}
+                  hintId={fieldId('phone-hint')}
                   value={profile.phoneNumber}
-                  onNumberChange={(event) =>
-                    updateProfileField("phoneNumber", event.target.value)
-                  }
+                  onNumberChange={(event) => updateProfileField('phoneNumber', event.target.value)}
                   countryControlId={phoneCountryControlId}
                   countryHintId={phoneCountryHintId}
-                  countryHint={t("profile.fields.phoneNumber.countryHint", {
+                  countryHint={t('profile.fields.phoneNumber.countryHint', {
                     dialCode: selectedPhoneCountry.dialCode,
                   })}
                   selectedCountry={selectedPhoneCountry}
@@ -566,9 +523,9 @@ function ProfilePage() {
                 />
 
                 <FormField
-                  htmlFor={fieldId("location")}
-                  label={t("profile.fields.location.label")}
-                  hint={t("profile.fields.location.hint")}
+                  htmlFor={fieldId('location')}
+                  label={t('profile.fields.location.label')}
+                  hint={t('profile.fields.location.hint')}
                   hintId={locationHintId}
                   error={profileErrors.locationQuery}
                   errorId={locationErrorId}
@@ -576,14 +533,14 @@ function ProfilePage() {
                     <LocationLookup
                       statusId={locationStatusId}
                       loading={locationLookupLoading}
-                      loadingText={t("profile.fields.location.loading")}
+                      loadingText={t('profile.fields.location.loading')}
                       statusMessage={locationLookupMessage}
                       resolvedText={
                         resolvedLocation
-                          ? t("profile.fields.location.resolved", {
+                          ? t('profile.fields.location.resolved', {
                               location: resolvedLocation.displayName,
                             })
-                          : ""
+                          : ''
                       }
                       listId={locationListId}
                       suggestions={locationSuggestions}
@@ -595,38 +552,26 @@ function ProfilePage() {
                 >
                   <div className="relative">
                     <TextInput
-                      id={fieldId("location")}
+                      id={fieldId('location')}
                       type="text"
                       name="location"
                       autoComplete="off"
                       enterKeyHint="next"
                       value={profile.locationQuery}
-                      onChange={(event) =>
-                        handleLocationInputChange(event.target.value)
-                      }
+                      onChange={(event) => handleLocationInputChange(event.target.value)}
                       onKeyDown={handleLocationKeyDown}
                       trailingIcon={<MapPin aria-hidden="true" size={16} />}
                       aria-describedby={[
                         locationHintId,
                         locationStatusId,
-                        profileErrors.locationQuery ? locationErrorId : "",
+                        profileErrors.locationQuery ? locationErrorId : '',
                       ]
                         .filter(Boolean)
-                        .join(" ")}
-                      aria-errormessage={
-                        profileErrors.locationQuery
-                          ? locationErrorId
-                          : undefined
-                      }
-                      aria-invalid={
-                        profileErrors.locationQuery ? "true" : "false"
-                      }
+                        .join(' ')}
+                      aria-errormessage={profileErrors.locationQuery ? locationErrorId : undefined}
+                      aria-invalid={profileErrors.locationQuery ? 'true' : 'false'}
                       aria-autocomplete="list"
-                      aria-controls={
-                        locationSuggestions.length > 0
-                          ? locationListId
-                          : undefined
-                      }
+                      aria-controls={locationSuggestions.length > 0 ? locationListId : undefined}
                       aria-activedescendant={
                         activeSuggestionIndex >= 0
                           ? getLocationSuggestionId(activeSuggestionIndex)
@@ -639,19 +584,16 @@ function ProfilePage() {
                 </FormField>
 
                 <FormField
-                  htmlFor={fieldId("default-language")}
-                  label={t("profile.fields.defaultLanguage.label")}
+                  htmlFor={fieldId('default-language')}
+                  label={t('profile.fields.defaultLanguage.label')}
                 >
                   <div className="relative">
                     <select
-                      id={fieldId("default-language")}
+                      id={fieldId('default-language')}
                       name="defaultLanguage"
                       value={profile.defaultLanguage}
                       onChange={(event) =>
-                        updateProfileField(
-                          "defaultLanguage",
-                          event.target.value as Locale,
-                        )
+                        updateProfileField('defaultLanguage', event.target.value as Locale)
                       }
                       className="field-control field-control--trailing appearance-none"
                     >
@@ -666,16 +608,12 @@ function ProfilePage() {
                     </span>
                   </div>
                 </FormField>
-              </AuthFormSection>
+              </FlowFormSection>
 
               <FormActions className="mt-auto border-t border-border-subtle pt-4 sm:grid sm:grid-cols-2">
-                <ActionButton
-                  type="submit"
-                  className="gap-2"
-                  disabled={!isDirty}
-                >
+                <ActionButton type="submit" className="gap-2" disabled={!isDirty}>
                   <Save size={16} aria-hidden="true" />
-                  {t("profile.actions.save")}
+                  {t('profile.actions.save')}{' '}
                 </ActionButton>
                 <ActionButton
                   type="button"
@@ -684,26 +622,24 @@ function ProfilePage() {
                   disabled={!isDirty}
                   onClick={resetProfileChanges}
                 >
-                  {t("profile.actions.discard")}
+                  {t('profile.actions.discard')}{' '}
                 </ActionButton>
               </FormActions>
-            </AuthForm>
+            </FlowForm>
 
-            <AuthForm
+            <FlowForm
               className="flex min-w-0 flex-col gap-4 border-t border-border-subtle pt-5 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0"
               onSubmit={handlePasswordSubmit}
             >
-              <AuthFormSection>
+              <FlowFormSection>
                 <div className="flex flex-col gap-1">
-                  <p className="auth-progress-text">
-                    {t("profile.actions.changePassword")}
-                  </p>
+                  <p className="auth-progress-text">{t('profile.actions.changePassword')}</p>
                 </div>
 
                 <PasswordField
-                  id={fieldId("current-password")}
+                  id={fieldId('current-password')}
                   name="currentPassword"
-                  label={t("profile.fields.currentPassword.label")}
+                  label={t('profile.fields.currentPassword.label')}
                   value={currentPassword}
                   show={showCurrentPassword}
                   setShow={setShowCurrentPassword}
@@ -717,22 +653,22 @@ function ProfilePage() {
                   }}
                   autoComplete="current-password"
                   error={passwordErrors.currentPassword}
-                  errorId={fieldId("current-password-error")}
+                  errorId={fieldId('current-password-error')}
                   required
-                  ariaLabelHide={t("profile.fields.currentPassword.hide", {
-                    defaultValue: "Hide current password",
+                  ariaLabelHide={t('profile.fields.currentPassword.hide', {
+                    defaultValue: 'Hide current password',
                   })}
-                  ariaLabelShow={t("profile.fields.currentPassword.show", {
-                    defaultValue: "Show current password",
+                  ariaLabelShow={t('profile.fields.currentPassword.show', {
+                    defaultValue: 'Show current password',
                   })}
                 />
 
                 <PasswordField
-                  id={fieldId("new-password")}
+                  id={fieldId('new-password')}
                   name="newPassword"
-                  label={t("profile.fields.newPassword.label")}
-                  hint={t("profile.fields.newPassword.hint")}
-                  hintId={fieldId("new-password-hint")}
+                  label={t('profile.fields.newPassword.label')}
+                  hint={t('profile.fields.newPassword.hint')}
+                  hintId={fieldId('new-password-hint')}
                   value={newPassword}
                   show={showNewPassword}
                   setShow={setShowNewPassword}
@@ -746,20 +682,20 @@ function ProfilePage() {
                   }}
                   autoComplete="new-password"
                   error={passwordErrors.newPassword}
-                  errorId={fieldId("new-password-error")}
+                  errorId={fieldId('new-password-error')}
                   required
-                  ariaLabelHide={t("profile.fields.newPassword.hide", {
-                    defaultValue: "Hide new password",
+                  ariaLabelHide={t('profile.fields.newPassword.hide', {
+                    defaultValue: 'Hide new password',
                   })}
-                  ariaLabelShow={t("profile.fields.newPassword.show", {
-                    defaultValue: "Show new password",
+                  ariaLabelShow={t('profile.fields.newPassword.show', {
+                    defaultValue: 'Show new password',
                   })}
                 />
 
                 <PasswordField
-                  id={fieldId("confirm-password")}
+                  id={fieldId('confirm-password')}
                   name="confirmPassword"
-                  label={t("profile.fields.confirmPassword.label")}
+                  label={t('profile.fields.confirmPassword.label')}
                   value={confirmPassword}
                   show={showConfirmPassword}
                   setShow={setShowConfirmPassword}
@@ -773,22 +709,22 @@ function ProfilePage() {
                   }}
                   autoComplete="new-password"
                   error={passwordErrors.confirmPassword}
-                  errorId={fieldId("confirm-password-error")}
+                  errorId={fieldId('confirm-password-error')}
                   required
                   ariaLabelHide="Hide confirmation password"
                   ariaLabelShow="Show confirmation password"
                 />
-              </AuthFormSection>
+              </FlowFormSection>
 
               <FormActions className="mt-auto border-t border-border-subtle pt-4">
                 <ActionButton type="submit" className="gap-2">
                   <ShieldCheck size={16} aria-hidden="true" />
-                  {t("profile.actions.updatePassword")}
+                  {t('profile.actions.updatePassword')}{' '}
                 </ActionButton>
               </FormActions>
-            </AuthForm>
+            </FlowForm>
           </div>
-        </AuthPage>
+        </FormPage>
       </section>
     </main>
   );

@@ -60,7 +60,6 @@ CHINVAT is an open-source, cross-platform, accessible, and multilingual authenti
 The frontend reads environment variables through Vite.
 
 - `VITE_API_BASE_URL` — base URL for the backend API (for example `http://192.168.181.152`).
-- `VITE_RESET_PASSWORD_URL` — optional client-side password reset redirect URL.
 
 You can copy `.env.example` into `.env` inside the `frontend/` folder to configure the app before running it.
 

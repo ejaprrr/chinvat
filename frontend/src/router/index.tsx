@@ -1,29 +1,11 @@
-/* eslint-disable react-refresh/only-export-components */
-import { createBrowserRouter, Navigate } from "react-router";
-import type { ReactNode } from "react";
-import AuthLayout from "../layouts/AuthLayout";
-import LoginPage from "../pages/LoginPage.tsx";
-import ProfilePage from "../pages/ProfilePage.tsx";
-import RegisterPage from "../pages/RegisterPage.tsx";
-import ResetPasswordPage from "../pages/ResetPasswordPage.tsx";
-import { appRoutes, authRouteSegments } from "./paths";
-import { ProtectedRoute } from "../auth/ProtectedRoute";
-import { useAuth } from "../auth/useAuth";
-
-function PublicRoute({ children }: { children: ReactNode }) {
-  const { authenticated, loading } = useAuth();
-
-  if (loading) {
-    return null;
-  }
-
-  if (authenticated) {
-    return <Navigate to={appRoutes.profile} replace />;
-  }
-
-  return <>{children}</>;
-}
-
+import { createBrowserRouter, Navigate } from 'react-router';
+import AuthLayout from '../layouts/AuthLayout';
+import LoginPage from '../pages/LoginPage';
+import ProfilePage from '../pages/ProfilePage';
+import RegisterPage from '../pages/RegisterPage';
+import ResetPasswordPage from '../pages/ResetPasswordPage';
+import { ProtectedRoute, PublicRoute } from './guards.tsx';
+import { appRoutes } from './routes.ts';
 export const router = createBrowserRouter(
   [
     {
@@ -46,7 +28,7 @@ export const router = createBrowserRouter(
           ),
         },
         {
-          path: authRouteSegments.register,
+          path: 'register',
           element: (
             <PublicRoute>
               <RegisterPage />
@@ -54,11 +36,11 @@ export const router = createBrowserRouter(
           ),
         },
         {
-          path: authRouteSegments.resetPassword,
+          path: 'reset-password',
           element: <ResetPasswordPage />,
         },
         {
-          path: "*",
+          path: '*',
           element: <Navigate to={appRoutes.login} replace />,
         },
       ],
@@ -68,3 +50,5 @@ export const router = createBrowserRouter(
     basename: import.meta.env.BASE_URL,
   },
 );
+
+export default router;

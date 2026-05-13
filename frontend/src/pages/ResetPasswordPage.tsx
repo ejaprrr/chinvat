@@ -1,21 +1,23 @@
-import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useDocumentTitle } from '@/shared/lib/documentTitle';
 
-import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { Mail } from "lucide-react";
-import { useTranslation } from "react-i18next";
-import { confirmPasswordReset, requestPasswordReset } from "../api/auth";
-import { appRoutes } from "../router/paths";
-import { ActionButton, ActionLink } from "../components/forms/Action";
-import AuthPage from "../components/auth/AuthPage";
-import { AuthStepForm, FormActions } from "../components/auth/AuthForm";
-import { AuthCompletion } from "../components/auth/AuthSupport";
-import Stepper from "../components/auth/Stepper";
-import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
-import PasswordField from "../components/forms/PasswordField";
-import TextInput from "../components/forms/TextInput";
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
+import { Mail } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { confirmPasswordReset, requestPasswordReset } from '@/features/auth/api';
+import { useAuth } from '@/shared/auth';
+import { getErrorDisplay } from '@/shared/api/errors';
+import { isPasswordLongEnough, PASSWORD_MIN_LENGTH } from '@/shared/lib/validation/password';
+import { appRoutes } from '../router/routes.ts';
+import { ActionButton, ActionLink } from '@/shared/ui/Action';
+import FormPage from '@/shared/ui/FormPage';
+import { FlowStepForm, FormActions } from '@/shared/ui/FlowForm';
+import CompletionMessage from '@/shared/ui/CompletionMessage';
+import ProgressStepper from '@/shared/ui/ProgressStepper';
+import LanguageSwitcher from '@/shared/ui/LanguageSwitcher';
+import PasswordField from '@/shared/ui/PasswordField';
+import TextInput from '@/shared/ui/TextInput';
 
-type Step = "email" | "code" | "password" | "done";
-
+type Step = 'email' | 'code' | 'password' | 'done';
 type FieldErrors = {
   code?: string;
   confirmPassword?: string;
@@ -25,21 +27,21 @@ type FieldErrors = {
 
 type StatusMessage = {
   text: string;
-  tone: "default" | "warning";
+  tone: 'default' | 'warning';
 } | null;
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordMinLength = 8;
-
+const resetCodePattern = /^\d{6}$/;
 function ResetPasswordPage() {
-  useDocumentTitle("meta.resetPasswordPageTitle");
+  useDocumentTitle('meta.resetPasswordPageTitle');
 
   const { t } = useTranslation();
-  const [currentStep, setCurrentStep] = useState<Step>("email");
-  const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const { error: authError, reportError, clearError } = useAuth();
+  const [currentStep, setCurrentStep] = useState<Step>('email');
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -63,30 +65,27 @@ function ResetPasswordPage() {
   const passwordErrorId = useId();
   const confirmPasswordErrorId = useId();
 
-  const emailDescribedBy = [emailHintId, fieldErrors.email ? emailErrorId : ""]
+  const emailDescribedBy = [emailHintId, fieldErrors.email ? emailErrorId : '']
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
-  const codeDescribedBy = [codeHintId, fieldErrors.code ? codeErrorId : ""]
+  const codeDescribedBy = [codeHintId, fieldErrors.code ? codeErrorId : '']
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
-  const passwordDescribedBy = [
-    passwordHintId,
-    fieldErrors.password ? passwordErrorId : "",
-  ]
+  const passwordDescribedBy = [passwordHintId, fieldErrors.password ? passwordErrorId : '']
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   const confirmPasswordDescribedBy = [
     confirmPasswordHintId,
-    fieldErrors.confirmPassword ? confirmPasswordErrorId : "",
+    fieldErrors.confirmPassword ? confirmPasswordErrorId : '',
   ]
     .filter(Boolean)
-    .join(" ");
-
+    .join(' ');
   const clearStatus = () => {
     setStatusMessage(null);
+    clearError();
   };
 
   const handleEmailSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -96,7 +95,7 @@ function ResetPasswordPage() {
 
     if (!trimmedEmail) {
       setFieldErrors({
-        email: t("auth.resetPassword.form.email.required"),
+        email: t('auth.resetPassword.form.email.required'),
       });
       clearStatus();
       emailInputRef.current?.focus();
@@ -105,7 +104,7 @@ function ResetPasswordPage() {
 
     if (!emailPattern.test(trimmedEmail)) {
       setFieldErrors({
-        email: t("auth.resetPassword.form.email.invalid"),
+        email: t('auth.resetPassword.form.email.invalid'),
       });
       clearStatus();
       emailInputRef.current?.focus();
@@ -117,21 +116,23 @@ function ResetPasswordPage() {
         await requestPasswordReset({ email: trimmedEmail });
         setFieldErrors({});
         setStatusMessage({
-          tone: "default",
-          text: t("auth.resetPassword.form.codeSent", { email: trimmedEmail }),
+          tone: 'default',
+          text: t('auth.resetPassword.form.codeSent', { email: trimmedEmail }),
         });
-        setCurrentStep("code");
+        setCurrentStep('code');
       } catch (error) {
+        const detail = getErrorDisplay(error, {
+          fallbackCode: 'AUTH_PASSWORD_RESET_REQUEST_FAILED',
+          fallbackMessage: t('auth.resetPassword.form.email.invalid'),
+        });
         setFieldErrors({
-          email:
-            error instanceof Error
-              ? error.message
-              : t("auth.resetPassword.form.email.invalid"),
+          email: t('auth.resetPassword.form.email.invalid'),
         });
         setStatusMessage({
-          tone: "warning",
-          text: t("auth.resetPassword.form.email.invalid"),
+          tone: 'warning',
+          text: detail.message,
         });
+        reportError(detail.message);
         emailInputRef.current?.focus();
       }
     })();
@@ -142,7 +143,16 @@ function ResetPasswordPage() {
 
     if (!code.trim()) {
       setFieldErrors({
-        code: t("auth.resetPassword.form.code.required"),
+        code: t('auth.resetPassword.form.code.required'),
+      });
+      clearStatus();
+      codeInputRef.current?.focus();
+      return;
+    }
+
+    if (!resetCodePattern.test(code.trim())) {
+      setFieldErrors({
+        code: t('auth.resetPassword.form.code.required'),
       });
       clearStatus();
       codeInputRef.current?.focus();
@@ -153,7 +163,7 @@ function ResetPasswordPage() {
       try {
         setFieldErrors({});
         clearStatus();
-        setCurrentStep("password");
+        setCurrentStep('password');
       } catch {
         // no-op
       }
@@ -166,21 +176,17 @@ function ResetPasswordPage() {
     const nextErrors: FieldErrors = {};
 
     if (!password) {
-      nextErrors.password = t("auth.resetPassword.form.password.required");
-    } else if (password.length < passwordMinLength) {
-      nextErrors.password = t("auth.resetPassword.form.password.length", {
-        count: passwordMinLength,
+      nextErrors.password = t('auth.resetPassword.form.password.required');
+    } else if (!isPasswordLongEnough(password)) {
+      nextErrors.password = t('auth.resetPassword.form.password.length', {
+        count: PASSWORD_MIN_LENGTH,
       });
     }
 
     if (!confirmPassword) {
-      nextErrors.confirmPassword = t(
-        "auth.resetPassword.form.confirmPassword.required",
-      );
+      nextErrors.confirmPassword = t('auth.resetPassword.form.confirmPassword.required');
     } else if (password !== confirmPassword) {
-      nextErrors.confirmPassword = t(
-        "auth.resetPassword.form.confirmPassword.mismatch",
-      );
+      nextErrors.confirmPassword = t('auth.resetPassword.form.confirmPassword.mismatch');
     }
 
     setFieldErrors(nextErrors);
@@ -205,15 +211,17 @@ function ResetPasswordPage() {
           newPassword: password,
         });
         clearStatus();
-        setCurrentStep("done");
+        setCurrentStep('done');
       } catch (error) {
-        setStatusMessage({
-          tone: "warning",
-          text:
-            error instanceof Error
-              ? error.message
-              : t("auth.resetPassword.form.code.required"),
+        const detail = getErrorDisplay(error, {
+          fallbackCode: 'AUTH_PASSWORD_RESET_CONFIRM_FAILED',
+          fallbackMessage: t('auth.resetPassword.form.code.required'),
         });
+        setStatusMessage({
+          tone: 'warning',
+          text: detail.message,
+        });
+        reportError(detail.message);
       }
     })();
   };
@@ -221,34 +229,31 @@ function ResetPasswordPage() {
   const goToEmailStep = () => {
     setFieldErrors({});
     clearStatus();
-    setCurrentStep("email");
+    setCurrentStep('email');
   };
 
-  const stepOrder: Step[] = ["email", "code", "password", "done"];
-  const visibleStepOrder = stepOrder.filter((step) => step !== "done");
+  const stepOrder: Step[] = ['email', 'code', 'password', 'done'];
+  const visibleStepOrder = stepOrder.filter((step) => step !== 'done');
   const visibleStepIndex =
-    currentStep === "done"
-      ? visibleStepOrder.length - 1
-      : visibleStepOrder.indexOf(currentStep);
+    currentStep === 'done' ? visibleStepOrder.length - 1 : visibleStepOrder.indexOf(currentStep);
 
   const headerTitle =
-    currentStep === "email"
-      ? t("auth.resetPassword.form.emailStepTitle")
-      : currentStep === "code"
-        ? t("auth.resetPassword.form.codeStepTitle")
-        : currentStep === "password"
-          ? t("auth.resetPassword.form.passwordStepTitle")
-          : t("auth.resetPassword.form.doneTitle");
+    currentStep === 'email'
+      ? t('auth.resetPassword.form.emailStepTitle')
+      : currentStep === 'code'
+        ? t('auth.resetPassword.form.codeStepTitle')
+        : currentStep === 'password'
+          ? t('auth.resetPassword.form.passwordStepTitle')
+          : t('auth.resetPassword.form.doneTitle');
 
   const headerIntro =
-    currentStep === "email"
-      ? t("auth.resetPassword.form.emailStepIntro")
-      : currentStep === "code"
-        ? t("auth.resetPassword.form.codeStepIntro")
-        : currentStep === "password"
-          ? t("auth.resetPassword.form.passwordStepIntro")
-          : t("auth.resetPassword.form.doneIntro");
-
+    currentStep === 'email'
+      ? t('auth.resetPassword.form.emailStepIntro')
+      : currentStep === 'code'
+        ? t('auth.resetPassword.form.codeStepIntro')
+        : currentStep === 'password'
+          ? t('auth.resetPassword.form.passwordStepIntro')
+          : t('auth.resetPassword.form.doneIntro');
   useEffect(() => {
     if (previousStepRef.current === currentStep) {
       return;
@@ -259,14 +264,12 @@ function ResetPasswordPage() {
   }, [currentStep]);
 
   return (
-    <AuthPage
+    <FormPage
       aria-labelledby="reset-password-title"
       progress={
         <div id={progressId}>
-          <Stepper
-            steps={visibleStepOrder.map((step) =>
-              t(`auth.resetPassword.form.${step}StepTitle`),
-            )}
+          <ProgressStepper
+            steps={visibleStepOrder.map((step) => t(`auth.resetPassword.form.${step}StepTitle`))}
             currentStep={visibleStepIndex}
             totalSteps={visibleStepOrder.length}
             className="mb-2"
@@ -274,10 +277,10 @@ function ResetPasswordPage() {
         </div>
       }
       status={
-        statusMessage
+        statusMessage || authError
           ? {
-              content: statusMessage.text,
-              tone: statusMessage.tone === "warning" ? "warning" : "default",
+              content: statusMessage?.text || authError,
+              tone: statusMessage?.tone === 'warning' ? 'warning' : 'default',
             }
           : null
       }
@@ -285,9 +288,9 @@ function ResetPasswordPage() {
         <FormActions>
           <ActionLink
             to={appRoutes.login}
-            variant={currentStep === "done" ? "primary" : "secondary"}
+            variant={currentStep === 'done' ? 'primary' : 'secondary'}
           >
-            {t("auth.actions.backToSignIn")}
+            {t('auth.actions.backToSignIn')}{' '}
           </ActionLink>
         </FormActions>
       }
@@ -304,13 +307,11 @@ function ResetPasswordPage() {
       titleDescribedBy={`${progressId} ${headerIntroId}`}
       intro={headerIntro}
     >
-      {currentStep === "email" ? (
-        <AuthStepForm
+      {currentStep === 'email' ? (
+        <FlowStepForm
           onSubmit={handleEmailSubmit}
           actions={
-            <ActionButton type="submit">
-              {t("auth.resetPassword.form.email.submit")}
-            </ActionButton>
+            <ActionButton type="submit">{t('auth.resetPassword.form.email.submit')}</ActionButton>
           }
         >
           <TextInput
@@ -333,33 +334,27 @@ function ResetPasswordPage() {
             error={Boolean(fieldErrors.email)}
             aria-describedby={emailDescribedBy}
             aria-errormessage={fieldErrors.email ? emailErrorId : undefined}
-            aria-invalid={fieldErrors.email ? "true" : "false"}
+            aria-invalid={fieldErrors.email ? 'true' : 'false'}
             required
             trailingIcon={<Mail aria-hidden="true" size={16} />}
             htmlFor="reset-email"
-            label={t("auth.resetPassword.form.email.label")}
-            hint={t("auth.resetPassword.form.email.hint")}
+            label={t('auth.resetPassword.form.email.label')}
+            hint={t('auth.resetPassword.form.email.hint')}
             hintId={emailHintId}
             fieldError={fieldErrors.email}
             errorId={emailErrorId}
           />
-        </AuthStepForm>
+        </FlowStepForm>
       ) : null}
 
-      {currentStep === "code" ? (
-        <AuthStepForm
+      {currentStep === 'code' ? (
+        <FlowStepForm
           onSubmit={handleCodeSubmit}
           actions={
             <>
-              <ActionButton type="submit">
-                {t("auth.resetPassword.form.code.submit")}
-              </ActionButton>
-              <ActionButton
-                type="button"
-                variant="secondary"
-                onClick={goToEmailStep}
-              >
-                {t("auth.resetPassword.form.code.changeEmail")}
+              <ActionButton type="submit">{t('auth.resetPassword.form.code.submit')}</ActionButton>
+              <ActionButton type="button" variant="secondary" onClick={goToEmailStep}>
+                {t('auth.resetPassword.form.code.changeEmail')}{' '}
               </ActionButton>
             </>
           }
@@ -384,24 +379,24 @@ function ResetPasswordPage() {
             error={Boolean(fieldErrors.code)}
             aria-describedby={codeDescribedBy}
             aria-errormessage={fieldErrors.code ? codeErrorId : undefined}
-            aria-invalid={fieldErrors.code ? "true" : "false"}
+            aria-invalid={fieldErrors.code ? 'true' : 'false'}
             required
-            label={t("auth.resetPassword.form.code.label")}
-            hint={t("auth.resetPassword.form.code.hint")}
+            label={t('auth.resetPassword.form.code.label')}
+            hint={t('auth.resetPassword.form.code.hint')}
             hintId={codeHintId}
             fieldError={fieldErrors.code}
             errorId={codeErrorId}
           />
-        </AuthStepForm>
+        </FlowStepForm>
       ) : null}
 
-      {currentStep === "password" ? (
-        <AuthStepForm
+      {currentStep === 'password' ? (
+        <FlowStepForm
           onSubmit={handlePasswordSubmit}
           actions={
             <>
               <ActionButton type="submit">
-                {t("auth.resetPassword.form.password.submit")}
+                {t('auth.resetPassword.form.password.submit')}{' '}
               </ActionButton>
               <ActionButton
                 type="button"
@@ -409,10 +404,10 @@ function ResetPasswordPage() {
                 onClick={() => {
                   setFieldErrors({});
                   clearStatus();
-                  setCurrentStep("code");
+                  setCurrentStep('code');
                 }}
               >
-                {t("auth.resetPassword.form.password.back")}
+                {t('auth.resetPassword.form.password.back')}{' '}
               </ActionButton>
             </>
           }
@@ -421,7 +416,7 @@ function ResetPasswordPage() {
             ref={passwordInputRef}
             id="new-password"
             name="newPassword"
-            label={t("auth.resetPassword.form.password.label")}
+            label={t('auth.resetPassword.form.password.label')}
             value={password}
             show={showPassword}
             setShow={setShowPassword}
@@ -437,19 +432,19 @@ function ResetPasswordPage() {
             enterKeyHint="next"
             aria-describedby={passwordDescribedBy}
             required
-            hint={t("auth.resetPassword.form.password.hint")}
+            hint={t('auth.resetPassword.form.password.hint')}
             hintId={passwordHintId}
             error={fieldErrors.password}
             errorId={passwordErrorId}
-            ariaLabelHide={t("auth.fields.password.hide")}
-            ariaLabelShow={t("auth.fields.password.show")}
+            ariaLabelHide={t('auth.fields.password.hide')}
+            ariaLabelShow={t('auth.fields.password.show')}
           />
 
           <PasswordField
             ref={confirmPasswordInputRef}
             id="confirm-password"
             name="confirmPassword"
-            label={t("auth.resetPassword.form.confirmPassword.label")}
+            label={t('auth.resetPassword.form.confirmPassword.label')}
             value={confirmPassword}
             show={showConfirmPassword}
             setShow={setShowConfirmPassword}
@@ -465,22 +460,22 @@ function ResetPasswordPage() {
             enterKeyHint="done"
             aria-describedby={confirmPasswordDescribedBy}
             required
-            hint={t("auth.resetPassword.form.confirmPassword.hint")}
+            hint={t('auth.resetPassword.form.confirmPassword.hint')}
             hintId={confirmPasswordHintId}
             error={fieldErrors.confirmPassword}
             errorId={confirmPasswordErrorId}
-            ariaLabelHide={t("auth.fields.password.hide")}
-            ariaLabelShow={t("auth.fields.password.show")}
+            ariaLabelHide={t('auth.fields.password.hide')}
+            ariaLabelShow={t('auth.fields.password.show')}
           />
-        </AuthStepForm>
+        </FlowStepForm>
       ) : null}
 
-      {currentStep === "done" ? (
-        <AuthCompletion id="reset-complete-title">
-          {t("auth.resetPassword.form.doneBody")}
-        </AuthCompletion>
+      {currentStep === 'done' ? (
+        <CompletionMessage id="reset-complete-title">
+          {t('auth.resetPassword.form.doneBody')}{' '}
+        </CompletionMessage>
       ) : null}
-    </AuthPage>
+    </FormPage>
   );
 }
 

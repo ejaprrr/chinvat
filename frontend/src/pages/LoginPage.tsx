@@ -1,42 +1,38 @@
-import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type FormEvent,
-  type KeyboardEvent,
-} from "react";
-import { useNavigate } from "react-router";
-import { useTranslation } from "react-i18next";
-import useDocumentTitle from "../hooks/useDocumentTitle";
-import { useAuth } from "../auth/useAuth";
-import { appRoutes } from "../router/paths";
-import { ActionButton, ActionLink } from "../components/forms/Action";
-import LanguageSwitcher from "../components/i18n/LanguageSwitcher";
-import AuthPage from "../components/auth/AuthPage";
-import { AuthStepForm } from "../components/auth/AuthForm";
-import PasswordField from "../components/forms/PasswordField";
-import TextInput from "../components/forms/TextInput";
-
+import { useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useNavigate } from 'react-router';
+import { useTranslation } from 'react-i18next';
+import { useDocumentTitle } from '@/shared/lib/documentTitle';
+import { useAuth } from '@/shared/auth';
+import { eidasLogin } from '@/features/auth/api';
+import { getErrorDisplay } from '@/shared/api/errors';
+import { setTokens } from '@/shared/auth/tokenStorage';
+import { isWellFormedEmail } from '@/shared/lib/validation/user';
+import { appRoutes } from '../router/routes.ts';
+import { ActionButton, ActionLink } from '@/shared/ui/Action';
+import LanguageSwitcher from '@/shared/ui/LanguageSwitcher';
+import FormPage from '@/shared/ui/FormPage';
+import { FlowStepForm } from '@/shared/ui/FlowForm';
+import PasswordField from '@/shared/ui/PasswordField';
+import TextInput from '@/shared/ui/TextInput';
 type FieldErrors = {
   email?: string;
   password?: string;
 };
 
 function LoginPage() {
-  useDocumentTitle("meta.pageTitle");
-
+  useDocumentTitle('meta.pageTitle');
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, refreshUser, error: authError, reportError } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOpeningCert, setIsOpeningCert] = useState(false);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
@@ -47,13 +43,8 @@ function LoginPage() {
   const passwordErrorId = useId();
   const capsLockWarningId = useId();
 
-  useEffect(() => {
-    // Avoid setting state synchronously in the effect body
-    Promise.resolve().then(() => setStatusMessage(null));
-  }, [email, password]);
-
   const handleCapsLock = (event: KeyboardEvent<HTMLInputElement>) => {
-    setCapsLockOn(event.getModifierState("CapsLock"));
+    setCapsLockOn(event.getModifierState('CapsLock'));
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -63,11 +54,13 @@ function LoginPage() {
     const trimmedEmail = email.trim();
 
     if (!trimmedEmail) {
-      nextErrors.email = "auth.fields.email.required";
+      nextErrors.email = 'auth.fields.email.required';
+    } else if (!isWellFormedEmail(trimmedEmail)) {
+      nextErrors.email = 'auth.fields.email.invalid';
     }
 
     if (!password) {
-      nextErrors.password = "auth.fields.password.required";
+      nextErrors.password = 'auth.fields.password.required';
     }
 
     setFieldErrors(nextErrors);
@@ -87,28 +80,51 @@ function LoginPage() {
       await login(trimmedEmail, password);
       navigate(appRoutes.profile, { replace: true });
     } catch (error) {
-      setStatusMessage(
-        error instanceof Error ? error.message : t("auth.status.loginError"),
-      );
+      const detail = getErrorDisplay(error, {
+        fallbackCode: 'AUTH_LOGIN_FAILED',
+        fallbackMessage: t('auth.status.loginError'),
+      });
+      setStatusMessage(detail.message);
+      reportError(detail.message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const emailDescribedBy = [emailHintId, fieldErrors.email ? emailErrorId : ""]
+  const handleEidas = async () => {
+    setStatusMessage(t('auth.status.certificateOpening'));
+    setIsOpeningCert(true);
+    try {
+      const response = await eidasLogin();
+      // Persist tokens and refresh auth state
+      setTokens(response.tokens.accessToken, response.tokens.refreshToken);
+      await refreshUser();
+      navigate(appRoutes.profile, { replace: true });
+    } catch (error) {
+      const detail = getErrorDisplay(error, {
+        fallbackCode: 'AUTH_EIDAS_LOGIN_FAILED',
+        fallbackMessage: t('auth.status.loginError'),
+      });
+      setStatusMessage(detail.message);
+      reportError(detail.message);
+    } finally {
+      setIsOpeningCert(false);
+    }
+  };
+
+  const emailDescribedBy = [emailHintId, fieldErrors.email ? emailErrorId : '']
     .filter(Boolean)
-    .join(" ");
+    .join(' ');
 
   const passwordDescribedBy = [
     passwordHintId,
-    capsLockOn ? capsLockWarningId : "",
-    fieldErrors.password ? passwordErrorId : "",
+    capsLockOn ? capsLockWarningId : '',
+    fieldErrors.password ? passwordErrorId : '',
   ]
     .filter(Boolean)
-    .join(" ");
-
+    .join(' ');
   return (
-    <AuthPage
+    <FormPage
       aria-labelledby="login-title"
       action={
         <div className="auth-floating-language">
@@ -116,20 +132,20 @@ function LoginPage() {
         </div>
       }
       titleId="login-title"
-      title={t("auth.title")}
-      intro={t("auth.intro", {
-        defaultValue: "Use your email and password to sign in.",
+      title={t('auth.title')}
+      intro={t('auth.intro', {
+        defaultValue: 'Use your email and password to sign in.',
       })}
       status={
-        statusMessage
+        statusMessage || authError
           ? {
-              content: statusMessage,
-              tone: "critical",
+              content: statusMessage || authError,
+              tone: 'critical',
             }
           : null
       }
     >
-      <AuthStepForm
+      <FlowStepForm
         onSubmit={handleSubmit}
         aria-labelledby="login-title"
         aria-busy={isSubmitting}
@@ -141,10 +157,10 @@ function LoginPage() {
             disabled={isSubmitting}
           >
             {isSubmitting
-              ? t("auth.actions.submitting", {
-                  defaultValue: "Signing in...",
+              ? t('auth.actions.submitting', {
+                  defaultValue: 'Signing in...',
                 })
-              : t("auth.actions.continue")}
+              : t('auth.actions.continue')}{' '}
           </ActionButton>
         }
       >
@@ -163,18 +179,19 @@ function LoginPage() {
               ...current,
               email: undefined,
             }));
+            setStatusMessage(null);
           }}
           error={Boolean(fieldErrors.email)}
           aria-describedby={emailDescribedBy}
           aria-errormessage={fieldErrors.email ? emailErrorId : undefined}
-          aria-invalid={fieldErrors.email ? "true" : "false"}
+          aria-invalid={fieldErrors.email ? 'true' : 'false'}
           aria-required="true"
           required
-          label={t("auth.fields.email.label", {
-            defaultValue: "Email address",
+          label={t('auth.fields.email.label', {
+            defaultValue: 'Email address',
           })}
-          hint={t("auth.fields.email.hint", {
-            defaultValue: "Use the email address associated with your account.",
+          hint={t('auth.fields.email.hint', {
+            defaultValue: 'Use the email address associated with your account.',
           })}
           hintId={emailHintId}
           fieldError={fieldErrors.email ? t(fieldErrors.email) : undefined}
@@ -185,7 +202,7 @@ function LoginPage() {
           ref={passwordInputRef}
           id="password"
           name="password"
-          label={t("auth.fields.password.label")}
+          label={t('auth.fields.password.label')}
           value={password}
           show={showPassword}
           setShow={setShowPassword}
@@ -195,6 +212,7 @@ function LoginPage() {
               ...current,
               password: undefined,
             }));
+            setStatusMessage(null);
           }}
           autoComplete="current-password"
           enterKeyHint="go"
@@ -210,10 +228,10 @@ function LoginPage() {
               variant="text"
               className="w-auto px-0 py-0 text-sm"
             >
-              {t("auth.actions.resetPassword")}
+              {t('auth.actions.resetPassword')}
             </ActionLink>
           }
-          hint={t("auth.fields.password.hint")}
+          hint={t('auth.fields.password.hint')}
           hintId={passwordHintId}
           status={
             capsLockOn ? (
@@ -224,34 +242,46 @@ function LoginPage() {
                 aria-live="polite"
                 aria-atomic="true"
               >
-                {t("auth.fields.password.capsLock", {
-                  defaultValue: "Caps Lock is on.",
+                {t('auth.fields.password.capsLock', {
+                  defaultValue: 'Caps Lock is on.',
                 })}
               </p>
             ) : null
           }
           error={fieldErrors.password ? t(fieldErrors.password) : undefined}
           errorId={passwordErrorId}
-          ariaLabelHide={t("auth.fields.password.hide", {
-            defaultValue: "Hide password",
+          ariaLabelHide={t('auth.fields.password.hide', {
+            defaultValue: 'Hide password',
           })}
-          ariaLabelShow={t("auth.fields.password.show", {
-            defaultValue: "Show password",
+          ariaLabelShow={t('auth.fields.password.show', {
+            defaultValue: 'Show password',
           })}
         />
-      </AuthStepForm>
+      </FlowStepForm>
+
+      <div className="mt-4">
+        <ActionButton
+          type="button"
+          variant="secondary"
+          onClick={handleEidas}
+          aria-busy={isOpeningCert}
+          disabled={isOpeningCert}
+        >
+          {isOpeningCert ? t('auth.status.certificateOpening') : t('auth.certificate.action')}{' '}
+        </ActionButton>
+      </div>
 
       <p className="text-center text-sm text-muted">
-        {t("auth.register.loginPrompt")}{" "}
+        {t('auth.register.loginPrompt')}{' '}
         <ActionLink
           to={appRoutes.register}
           variant="text"
           className="min-h-0 w-auto px-0 py-0 text-sm"
         >
-          {t("auth.register.actions.open")}
+          {t('auth.register.actions.open')}{' '}
         </ActionLink>
       </p>
-    </AuthPage>
+    </FormPage>
   );
 }
 

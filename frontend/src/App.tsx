@@ -1,7 +1,6 @@
-import { RouterProvider } from "react-router";
-import { AuthProvider } from "./auth/AuthProvider";
-import { router } from "./router";
-
+import { RouterProvider } from 'react-router';
+import { AuthProvider } from '@/shared/auth';
+import { router } from './router';
 function App() {
   return (
     <AuthProvider>

@@ -30,34 +30,24 @@
   <body>
     <div class="page-shell">
       <div>
-        <button id="open-popup" class="action action--primary">
-          Login with chinvat
-        </button>
-        <p class="note">
-          This opens the login page in a new popup window (module style).
-        </p>
+        <button id="open-popup" class="action action--primary">Login with chinvat</button>
+        <p class="note">This opens the login page in a new popup window (module style).</p>
       </div>
     </div>
 
     <script>
-      const openButton = document.getElementById("open-popup");
-      const popupUrl = "/";
+      const openButton = document.getElementById('open-popup');
+      const popupUrl = '/';
 
-      openButton?.addEventListener("click", () => {
+      openButton?.addEventListener('click', () => {
         const width = 420;
         const height = 640;
-        const left = Math.max(
-          0,
-          Math.round(window.screenX + (window.outerWidth - width) / 2),
-        );
-        const top = Math.max(
-          0,
-          Math.round(window.screenY + (window.outerHeight - height) / 2),
-        );
+        const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - width) / 2));
+        const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - height) / 2));
 
         window.open(
           popupUrl,
-          "chinvat-login",
+          'chinvat-login',
           `popup=yes,width=${width},height=${height},left=${left},top=${top}`,
         );
       });

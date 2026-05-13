@@ -7,7 +7,8 @@
   },
   "accessibility": {
     "skipToContent": "Salta al contingut principal",
-    "languageLabel": "Canvia idioma"
+    "languageLabel": "Canviar idioma",
+    "closeError": "Tancar error"
   },
   "brand": {
     "projectName": "chinvat",
@@ -15,7 +16,7 @@
   },
   "auth": {
     "title": "Benvingut de nou",
-    "intro": "Accedeix amb el teu usuari i contrasenya. Si ho prefereixes, continua amb el teu certificat FNMT.",
+    "intro": "Accedeix amb el teu usuari i contrasenya. Si ho prefereixes, continua amb el teu certificat eIDAS.",
     "divider": "o",
     "actions": {
       "continue": "Accedeix",
@@ -25,16 +26,17 @@
       "backToSignIn": "Torna a l'accés"
     },
     "status": {
-      "certificateOpening": "S'està redirigint l'accés amb certificat…",
+      "certificateOpening": "S'està redirigint l'accés eIDAS…",
       "loginSuccess": "L'accés s'ha completat correctament.",
       "loginError": "No hem pogut iniciar la sessió. Revisa les dades i torna-ho a provar.",
       "networkError": "No s'ha pogut connectar amb el servei. Revisa la connexió i torna-ho a provar."
     },
     "fields": {
-      "username": {
-        "label": "Usuari",
-        "hint": "Fes servir el nom d'usuari assignat al teu compte.",
-        "required": "Introdueix el teu nom d'usuari."
+      "email": {
+        "label": "Adreça de correu electrònic",
+        "hint": "Fes servir l'adreça de correu electrònic associada al teu compte.",
+        "required": "Introdueix una adreça de correu electrònic.",
+        "invalid": "Introdueix una adreça de correu electrònic vàlida."
       },
       "password": {
         "label": "Contrasenya",
@@ -46,9 +48,9 @@
       }
     },
     "certificate": {
-      "action": "Fes servir certificat FNMT",
-      "hint": "Et portarem a l'accés amb certificat. Si el navegador troba un certificat FNMT, selecciona'l quan t'ho demani.",
-      "unavailable": "L'accés amb certificat FNMT només està disponible en navegadors d'escriptori."
+      "action": "Fes servir certificat eIDAS",
+      "hint": "Et portarem a l'accés eIDAS. Si el navegador troba un certificat eIDAS, selecciona'l quan t'ho demani.",
+      "unavailable": "L'accés eIDAS només està disponible en navegadors d'escriptori."
     },
     "resetPassword": {
       "title": "Restableix la contrasenya",
@@ -105,6 +107,9 @@
   "profile": {
     "title": "El teu perfil",
     "intro": "Actualitza les dades del teu compte i preferències.",
+    "sections": {
+      "accountDetails": "Dades del compte"
+    },
     "actions": {
       "save": "Desa els canvis",
       "saving": "Desant...",
@@ -152,6 +157,16 @@
         "required": "Cerca la teva ubicació.",
         "loading": "Cercant ubicacions...",
         "resolved": "Ubicació establerta a {{location}}."
+      },
+      "errors": {
+        "usernameRequired": "Introdueix un nom d'usuari.",
+        "fullNameRequired": "Introdueix el nom complet.",
+        "phoneRequired": "Introdueix un número de telèfon amb el prefix del país.",
+        "emailRequired": "Introdueix una adreça de correu electrònic.",
+        "emailInvalid": "Introdueix una adreça de correu electrònic vàlida.",
+        "locationRequired": "Tria una ubicació de les suggerències.",
+        "passwordRequired": "Introdueix una contrasenya.",
+        "passwordMismatch": "Les contrasenyes no coincideixen."
       },
       "defaultLanguage": {
         "label": "Idioma per defecte",
