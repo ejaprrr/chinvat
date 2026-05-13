@@ -7,10 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-<<<<<<< HEAD
     "format": "prettier --write .",
-=======
->>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
     "preview": "vite preview"
   },
   "dependencies": {
@@ -21,12 +18,8 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-i18next": "^17.0.4",
-<<<<<<< HEAD
-    "react-router": "^7.14.2"
-=======
     "react-router": "^7.14.2",
     "react-select": "^5.10.2"
->>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
@@ -40,17 +33,10 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
-<<<<<<< HEAD
     "prettier": "^3.8.3",
-=======
->>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
     "tailwindcss": "^4.2.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.9"
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
