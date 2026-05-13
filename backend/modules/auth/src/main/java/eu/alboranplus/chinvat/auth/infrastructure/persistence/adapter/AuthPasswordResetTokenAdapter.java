@@ -25,7 +25,7 @@ public class AuthPasswordResetTokenAdapter implements AuthPasswordResetTokenPort
   @Override
   @Transactional
   public void save(
-      Long userId,
+      UUID userId,
       String rawCode,
       Instant issuedAt,
       Instant expiresAt,
@@ -42,7 +42,7 @@ public class AuthPasswordResetTokenAdapter implements AuthPasswordResetTokenPort
 
   @Override
   @Transactional
-  public Optional<Long> consume(Long userId, String rawCode, Instant now) {
+  public Optional<UUID> consume(UUID userId, String rawCode, Instant now) {
     String hash = sha256Hex(rawCode);
     Optional<AuthPasswordResetJpaEntity> active =
         repository.findActiveByUserIdAndTokenHash(userId, hash, now);

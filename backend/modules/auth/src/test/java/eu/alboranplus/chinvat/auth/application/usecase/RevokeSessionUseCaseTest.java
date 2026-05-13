@@ -33,14 +33,16 @@ class RevokeSessionUseCaseTest {
 
   @Test
   void execute_revokesSessionWhenOwned() {
+    UUID userId1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    UUID userId2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
     TokenPrincipal principal =
-        new TokenPrincipal(1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
+        new TokenPrincipal(userId1, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
     UUID sessionId = UUID.randomUUID();
 
     AuthSessionView session =
         new AuthSessionView(
             sessionId,
-            1L,
+            userId1,
             AuthSessionTokenKind.ACCESS,
             NOW.minusSeconds(10),
             NOW.plusSeconds(900),
@@ -57,14 +59,16 @@ class RevokeSessionUseCaseTest {
 
   @Test
   void execute_sessionNotOwned_throwsNotFound() {
+    UUID userId1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    UUID userId2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
     TokenPrincipal principal =
-        new TokenPrincipal(1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
+        new TokenPrincipal(userId1, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
     UUID sessionId = UUID.randomUUID();
 
     AuthSessionView session =
         new AuthSessionView(
             sessionId,
-            2L,
+            userId2,
             AuthSessionTokenKind.ACCESS,
             NOW.minusSeconds(10),
             NOW.plusSeconds(900),

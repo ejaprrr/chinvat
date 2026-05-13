@@ -19,7 +19,7 @@ public interface AuthPasswordResetJpaRepository
           + "AND r.consumedAt IS NULL "
           + "AND r.expiresAt > :now")
   Optional<AuthPasswordResetJpaEntity> findActiveByUserIdAndTokenHash(
-      @Param("userId") Long userId,
+      @Param("userId") UUID userId,
       @Param("hash") String hash, @Param("now") Instant now);
 
   @Modifying
@@ -31,7 +31,7 @@ public interface AuthPasswordResetJpaRepository
           + "AND r.consumedAt IS NULL "
           + "AND r.expiresAt > :now")
   int consumeByUserIdAndTokenHash(
-      @Param("userId") Long userId,
+      @Param("userId") UUID userId,
       @Param("hash") String hash, @Param("now") Instant now);
 
   @Modifying
@@ -41,6 +41,6 @@ public interface AuthPasswordResetJpaRepository
           + "WHERE r.userId = :userId "
           + "AND r.consumedAt IS NULL "
           + "AND r.expiresAt > :now")
-  int revokeActiveByUserId(@Param("userId") Long userId, @Param("now") Instant now);
+  int revokeActiveByUserId(@Param("userId") UUID userId, @Param("now") Instant now);
 }
 

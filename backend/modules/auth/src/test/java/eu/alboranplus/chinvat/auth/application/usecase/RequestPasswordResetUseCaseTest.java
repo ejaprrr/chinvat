@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -42,8 +43,10 @@ class RequestPasswordResetUseCaseTest {
         new RequestPasswordResetUseCase(
             authUsersPort, tokenGeneratorPort, passwordResetTokenPort, authClockPort, TTL);
 
+    UUID uuid10 = UUID.fromString("00000000-0000-0000-0000-00000000000a");
+
     AuthUserProjection user =
-        new AuthUserProjection(10L, "alice@example.com", "Alice", Set.of("USER"), true);
+        new AuthUserProjection(uuid10, "alice@example.com", "Alice", Set.of("USER"), true);
 
     RequestPasswordResetCommand cmd =
         new RequestPasswordResetCommand("alice@example.com", "127.0.0.1", "Agent", true);
@@ -52,7 +55,7 @@ class RequestPasswordResetUseCaseTest {
 
     given(authClockPort.now()).willReturn(NOW);
     given(authUsersPort.findByEmail("alice@example.com")).willReturn(Optional.of(user));
-    given(tokenGeneratorPort.generateToken(10L, "alice@example.com", expiresAt))
+    given(tokenGeneratorPort.generateToken(uuid10, "alice@example.com", expiresAt))
         .willReturn("482193");
 
     PasswordResetRequestResult result = sut.execute(cmd);
@@ -61,7 +64,7 @@ class RequestPasswordResetUseCaseTest {
     assertThat(result.requestedAt()).isEqualTo(NOW);
 
     verify(passwordResetTokenPort)
-        .save(eq(10L), eq("482193"), eq(NOW), eq(expiresAt), eq("127.0.0.1"), eq("Agent"));
+        .save(eq(uuid10), eq("482193"), eq(NOW), eq(expiresAt), eq("127.0.0.1"), eq("Agent"));
   }
 
   @Test

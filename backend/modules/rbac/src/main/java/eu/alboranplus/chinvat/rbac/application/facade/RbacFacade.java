@@ -5,6 +5,9 @@ import eu.alboranplus.chinvat.rbac.application.dto.PermissionView;
 import eu.alboranplus.chinvat.rbac.application.dto.UserRolesView;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 
 public interface RbacFacade {
   RoleView getRole(String roleName);
@@ -14,14 +17,15 @@ public interface RbacFacade {
   List<PermissionView> listPermissions();
 
   PermissionView createPermission(String code, String description, String actor);
+  PageResponse<PermissionView> listPermissionsPaged(PaginationRequest paginationRequest);
 
   PermissionView updatePermission(String code, String description, String actor);
 
   void deletePermission(String code, String actor);
 
-  UserRolesView getUserRoles(Long userId);
+  UserRolesView getUserRoles(UUID userId);
 
-  void assignRoleToUser(Long userId, String roleName, String assignedBy);
+  void assignRoleToUser(UUID userId, String roleName, String assignedBy);
 
-  void removeRoleFromUser(Long userId, String roleName, String actor);
+  void removeRoleFromUser(UUID userId, String roleName, String actor);
 }

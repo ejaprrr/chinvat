@@ -15,6 +15,7 @@ import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
 import java.time.Instant;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,8 +36,9 @@ class ChangePasswordUseCaseTest {
 
   @Test
   void execute_validCurrentPassword_changesPasswordAndRevokesSessions() {
+    UUID uuid10 = UUID.fromString("00000000-0000-0000-0000-00000000000a");
     TokenPrincipal principal =
-        new TokenPrincipal(10L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
+        new TokenPrincipal(uuid10, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
     ChangePasswordCommand command = new ChangePasswordCommand("CurrentPass123!", "NewPass123456!");
 
     given(authUsersPort.verifyPassword("alice@example.com", "CurrentPass123!")).willReturn(true);
@@ -44,14 +46,15 @@ class ChangePasswordUseCaseTest {
 
     sut.execute(principal, command);
 
-    verify(passwordChangePort).changePassword(10L, "NewPass123456!");
-    verify(authSessionPort).revokeAllByUserId(10L, NOW);
+    verify(passwordChangePort).changePassword(uuid10, "NewPass123456!");
+    verify(authSessionPort).revokeAllByUserId(uuid10, NOW);
   }
 
   @Test
   void execute_invalidCurrentPassword_throwsUnauthorized() {
+    UUID uuid10 = UUID.fromString("00000000-0000-0000-0000-00000000000a");
     TokenPrincipal principal =
-        new TokenPrincipal(10L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
+        new TokenPrincipal(uuid10, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
     ChangePasswordCommand command = new ChangePasswordCommand("WrongPass123!", "NewPass123456!");
 
     given(authUsersPort.verifyPassword("alice@example.com", "WrongPass123!")).willReturn(false);

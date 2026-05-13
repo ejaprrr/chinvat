@@ -5,14 +5,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_password")
 public class UserPasswordJpaEntity {
 
   @Id
-  @Column(name = "user_id")
-  private Long userId;
+  @Column(name = "user_id", columnDefinition = "uuid")
+  private UUID userId;
 
   @Column(name = "password_hash", nullable = false, length = 255)
   private String passwordHash;
@@ -26,8 +27,8 @@ public class UserPasswordJpaEntity {
   @Column(name = "recovery_required", nullable = false)
   private boolean recoveryRequired;
 
-  public Long getUserId() { return userId; }
-  public void setUserId(Long userId) { this.userId = userId; }
+  public UUID getUserId() { return userId; }
+  public void setUserId(UUID userId) { this.userId = userId; }
   public String getPasswordHash() { return passwordHash; }
   public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
   public String getPasswordAlgorithm() { return passwordAlgorithm; }

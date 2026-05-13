@@ -4,7 +4,9 @@ import eu.alboranplus.chinvat.eidas.infrastructure.persistence.entity.ExternalId
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ExternalIdentityJpaRepository extends JpaRepository<ExternalIdentityJpaEntity, Long> {
+import java.util.UUID;
+
+public interface ExternalIdentityJpaRepository extends JpaRepository<ExternalIdentityJpaEntity, UUID> {
 
   Optional<ExternalIdentityJpaEntity>
       findFirstByProviderCodeAndExternalSubjectIdAndUserIdIsNotNullOrderByCreatedAtDesc(

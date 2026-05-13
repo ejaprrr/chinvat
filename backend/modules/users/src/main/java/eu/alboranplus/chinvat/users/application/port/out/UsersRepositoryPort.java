@@ -5,6 +5,9 @@ import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface UsersRepositoryPort {
   boolean existsByEmail(UserEmail email);
@@ -13,13 +16,15 @@ public interface UsersRepositoryPort {
 
   Optional<UserAccount> findByEmail(UserEmail email);
 
-  Optional<UserAccount> findById(Long id);
+  Optional<UserAccount> findById(UUID id);
 
   Optional<UserAccount> findByCertificateThumbprint(String thumbprintSha256, Instant now);
 
   List<UserAccount> findAll();
 
+  Page<UserAccount> findAll(Pageable pageable);
+
   UserAccount save(UserAccount userAccount);
 
-  void deleteById(Long id);
+  void deleteById(UUID id);
 }

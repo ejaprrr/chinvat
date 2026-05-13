@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +24,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 @ExtendWith(MockitoExtension.class)
 class BearerTokenAuthFilterTest {
+
+  private static final UUID UUID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
   @Mock private AuthFacade authFacade;
 
@@ -44,7 +47,7 @@ class BearerTokenAuthFilterTest {
         .willReturn(
             Optional.of(
                 new TokenPrincipal(
-                    1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"))));
+            UUID_1, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"))));
 
     sut.doFilterInternal(request, response, chain);
 

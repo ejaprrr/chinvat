@@ -24,6 +24,7 @@ import eu.alboranplus.chinvat.users.domain.model.UserType;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -62,8 +63,10 @@ class RegisterUseCaseTest {
             "127.0.0.1",
             "TestAgent");
 
+    UUID uuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
     AuthUserProjection user =
-        new AuthUserProjection(1L, "alice@example.com", "Alice", Set.of("USER"), true);
+        new AuthUserProjection(uuid1, "alice@example.com", "Alice", Set.of("USER"), true);
 
     IssuedTokenPair tokens =
         new IssuedTokenPair(
@@ -72,22 +75,22 @@ class RegisterUseCaseTest {
             NOW.plusSeconds(900),
             NOW.plusSeconds(1_209_600));
 
-    given(userRegistrationPort.register(command)).willReturn(1L);
-    given(authUsersPort.findById(1L)).willReturn(Optional.of(user));
-    given(authPermissionService.resolvePermissions(1L, user.roles()))
+    given(userRegistrationPort.register(command)).willReturn(uuid1);
+    given(authUsersPort.findById(uuid1)).willReturn(Optional.of(user));
+    given(authPermissionService.resolvePermissions(uuid1, user.roles()))
         .willReturn(Set.of("PROFILE:READ"));
     given(authClockPort.now()).willReturn(NOW);
-    given(authTokenIssuerPort.issue(1L, "alice@example.com", NOW)).willReturn(tokens);
+    given(authTokenIssuerPort.issue(uuid1, "alice@example.com", NOW)).willReturn(tokens);
 
     AuthResult result = sut.execute(command);
 
-    assertThat(result.userId()).isEqualTo(1L);
+    assertThat(result.userId()).isEqualTo(uuid1);
     assertThat(result.email()).isEqualTo("alice@example.com");
     assertThat(result.tokens()).isEqualTo(tokens);
 
     verify(authSessionPort)
         .save(
-            eq(1L),
+            eq(uuid1),
             eq(AuthSessionTokenKind.ACCESS),
             eq("access-token"),
             eq(NOW),
@@ -96,7 +99,7 @@ class RegisterUseCaseTest {
             eq("TestAgent"));
     verify(authSessionPort)
         .save(
-            eq(1L),
+            eq(uuid1),
             eq(AuthSessionTokenKind.REFRESH),
             eq("refresh-token"),
             eq(NOW),
@@ -123,8 +126,9 @@ class RegisterUseCaseTest {
             "127.0.0.1",
             "TestAgent");
 
-    given(userRegistrationPort.register(command)).willReturn(1L);
-    given(authUsersPort.findById(1L)).willReturn(Optional.empty());
+    UUID uuid1b = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    given(userRegistrationPort.register(command)).willReturn(uuid1b);
+    given(authUsersPort.findById(uuid1b)).willReturn(Optional.empty());
 
     assertThatThrownBy(() -> sut.execute(command))
         .isInstanceOf(InvalidAuthenticationException.class);

@@ -10,6 +10,7 @@ import eu.alboranplus.chinvat.auth.application.port.out.AuthRbacPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -26,19 +27,20 @@ class GetMeUseCaseTest {
 
   @Test
   void execute_returnsMeViewWithResolvedPermissions() {
+    UUID uuid1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
     TokenPrincipal principal =
-        new TokenPrincipal(1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
+        new TokenPrincipal(uuid1, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"));
 
     AuthUserProjection user =
         new AuthUserProjection(
-            1L, "alice@example.com", "Alice", Set.of("USER"), true);
+            uuid1, "alice@example.com", "Alice", Set.of("USER"), true);
 
-    given(authUsersPort.findById(1L)).willReturn(Optional.of(user));
+    given(authUsersPort.findById(uuid1)).willReturn(Optional.of(user));
     given(authRbacPort.resolvePermissions(user.roles())).willReturn(Set.of("PROFILE:READ"));
 
     AuthMeView me = sut.execute(principal);
 
-    assertThat(me.id()).isEqualTo(1L);
+    assertThat(me.id()).isEqualTo(uuid1);
     assertThat(me.email()).isEqualTo("alice@example.com");
     assertThat(me.displayName()).isEqualTo("Alice");
     assertThat(me.roles()).containsExactly("USER");

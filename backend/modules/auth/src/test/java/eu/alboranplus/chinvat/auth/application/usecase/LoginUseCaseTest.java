@@ -23,6 +23,7 @@ import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -44,8 +45,11 @@ class LoginUseCaseTest {
 
   @InjectMocks private LoginUseCase sut;
 
+  private static final UUID UUID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  private static final UUID UUID_2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
+
   private final AuthUserProjection activeUser =
-      new AuthUserProjection(1L, "alice@example.com", "Alice", Set.of("USER"), true);
+      new AuthUserProjection(UUID_1, "alice@example.com", "Alice", Set.of("USER"), true);
 
   private final IssuedTokenPair tokens =
       new IssuedTokenPair("access-token", "refresh-token", ACCESS_EXP, REFRESH_EXP);
@@ -55,14 +59,14 @@ class LoginUseCaseTest {
     LoginCommand cmd = new LoginCommand("alice@example.com", "secret", "127.0.0.1", "TestAgent");
     given(authUsersPort.findByEmail("alice@example.com")).willReturn(Optional.of(activeUser));
     given(authUsersPort.verifyPassword("alice@example.com", "secret")).willReturn(true);
-    given(authPermissionService.resolvePermissions(1L, Set.of("USER")))
+    given(authPermissionService.resolvePermissions(UUID_1, Set.of("USER")))
       .willReturn(Set.of("PROFILE:READ"));
     given(authClockPort.now()).willReturn(NOW);
-    given(authTokenIssuerPort.issue(1L, "alice@example.com", NOW)).willReturn(tokens);
+    given(authTokenIssuerPort.issue(UUID_1, "alice@example.com", NOW)).willReturn(tokens);
 
     AuthResult result = sut.execute(cmd);
 
-    assertThat(result.userId()).isEqualTo(1L);
+    assertThat(result.userId()).isEqualTo(UUID_1);
     assertThat(result.email()).isEqualTo("alice@example.com");
     assertThat(result.permissions()).containsExactly("PROFILE:READ");
     assertThat(result.tokens().accessToken()).isEqualTo("access-token");
@@ -74,16 +78,16 @@ class LoginUseCaseTest {
     LoginCommand cmd = new LoginCommand("alice@example.com", "secret", "127.0.0.1", "TestAgent");
     given(authUsersPort.findByEmail("alice@example.com")).willReturn(Optional.of(activeUser));
     given(authUsersPort.verifyPassword("alice@example.com", "secret")).willReturn(true);
-    given(authPermissionService.resolvePermissions(1L, Set.of("USER"))).willReturn(Set.of());
+    given(authPermissionService.resolvePermissions(UUID_1, Set.of("USER"))).willReturn(Set.of());
     given(authClockPort.now()).willReturn(NOW);
-    given(authTokenIssuerPort.issue(1L, "alice@example.com", NOW)).willReturn(tokens);
+    given(authTokenIssuerPort.issue(UUID_1, "alice@example.com", NOW)).willReturn(tokens);
 
     sut.execute(cmd);
 
     // Access session
     verify(authSessionPort)
         .save(
-            eq(1L),
+            eq(UUID_1),
             eq(AuthSessionTokenKind.ACCESS),
             eq("access-token"),
             eq(NOW),
@@ -93,7 +97,7 @@ class LoginUseCaseTest {
     // Refresh session
     verify(authSessionPort)
         .save(
-            eq(1L),
+            eq(UUID_1),
             eq(AuthSessionTokenKind.REFRESH),
             eq("refresh-token"),
             eq(NOW),
@@ -119,7 +123,7 @@ class LoginUseCaseTest {
   @Test
   void execute_inactiveUser_throwsInvalidAuthentication() {
     AuthUserProjection inactive =
-        new AuthUserProjection(2L, "inactive@example.com", "Inactive", Set.of("USER"), false);
+        new AuthUserProjection(UUID_2, "inactive@example.com", "Inactive", Set.of("USER"), false);
     LoginCommand cmd = new LoginCommand("inactive@example.com", "secret", "127.0.0.1", "Agent");
     given(authUsersPort.findByEmail("inactive@example.com")).willReturn(Optional.of(inactive));
 

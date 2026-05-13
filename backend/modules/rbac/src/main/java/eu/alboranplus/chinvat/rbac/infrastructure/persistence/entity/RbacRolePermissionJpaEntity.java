@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import java.util.UUID;
 
 @Entity
 @Table(name = "rbac_role_permission")
@@ -13,33 +14,33 @@ import java.io.Serializable;
 public class RbacRolePermissionJpaEntity {
 
   @Id
-  @Column(name = "role_id")
-  private Long roleId;
+  @Column(name = "role_id", columnDefinition = "uuid")
+  private UUID roleId;
 
   @Id
-  @Column(name = "permission_id")
-  private Long permissionId;
+  @Column(name = "permission_id", columnDefinition = "uuid")
+  private UUID permissionId;
 
   public RbacRolePermissionJpaEntity() {}
 
-  public RbacRolePermissionJpaEntity(Long roleId, Long permissionId) {
+  public RbacRolePermissionJpaEntity(UUID roleId, UUID permissionId) {
     this.roleId = roleId;
     this.permissionId = permissionId;
   }
 
-  public Long getRoleId() {
+  public UUID getRoleId() {
     return roleId;
   }
 
-  public void setRoleId(Long roleId) {
+  public void setRoleId(UUID roleId) {
     this.roleId = roleId;
   }
 
-  public Long getPermissionId() {
+  public UUID getPermissionId() {
     return permissionId;
   }
 
-  public void setPermissionId(Long permissionId) {
+  public void setPermissionId(UUID permissionId) {
     this.permissionId = permissionId;
   }
 }
@@ -48,29 +49,29 @@ public class RbacRolePermissionJpaEntity {
  * Composite key class for RbacRolePermissionJpaEntity. Required for @IdClass annotation.
  */
 class RbacRolePermissionId implements Serializable {
-  private Long roleId;
-  private Long permissionId;
+  private UUID roleId;
+  private UUID permissionId;
 
   public RbacRolePermissionId() {}
 
-  public RbacRolePermissionId(Long roleId, Long permissionId) {
+  public RbacRolePermissionId(UUID roleId, UUID permissionId) {
     this.roleId = roleId;
     this.permissionId = permissionId;
   }
 
-  public Long getRoleId() {
+  public UUID getRoleId() {
     return roleId;
   }
 
-  public void setRoleId(Long roleId) {
+  public void setRoleId(UUID roleId) {
     this.roleId = roleId;
   }
 
-  public Long getPermissionId() {
+  public UUID getPermissionId() {
     return permissionId;
   }
 
-  public void setPermissionId(Long permissionId) {
+  public void setPermissionId(UUID permissionId) {
     this.permissionId = permissionId;
   }
 

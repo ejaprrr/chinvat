@@ -24,6 +24,7 @@ public class UserAccountJpaMapper {
     entity.setDefaultLanguage(userAccount.defaultLanguage());
     entity.setCreatedAt(userAccount.createdAt());
     entity.setUpdatedAt(userAccount.updatedAt());
+    entity.setDeletedAt(userAccount.deletedAt());
     return entity;
   }
 
@@ -42,7 +43,8 @@ public class UserAccountJpaMapper {
         entity.getCountry(),
         entity.getDefaultLanguage(),
         entity.getCreatedAt(),
-        entity.getUpdatedAt());
+        entity.getUpdatedAt(),
+        entity.getDeletedAt());
   }
 }
 

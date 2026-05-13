@@ -1,19 +1,20 @@
 package eu.alboranplus.chinvat.config;
 
+import eu.alboranplus.chinvat.security.ApiAccessDeniedHandler;
+import eu.alboranplus.chinvat.security.ApiAuthenticationEntryPoint;
 import eu.alboranplus.chinvat.security.BearerTokenAuthFilter;
+import eu.alboranplus.chinvat.security.RateLimitingFilter;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -25,12 +26,22 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
   private final BearerTokenAuthFilter bearerTokenAuthFilter;
+  private final RateLimitingFilter rateLimitingFilter;
+  private final ApiAuthenticationEntryPoint apiAuthenticationEntryPoint;
+  private final ApiAccessDeniedHandler apiAccessDeniedHandler;
 
   @Value("${app.cors.allowed-origins}")
   private List<String> allowedOrigins;
 
-  public SecurityConfig(BearerTokenAuthFilter bearerTokenAuthFilter) {
+  public SecurityConfig(
+      BearerTokenAuthFilter bearerTokenAuthFilter,
+      RateLimitingFilter rateLimitingFilter,
+      ApiAuthenticationEntryPoint apiAuthenticationEntryPoint,
+      ApiAccessDeniedHandler apiAccessDeniedHandler) {
     this.bearerTokenAuthFilter = bearerTokenAuthFilter;
+    this.rateLimitingFilter = rateLimitingFilter;
+    this.apiAuthenticationEntryPoint = apiAuthenticationEntryPoint;
+    this.apiAccessDeniedHandler = apiAccessDeniedHandler;
   }
 
   @Bean
@@ -39,6 +50,7 @@ public class SecurityConfig {
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(bearerTokenAuthFilter, UsernamePasswordAuthenticationFilter.class)
         .authorizeHttpRequests(
             auth ->
@@ -73,7 +85,9 @@ public class SecurityConfig {
                     .anyRequest()
                     .authenticated())
         .exceptionHandling(
-            ex -> ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+          ex ->
+            ex.authenticationEntryPoint(apiAuthenticationEntryPoint)
+              .accessDeniedHandler(apiAccessDeniedHandler))
         .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
     return http.build();
   }

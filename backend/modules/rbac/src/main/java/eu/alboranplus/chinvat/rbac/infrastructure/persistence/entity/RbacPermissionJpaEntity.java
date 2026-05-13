@@ -7,14 +7,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "rbac_permission")
 public class RbacPermissionJpaEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(columnDefinition = "uuid")
+  private UUID id;
 
   @Column(name = "permission_code", nullable = false, unique = true, length = 120)
   private String permissionCode;
@@ -33,11 +35,11 @@ public class RbacPermissionJpaEntity {
     this.createdAt = createdAt;
   }
 
-  public Long getId() {
+  public UUID getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 

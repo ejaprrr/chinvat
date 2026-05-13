@@ -14,7 +14,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -65,6 +69,27 @@ public class RbacRepositoryAdapter implements RbacRepositoryPort {
         ORDER BY permission_code
         """,
         permissionRowMapper());
+  }
+
+  @Override
+  public Page<PermissionDefinition> findAllPermissions(Pageable pageable) {
+    Long total = jdbcTemplate.queryForObject(
+        "SELECT COUNT(*) FROM rbac_permission",
+        Long.class);
+    long totalCount = total != null ? total : 0L;
+
+    List<PermissionDefinition> content = jdbcTemplate.query(
+        """
+        SELECT permission_code, description
+        FROM rbac_permission
+        ORDER BY permission_code
+        LIMIT ? OFFSET ?
+        """,
+        permissionRowMapper(),
+        pageable.getPageSize(),
+        pageable.getOffset());
+
+    return new PageImpl<>(content, pageable, totalCount);
   }
 
   @Override
@@ -128,7 +153,7 @@ public class RbacRepositoryAdapter implements RbacRepositoryPort {
   }
 
   @Override
-  public boolean userExists(Long userId) {
+  public boolean userExists(UUID userId) {
     Integer count =
         jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM \"user\" WHERE id = ?",
@@ -138,7 +163,7 @@ public class RbacRepositoryAdapter implements RbacRepositoryPort {
   }
 
   @Override
-  public void assignRoleToUser(Long userId, String roleName, String assignedBy) {
+  public void assignRoleToUser(UUID userId, String roleName, String assignedBy) {
     jdbcTemplate.update(
         """
         INSERT INTO user_role (user_id, role_id, assigned_at, assigned_by)
@@ -154,7 +179,7 @@ public class RbacRepositoryAdapter implements RbacRepositoryPort {
   }
 
   @Override
-  public void removeRoleFromUser(Long userId, String roleName) {
+  public void removeRoleFromUser(UUID userId, String roleName) {
     jdbcTemplate.update(
         """
         DELETE FROM user_role ur
@@ -168,7 +193,7 @@ public class RbacRepositoryAdapter implements RbacRepositoryPort {
   }
 
   @Override
-  public Set<String> findRoleNamesByUserId(Long userId) {
+  public Set<String> findRoleNamesByUserId(UUID userId) {
     return Set.copyOf(
         jdbcTemplate.queryForList(
             """

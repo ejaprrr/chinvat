@@ -15,6 +15,7 @@ import eu.alboranplus.chinvat.auth.application.facade.AuthFacade;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -37,10 +38,11 @@ class AuthControllerIT {
 
   private static final Instant ACCESS_EXP = Instant.parse("2026-01-01T00:15:00Z");
   private static final Instant REFRESH_EXP = Instant.parse("2026-01-15T00:00:00Z");
+    private static final UUID UUID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
   private final AuthResult successResult =
       new AuthResult(
-          1L,
+          UUID_1,
           "alice@example.com",
           "Alice",
           Set.of("USER"),
@@ -76,7 +78,13 @@ class AuthControllerIT {
             post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"alice@example.com\",\"password\":\"WrongPass1!\"}"))
-        .andExpect(status().isUnauthorized());
+        .andExpect(status().isUnauthorized())
+        .andExpect(jsonPath("$.errorCode").value("AUTH-401-001"))
+        .andExpect(jsonPath("$.messageKey").value("error.auth.invalid-authentication"))
+        .andExpect(jsonPath("$.message").value("Invalid email or password"))
+        .andExpect(jsonPath("$.timestamp").isString())
+        .andExpect(jsonPath("$.path").value("/api/v1/auth/login"))
+        .andExpect(jsonPath("$.details").isArray());
   }
 
   @Test
@@ -88,7 +96,13 @@ class AuthControllerIT {
             post("/api/v1/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"\",\"password\":\"SecretPass1!\"}"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errorCode").value("API-400-001"))
+        .andExpect(jsonPath("$.messageKey").value("error.common.validation-failed"))
+        .andExpect(jsonPath("$.timestamp").isString())
+        .andExpect(jsonPath("$.path").value("/api/v1/auth/login"))
+        .andExpect(jsonPath("$.details[0].field").exists())
+        .andExpect(jsonPath("$.details[0].message").exists());
   }
 
   @Test
@@ -163,7 +177,9 @@ class AuthControllerIT {
   void changePassword_authenticated_returns204() throws Exception {
     doNothing().when(authFacade).changePassword(any(), any());
     given(authFacade.validateAccessToken("valid-access"))
-        .willReturn(Optional.of(new TokenPrincipal(1L, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"))));
+        .willReturn(
+            Optional.of(
+                new TokenPrincipal(UUID_1, "alice@example.com", Set.of("USER"), Set.of("PROFILE:READ"))));
 
     mockMvc
         .perform(

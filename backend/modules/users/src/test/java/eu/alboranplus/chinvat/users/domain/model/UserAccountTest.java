@@ -45,7 +45,7 @@ class UserAccountTest {
   void constructor_blankFullName_throwsIllegalArgument() {
     assertThatThrownBy(
             () -> new UserAccount(null, USERNAME, "  ", null, EMAIL,
-                UserType.INDIVIDUAL, AccessLevel.NORMAL, null, null, null, null, "en", NOW, NOW))
+        UserType.INDIVIDUAL, AccessLevel.NORMAL, null, null, null, null, "en", NOW, NOW, null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Full name");
   }
@@ -54,7 +54,7 @@ class UserAccountTest {
   void constructor_blankUsername_throwsIllegalArgument() {
     assertThatThrownBy(
             () -> new UserAccount(null, "  ", FULL_NAME, null, EMAIL,
-                UserType.INDIVIDUAL, AccessLevel.NORMAL, null, null, null, null, "en", NOW, NOW))
+        UserType.INDIVIDUAL, AccessLevel.NORMAL, null, null, null, null, "en", NOW, NOW, null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Username");
   }

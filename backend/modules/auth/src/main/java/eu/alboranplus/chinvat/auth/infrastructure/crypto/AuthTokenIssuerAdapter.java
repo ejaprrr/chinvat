@@ -5,8 +5,8 @@ import eu.alboranplus.chinvat.auth.application.port.out.AuthTokenGeneratorPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthTokenIssuerPort;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -24,7 +24,7 @@ public class AuthTokenIssuerAdapter implements AuthTokenIssuerPort {
   }
 
   @Override
-  public IssuedTokenPair issue(Long userId, String email, Instant issuedAt) {
+  public IssuedTokenPair issue(UUID userId, String email, Instant issuedAt) {
     Instant accessExpiresAt = issuedAt.plus(accessTokenTtl);
     Instant refreshExpiresAt = issuedAt.plus(refreshTokenTtl);
 

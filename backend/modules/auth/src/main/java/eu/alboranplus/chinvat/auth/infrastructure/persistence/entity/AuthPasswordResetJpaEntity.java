@@ -15,8 +15,8 @@ public class AuthPasswordResetJpaEntity {
   @Column(columnDefinition = "uuid", updatable = false)
   private UUID id;
 
-  @Column(name = "user_id", nullable = false)
-  private Long userId;
+  @Column(name = "user_id", nullable = false, columnDefinition = "uuid")
+  private UUID userId;
 
   @Column(name = "reset_token_hash", nullable = false, length = 255)
   private String resetTokenHash;
@@ -40,7 +40,7 @@ public class AuthPasswordResetJpaEntity {
 
   public AuthPasswordResetJpaEntity(
       UUID id,
-      Long userId,
+      UUID userId,
       String resetTokenHash,
       Instant issuedAt,
       Instant expiresAt,
@@ -59,7 +59,7 @@ public class AuthPasswordResetJpaEntity {
     return id;
   }
 
-  public Long getUserId() {
+  public UUID getUserId() {
     return userId;
   }
 

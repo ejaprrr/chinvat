@@ -21,6 +21,7 @@ import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationExcepti
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,8 +43,11 @@ class RefreshTokenUseCaseTest {
 
   @InjectMocks private RefreshTokenUseCase sut;
 
+  private static final UUID UUID_1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  private static final UUID UUID_2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
+
   private final AuthUserProjection activeUser =
-      new AuthUserProjection(1L, "alice@example.com", "Alice", Set.of("USER"), true);
+      new AuthUserProjection(UUID_1, "alice@example.com", "Alice", Set.of("USER"), true);
 
   private final IssuedTokenPair newTokens =
       new IssuedTokenPair("new-access", "new-refresh", ACCESS_EXP, REFRESH_EXP);
@@ -52,11 +56,11 @@ class RefreshTokenUseCaseTest {
   void execute_validRefreshToken_rotatesTokensAndReturnsResult() {
     RefreshCommand cmd = new RefreshCommand("old-refresh", "127.0.0.1", "Agent");
     given(authClockPort.now()).willReturn(NOW);
-    given(authSessionPort.findActiveUserId("old-refresh", NOW)).willReturn(Optional.of(1L));
-    given(authUsersPort.findById(1L)).willReturn(Optional.of(activeUser));
-    given(authPermissionService.resolvePermissions(1L, Set.of("USER")))
+    given(authSessionPort.findActiveUserId("old-refresh", NOW)).willReturn(Optional.of(UUID_1));
+    given(authUsersPort.findById(UUID_1)).willReturn(Optional.of(activeUser));
+    given(authPermissionService.resolvePermissions(UUID_1, Set.of("USER")))
       .willReturn(Set.of("PROFILE:READ"));
-    given(authTokenIssuerPort.issue(1L, "alice@example.com", NOW)).willReturn(newTokens);
+    given(authTokenIssuerPort.issue(UUID_1, "alice@example.com", NOW)).willReturn(newTokens);
 
     AuthResult result = sut.execute(cmd);
 
@@ -85,11 +89,11 @@ class RefreshTokenUseCaseTest {
   @Test
   void execute_userInactive_throwsInvalidAuthentication() {
     AuthUserProjection inactive =
-        new AuthUserProjection(2L, "bob@example.com", "Bob", Set.of("USER"), false);
+        new AuthUserProjection(UUID_2, "bob@example.com", "Bob", Set.of("USER"), false);
     RefreshCommand cmd = new RefreshCommand("valid-refresh", "127.0.0.1", "Agent");
     given(authClockPort.now()).willReturn(NOW);
-    given(authSessionPort.findActiveUserId("valid-refresh", NOW)).willReturn(Optional.of(2L));
-    given(authUsersPort.findById(2L)).willReturn(Optional.of(inactive));
+    given(authSessionPort.findActiveUserId("valid-refresh", NOW)).willReturn(Optional.of(UUID_2));
+    given(authUsersPort.findById(UUID_2)).willReturn(Optional.of(inactive));
 
     assertThatThrownBy(() -> sut.execute(cmd))
         .isInstanceOf(InvalidAuthenticationException.class)

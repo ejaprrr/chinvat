@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.Cursor;
@@ -30,7 +31,7 @@ public class RedisPermissionCacheFacade implements PermissionCacheFacade {
   }
 
   @Override
-  public Optional<Set<String>> findUserPermissions(Long userId) {
+  public Optional<Set<String>> findUserPermissions(UUID userId) {
     Set<String> cached = stringRedisTemplate.opsForSet().members(userPermissionsKey(userId));
     if (cached == null || cached.isEmpty()) {
       return Optional.empty();
@@ -39,7 +40,7 @@ public class RedisPermissionCacheFacade implements PermissionCacheFacade {
   }
 
   @Override
-  public void cacheUserPermissions(Long userId, Set<String> permissions) {
+  public void cacheUserPermissions(UUID userId, Set<String> permissions) {
     String key = userPermissionsKey(userId);
     stringRedisTemplate.delete(key);
     if (permissions.isEmpty()) {
@@ -50,7 +51,7 @@ public class RedisPermissionCacheFacade implements PermissionCacheFacade {
   }
 
   @Override
-  public void evictUserPermissions(Long userId) {
+  public void evictUserPermissions(UUID userId) {
     stringRedisTemplate.delete(userPermissionsKey(userId));
   }
 
@@ -76,7 +77,7 @@ public class RedisPermissionCacheFacade implements PermissionCacheFacade {
         });
   }
 
-  private String userPermissionsKey(Long userId) {
+  private String userPermissionsKey(UUID userId) {
     return keyPrefix + "user:" + userId + ":permissions";
   }
 }

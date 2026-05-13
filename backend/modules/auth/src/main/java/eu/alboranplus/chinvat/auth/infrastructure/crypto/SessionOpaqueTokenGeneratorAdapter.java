@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,7 +19,7 @@ public class SessionOpaqueTokenGeneratorAdapter implements AuthTokenGeneratorPor
 
   @Override
   public String generateToken(
-      Long userId, String email, Instant expiresAt, AuthSessionTokenKind kind) {
+      UUID userId, String email, Instant expiresAt, AuthSessionTokenKind kind) {
     byte[] entropy = new byte[TOKEN_SIZE_BYTES];
     secureRandom.nextBytes(entropy);
 

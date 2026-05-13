@@ -18,6 +18,7 @@ import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationExcepti
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -39,31 +40,33 @@ class ConfirmPasswordResetUseCaseTest {
 
   @Test
   void execute_validCode_changesPasswordAndRevokesSessions() {
+    UUID uuid10 = UUID.fromString("00000000-0000-0000-0000-00000000000a");
     ConfirmPasswordResetCommand cmd =
         new ConfirmPasswordResetCommand(
             "alice@example.com", "482193", "NewPass123456!", "127.0.0.1", "Agent");
 
     given(authClockPort.now()).willReturn(NOW);
     given(authUsersPort.findByEmail("alice@example.com"))
-        .willReturn(Optional.of(new AuthUserProjection(10L, "alice@example.com", "Alice", Set.of("USER"), true)));
-    given(passwordResetTokenPort.consume(10L, "482193", NOW)).willReturn(Optional.of(10L));
+        .willReturn(Optional.of(new AuthUserProjection(uuid10, "alice@example.com", "Alice", Set.of("USER"), true)));
+    given(passwordResetTokenPort.consume(uuid10, "482193", NOW)).willReturn(Optional.of(uuid10));
 
     sut.execute(cmd);
 
-    verify(passwordChangePort).changePassword(10L, "NewPass123456!");
-    verify(authSessionPort).revokeAllByUserId(10L, NOW);
+    verify(passwordChangePort).changePassword(uuid10, "NewPass123456!");
+    verify(authSessionPort).revokeAllByUserId(uuid10, NOW);
   }
 
   @Test
   void execute_invalidCode_throwsInvalidAuthentication() {
+    UUID uuid10 = UUID.fromString("00000000-0000-0000-0000-00000000000a");
     ConfirmPasswordResetCommand cmd =
         new ConfirmPasswordResetCommand(
             "alice@example.com", "000000", "NewPass123456!", "127.0.0.1", "Agent");
 
     given(authClockPort.now()).willReturn(NOW);
     given(authUsersPort.findByEmail("alice@example.com"))
-        .willReturn(Optional.of(new AuthUserProjection(10L, "alice@example.com", "Alice", Set.of("USER"), true)));
-    given(passwordResetTokenPort.consume(10L, "000000", NOW)).willReturn(Optional.empty());
+        .willReturn(Optional.of(new AuthUserProjection(uuid10, "alice@example.com", "Alice", Set.of("USER"), true)));
+    given(passwordResetTokenPort.consume(uuid10, "000000", NOW)).willReturn(Optional.empty());
 
     assertThatThrownBy(() -> sut.execute(cmd))
         .isInstanceOf(InvalidAuthenticationException.class);

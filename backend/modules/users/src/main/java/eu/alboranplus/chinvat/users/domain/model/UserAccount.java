@@ -2,9 +2,10 @@ package eu.alboranplus.chinvat.users.domain.model;
 
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import java.time.Instant;
+import java.util.UUID;
 
 public record UserAccount(
-    Long id,
+    UUID id,
     String username,
     String fullName,
     String phoneNumber,
@@ -17,7 +18,8 @@ public record UserAccount(
     String country,
     String defaultLanguage,
     Instant createdAt,
-    Instant updatedAt) {
+    Instant updatedAt,
+    Instant deletedAt) {
 
   public UserAccount {
     if (username == null || username.isBlank()) {
@@ -57,7 +59,7 @@ public record UserAccount(
       Instant now) {
     return new UserAccount(
         null, username, fullName, phoneNumber, email, userType, accessLevel,
-        addressLine, postalCode, city, country, defaultLanguage, now, now);
+        addressLine, postalCode, city, country, defaultLanguage, now, now, null);
   }
 
   public UserAccount withUpdatedFields(
@@ -74,6 +76,41 @@ public record UserAccount(
       Instant updatedAt) {
     return new UserAccount(
         this.id, username, fullName, phoneNumber, this.email, userType, accessLevel,
-        addressLine, postalCode, city, country, defaultLanguage, this.createdAt, updatedAt);
+        addressLine, postalCode, city, country, defaultLanguage, this.createdAt, updatedAt, this.deletedAt);
+  }
+
+  /**
+   * Soft delete - marks user as deleted at given time but retains data for audit trail.
+   * Enterprise-grade compliance: preserves all historical data for legal requirements.
+   * 
+   * @param deletedAt timestamp when user was deleted
+   * @return new UserAccount with deletedAt set
+   */
+  public UserAccount withDeleted(Instant deletedAt) {
+    return new UserAccount(
+        this.id, this.username, this.fullName, this.phoneNumber, this.email, this.userType,
+        this.accessLevel, this.addressLine, this.postalCode, this.city, this.country,
+        this.defaultLanguage, this.createdAt, this.updatedAt, deletedAt);
+  }
+
+  /**
+   * Restore a soft-deleted user.
+   * 
+   * @return new UserAccount with deletedAt set to null
+   */
+  public UserAccount withRestored() {
+    return new UserAccount(
+        this.id, this.username, this.fullName, this.phoneNumber, this.email, this.userType,
+        this.accessLevel, this.addressLine, this.postalCode, this.city, this.country,
+        this.defaultLanguage, this.createdAt, this.updatedAt, null);
+  }
+
+  /**
+   * Check if user is active (not deleted).
+   * 
+   * @return true if user has not been soft-deleted
+   */
+  public boolean isActive() {
+    return deletedAt == null;
   }
 }

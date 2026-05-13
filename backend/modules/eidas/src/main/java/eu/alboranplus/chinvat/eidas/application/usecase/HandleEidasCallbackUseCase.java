@@ -10,6 +10,7 @@ import eu.alboranplus.chinvat.eidas.application.port.out.EidasStatePort;
 import eu.alboranplus.chinvat.eidas.domain.exception.EidasInvalidStateException;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -46,7 +47,7 @@ public class HandleEidasCallbackUseCase {
         eidasBrokerPort.exchangeAuthorizationCode(
             command.providerCode(), command.state(), command.authorizationCode());
 
-    Optional<Long> linkedUserId =
+    Optional<UUID> linkedUserId =
         externalIdentityLifecyclePort.findLinkedUserId(
             command.providerCode(), brokerIdentity.externalSubjectId());
 

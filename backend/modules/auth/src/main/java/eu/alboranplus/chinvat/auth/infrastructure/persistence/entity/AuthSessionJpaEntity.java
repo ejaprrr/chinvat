@@ -20,8 +20,8 @@ public class AuthSessionJpaEntity {
   @Column(columnDefinition = "uuid", updatable = false)
   private UUID id;
 
-  @Column(name = "user_id", nullable = false)
-  private Long userId;
+  @Column(name = "user_id", nullable = false, columnDefinition = "uuid")
+  private UUID userId;
 
   @Column(name = "session_token_hash", nullable = false, unique = true, length = 255)
   private String sessionTokenHash;
@@ -50,7 +50,7 @@ public class AuthSessionJpaEntity {
 
   public AuthSessionJpaEntity(
       UUID id,
-      Long userId,
+      UUID userId,
       String sessionTokenHash,
       AuthSessionTokenKind sessionTokenKind,
       Instant issuedAt,
@@ -71,7 +71,7 @@ public class AuthSessionJpaEntity {
     return id;
   }
 
-  public Long getUserId() {
+  public UUID getUserId() {
     return userId;
   }
 

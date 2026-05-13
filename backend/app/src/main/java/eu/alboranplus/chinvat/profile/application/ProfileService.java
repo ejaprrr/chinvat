@@ -18,6 +18,7 @@ import eu.alboranplus.chinvat.users.domain.model.AccessLevel;
 import eu.alboranplus.chinvat.users.domain.model.UserType;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +50,7 @@ public class ProfileService {
 
   public CertificateCredentialView addCertificate(
       AddProfileCertificateCommand command, Authentication authentication) {
-    Long userId = currentUserId(authentication);
+    UUID userId = currentUserId(authentication);
     String actor = actor(authentication);
     CertificateCredentialView created =
         trustFacade.bindCertificateCredential(
@@ -74,8 +75,8 @@ public class ProfileService {
     return created;
   }
 
-  public void removeCertificate(Long credentialId, String reason, Authentication authentication) {
-    Long userId = currentUserId(authentication);
+  public void removeCertificate(UUID credentialId, String reason, Authentication authentication) {
+    UUID userId = currentUserId(authentication);
     String actor = actor(authentication);
     ensureOwnedByUser(userId, credentialId);
 
@@ -91,8 +92,8 @@ public class ProfileService {
   }
 
   public CertificateCredentialView setPrimaryCertificate(
-      Long credentialId, Authentication authentication) {
-    Long userId = currentUserId(authentication);
+      UUID credentialId, Authentication authentication) {
+    UUID userId = currentUserId(authentication);
     String actor = actor(authentication);
     CertificateCredentialView primary =
         trustFacade.setPrimaryCertificateCredential(userId, credentialId, actor);
@@ -167,7 +168,7 @@ public class ProfileService {
     return completion;
   }
 
-  private void ensureOwnedByUser(Long userId, Long credentialId) {
+  private void ensureOwnedByUser(UUID userId, UUID credentialId) {
     boolean owned =
         trustFacade.listCertificateCredentials(userId).stream()
             .anyMatch(credential -> credential.id().equals(credentialId));
@@ -198,7 +199,7 @@ public class ProfileService {
     }
   }
 
-  private Long currentUserId(Authentication authentication) {
+  private UUID currentUserId(Authentication authentication) {
     return usersFacade
         .findSecurityViewByEmail(authentication.getName())
         .map(UserSecurityView::id)

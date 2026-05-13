@@ -1,9 +1,10 @@
 package eu.alboranplus.chinvat.profile.api.dto;
 
 import java.time.Instant;
+import java.util.UUID;
 
 public record ProfileCertificateResponse(
-    Long id,
+    UUID id,
     String providerCode,
     String trustStatus,
     String revocationStatus,

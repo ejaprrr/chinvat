@@ -13,11 +13,17 @@ import eu.alboranplus.chinvat.eidas.application.usecase.CompleteEidasProfileUseC
 import eu.alboranplus.chinvat.eidas.application.usecase.HandleEidasCallbackUseCase;
 import eu.alboranplus.chinvat.eidas.application.usecase.InitiateEidasLoginUseCase;
 import eu.alboranplus.chinvat.eidas.application.usecase.ListEidasProvidersUseCase;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
+import eu.alboranplus.chinvat.common.pagination.PaginationMetadata;
 import java.util.List;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EidasFacadeService implements EidasFacade {
+
+  private static final String EIDAS_PROVIDERS_CACHE = "eidas.providers";
 
   private final InitiateEidasLoginUseCase initiateEidasLoginUseCase;
   private final HandleEidasCallbackUseCase handleEidasCallbackUseCase;
@@ -88,7 +94,28 @@ public class EidasFacadeService implements EidasFacade {
   }
 
   @Override
+  @Cacheable(cacheNames = EIDAS_PROVIDERS_CACHE)
   public List<EidasProviderView> listProviders() {
     return listEidasProvidersUseCase.execute();
+  }
+  
+  @Override
+  @Cacheable(cacheNames = EIDAS_PROVIDERS_CACHE)
+  public PageResponse<EidasProviderView> listProvidersPaged(PaginationRequest paginationRequest) {
+    List<EidasProviderView> providers = listEidasProvidersUseCase.execute();
+    int startIdx = paginationRequest.page() * paginationRequest.size();
+    int endIdx = Math.min(startIdx + paginationRequest.size(), providers.size());
+    List<EidasProviderView> paginatedData = providers.subList(startIdx, endIdx);
+    
+    PaginationMetadata metadata = new PaginationMetadata(
+        paginationRequest.page(),
+        paginationRequest.size(),
+        (long) providers.size(),
+        (int) Math.ceil((double) providers.size() / paginationRequest.size()),
+        paginationRequest.page() == 0,
+        endIdx >= providers.size(),
+        endIdx < providers.size());
+    
+    return PageResponse.of(paginatedData, metadata);
   }
 }

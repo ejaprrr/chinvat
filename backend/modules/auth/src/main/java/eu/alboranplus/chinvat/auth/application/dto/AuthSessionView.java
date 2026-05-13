@@ -9,7 +9,7 @@ import java.util.UUID;
  */
 public record AuthSessionView(
     UUID sessionId,
-    Long userId,
+    UUID userId,
     AuthSessionTokenKind tokenKind,
     Instant issuedAt,
     Instant expiresAt,

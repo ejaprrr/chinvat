@@ -7,6 +7,7 @@ import eu.alboranplus.chinvat.eidas.infrastructure.persistence.jpa.ExternalIdent
 import eu.alboranplus.chinvat.eidas.infrastructure.persistence.mapper.ExternalIdentityJpaMapper;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -25,7 +26,7 @@ public class ExternalIdentityPersistenceAdapter implements ExternalIdentityLifec
   }
 
   @Override
-  public Optional<Long> findLinkedUserId(String providerCode, String externalSubjectId) {
+  public Optional<UUID> findLinkedUserId(String providerCode, String externalSubjectId) {
     return externalIdentityJpaRepository
         .findFirstByProviderCodeAndExternalSubjectIdAndUserIdIsNotNullOrderByCreatedAtDesc(
             providerCode, externalSubjectId)

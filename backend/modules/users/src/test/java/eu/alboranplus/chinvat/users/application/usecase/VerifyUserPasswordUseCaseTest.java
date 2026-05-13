@@ -12,6 +12,7 @@ import eu.alboranplus.chinvat.users.domain.model.UserType;
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,18 +31,20 @@ class VerifyUserPasswordUseCaseTest {
   private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
   private static final String STORED_HASH = "$2a$10$storedHash";
 
+  private static final UUID TEST_UUID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
   private final UserAccount activeUser =
       new UserAccount(
-          1L, "alice", "Alice Smith", null,
+          TEST_UUID, "alice", "Alice Smith", null,
           UserEmail.of("alice@example.com"),
           UserType.INDIVIDUAL, AccessLevel.NORMAL,
-          null, null, null, null, "en", NOW, NOW);
+        null, null, null, null, "en", NOW, NOW, null);
 
   @Test
   void execute_correctPassword_returnsTrue() {
     given(usersRepositoryPort.findByEmail(UserEmail.of("alice@example.com")))
         .willReturn(Optional.of(activeUser));
-    given(usersPasswordPort.findHashByUserId(1L)).willReturn(Optional.of(STORED_HASH));
+    given(usersPasswordPort.findHashByUserId(TEST_UUID)).willReturn(Optional.of(STORED_HASH));
     given(usersPasswordHasherPort.matches("correct-secret", STORED_HASH)).willReturn(true);
 
     assertThat(sut.execute("alice@example.com", "correct-secret")).isTrue();
@@ -51,7 +54,7 @@ class VerifyUserPasswordUseCaseTest {
   void execute_wrongPassword_returnsFalse() {
     given(usersRepositoryPort.findByEmail(UserEmail.of("alice@example.com")))
         .willReturn(Optional.of(activeUser));
-    given(usersPasswordPort.findHashByUserId(1L)).willReturn(Optional.of(STORED_HASH));
+    given(usersPasswordPort.findHashByUserId(TEST_UUID)).willReturn(Optional.of(STORED_HASH));
     given(usersPasswordHasherPort.matches("wrong-secret", STORED_HASH)).willReturn(false);
 
     assertThat(sut.execute("alice@example.com", "wrong-secret")).isFalse();
@@ -69,7 +72,7 @@ class VerifyUserPasswordUseCaseTest {
   void execute_noPasswordRecord_returnsFalse() {
     given(usersRepositoryPort.findByEmail(UserEmail.of("alice@example.com")))
         .willReturn(Optional.of(activeUser));
-    given(usersPasswordPort.findHashByUserId(1L)).willReturn(Optional.empty());
+    given(usersPasswordPort.findHashByUserId(TEST_UUID)).willReturn(Optional.empty());
 
     assertThat(sut.execute("alice@example.com", "any-password")).isFalse();
   }

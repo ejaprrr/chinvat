@@ -133,20 +133,21 @@ Operational rules:
 ## eIDAS State Redis Hardening
 
 The eIDAS callback state is short-lived, security-sensitive data and should be isolated from
-general caches (for example permission cache).
+general caches (for example permission cache). In this repository it lives in the auth Redis
+instance (`redis-auth`) in a separate database/key namespace, not in a separate Redis service.
 
 Current setup in this repository:
 
-1. Dedicated Redis service `redis-eidas` in both `compose.dev.yml` and `compose.prod.yml`
+1. Shared auth Redis service `redis-auth` in both `compose.dev.yml` and `compose.prod.yml`
 2. Separate app connection settings via `EIDAS_STATE_REDIS_*`
-3. Dedicated key prefix (`chinvat:eidas:state:`) and one-key delete operations only
+3. Dedicated database/key prefix (`chinvat:eidas:state:`) and one-key delete operations only
 
 Recommended production hardening:
 
 1. Enable Redis ACL and create a dedicated user for eIDAS state (`EIDAS_STATE_REDIS_USERNAME` / `EIDAS_STATE_REDIS_PASSWORD`)
 2. Restrict ACL permissions to the eIDAS prefix only (`~chinvat:eidas:state:*`) and required commands only (`+get +set +del +expire +ping`)
-3. Keep `redis-eidas` private (no published ports), reachable only from backend network segment
-4. Use independent credentials from the general Redis cache instance
+3. Keep `redis-auth` private (no published ports), reachable only from backend network segment
+4. Use independent credentials from the general Redis cache namespace/db
 5. Add monitoring/alerts for unexpected keyspace patterns and high delete/set anomaly rates
 
 Example ACL profile for eIDAS state user:

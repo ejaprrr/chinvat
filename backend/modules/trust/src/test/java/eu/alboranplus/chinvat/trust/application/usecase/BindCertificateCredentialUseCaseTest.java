@@ -11,6 +11,7 @@ import eu.alboranplus.chinvat.trust.application.port.out.CertificateCredentialLi
 import eu.alboranplus.chinvat.trust.application.port.out.CertificateValidationPort;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class BindCertificateCredentialUseCaseTest {
+
+  private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-00000000004d");
 
   @Mock private CertificateValidationPort certificateValidationPort;
   @Mock private CertificateCredentialLifecyclePort certificateCredentialLifecyclePort;
@@ -36,7 +39,7 @@ class BindCertificateCredentialUseCaseTest {
   void execute_whenIssuerTrusted_persistsTrustedActiveCredential() {
     BindCertificateCredentialCommand command =
         new BindCertificateCredentialCommand(
-            77L, "FNMT", "PROFILE_SELF_SERVICE", "high", "pem-data");
+            USER_ID, "FNMT", "PROFILE_SELF_SERVICE", "high", "pem-data");
 
     Instant now = Instant.now();
     CertificateValidationResult validation =
@@ -60,7 +63,7 @@ class BindCertificateCredentialUseCaseTest {
     CertificateCredentialView result = sut.execute(command, "maria@example.com");
 
     verify(certificateValidationPort).validate("pem-data");
-    assertThat(result.userId()).isEqualTo(77L);
+    assertThat(result.userId()).isEqualTo(USER_ID);
     assertThat(result.providerCode()).isEqualTo("FNMT");
     assertThat(result.trustStatus()).isEqualTo("TRUSTED");
     assertThat(result.revocationStatus()).isEqualTo("ACTIVE");
@@ -71,7 +74,8 @@ class BindCertificateCredentialUseCaseTest {
   @Test
   void execute_whenIssuerNotTrusted_marksCredentialUntrusted() {
     BindCertificateCredentialCommand command =
-        new BindCertificateCredentialCommand(77L, "FNMT", "PROFILE_SELF_SERVICE", "high", "pem-data");
+        new BindCertificateCredentialCommand(
+            USER_ID, "FNMT", "PROFILE_SELF_SERVICE", "high", "pem-data");
 
     Instant now = Instant.now();
     CertificateValidationResult validation =

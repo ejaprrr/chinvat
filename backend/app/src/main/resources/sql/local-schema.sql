@@ -5,7 +5,7 @@
 -- Maps ENUM types as VARCHAR for H2 compatibility
 CREATE TABLE IF NOT EXISTS auth_session (
     id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
-    user_id BIGINT NOT NULL,
+    user_id UUID NOT NULL,
     session_token_hash VARCHAR(255) NOT NULL UNIQUE,
     session_token_kind VARCHAR(20) NOT NULL CHECK (session_token_kind IN ('ACCESS', 'REFRESH')),
     issued_at TIMESTAMP NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS auth_session (
 
 -- Table: users (account management)
 CREATE TABLE IF NOT EXISTS users (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
     email VARCHAR(255) NOT NULL UNIQUE,
     account_status VARCHAR(20) NOT NULL CHECK (account_status IN ('PENDING', 'ACTIVE', 'SUSPENDED', 'DELETED')),
     account_role VARCHAR(20) NOT NULL CHECK (account_role IN ('ADMIN', 'USER', 'GUEST')),
@@ -28,8 +28,8 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Table: user_certificates
 CREATE TABLE IF NOT EXISTS user_certificates (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
+    id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
+    user_id UUID NOT NULL,
     certificate_data BLOB NOT NULL,
     issuer_name VARCHAR(500),
     subject_name VARCHAR(500),

@@ -8,6 +8,8 @@ import eu.alboranplus.chinvat.eidas.application.command.CompleteEidasProfileComm
 import eu.alboranplus.chinvat.eidas.application.dto.EidasProfileCompletionView;
 import eu.alboranplus.chinvat.eidas.application.dto.EidasProviderView;
 import java.util.List;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 
 public interface EidasFacade {
   EidasLoginView initiateLogin(InitiateEidasLoginCommand command);
@@ -17,4 +19,6 @@ public interface EidasFacade {
   EidasProfileCompletionView completeProfile(CompleteEidasProfileCommand command, String actor);
 
   List<EidasProviderView> listProviders();
+  
+  PageResponse<EidasProviderView> listProvidersPaged(PaginationRequest paginationRequest);
 }

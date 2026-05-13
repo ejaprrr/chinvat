@@ -1,10 +1,9 @@
-INSERT INTO rbac_role (role_name, permissions_csv)
+INSERT INTO rbac_role (role_name)
 VALUES
-	('USER', 'PROFILE:READ'),
-	('ADMIN', 'PROFILE:READ,PROFILE:WRITE,USERS:MANAGE'),
-	('SUPERADMIN', 'PROFILE:READ,PROFILE:WRITE,USERS:MANAGE,RBAC:MANAGE,AUTH:MANAGE')
-ON CONFLICT (role_name) DO UPDATE
-SET permissions_csv = EXCLUDED.permissions_csv;
+	('USER'),
+	('ADMIN'),
+	('SUPERADMIN')
+ON CONFLICT (role_name) DO NOTHING;
 
 INSERT INTO rbac_permission (permission_code, description)
 VALUES
@@ -22,7 +21,7 @@ FROM rbac_role r
 JOIN rbac_permission p
   ON p.permission_code = ANY (
       CASE r.role_name
-        WHEN 'USER' THEN ARRAY['PROFILE:READ']
+				WHEN 'USER' THEN ARRAY['PROFILE:READ', 'PROFILE:WRITE']
         WHEN 'ADMIN' THEN ARRAY['PROFILE:READ', 'PROFILE:WRITE', 'USERS:MANAGE']
         WHEN 'SUPERADMIN' THEN ARRAY['PROFILE:READ', 'PROFILE:WRITE', 'USERS:MANAGE', 'RBAC:MANAGE', 'AUTH:MANAGE']
         ELSE ARRAY[]::VARCHAR[]

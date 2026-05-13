@@ -5,6 +5,7 @@ import eu.alboranplus.chinvat.users.infrastructure.persistence.entity.UserPasswo
 import eu.alboranplus.chinvat.users.infrastructure.persistence.jpa.UserPasswordJpaRepository;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -17,12 +18,12 @@ public class UsersPasswordAdapter implements UsersPasswordPort {
   }
 
   @Override
-  public Optional<String> findHashByUserId(Long userId) {
+  public Optional<String> findHashByUserId(UUID userId) {
     return userPasswordJpaRepository.findById(userId).map(UserPasswordJpaEntity::getPasswordHash);
   }
 
   @Override
-  public void save(Long userId, String passwordHash, String algorithm) {
+  public void save(UUID userId, String passwordHash, String algorithm) {
     UserPasswordJpaEntity entity =
         userPasswordJpaRepository.findById(userId).orElse(new UserPasswordJpaEntity());
     entity.setUserId(userId);

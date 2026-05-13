@@ -1,5 +1,6 @@
 package eu.alboranplus.chinvat.profile.api;
 
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import eu.alboranplus.chinvat.profile.api.dto.AddProfileCertificateRequest;
 import eu.alboranplus.chinvat.profile.api.dto.CompleteEidasProfileRequest;
 import eu.alboranplus.chinvat.profile.api.dto.CompleteEidasProfileResponse;
@@ -18,6 +19,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -51,8 +53,11 @@ public class ProfileController {
     @ApiResponse(
         responseCode = "400",
         description = "Validation failed",
-        content = @Content(mediaType = "application/json", schema = @Schema(hidden = true))),
-    @ApiResponse(responseCode = "404", description = "Pending external identity not found")
+      content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class))),
+    @ApiResponse(
+      responseCode = "404",
+      description = "Pending external identity not found",
+      content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/eidas/complete")
   public ResponseEntity<CompleteEidasProfileResponse> completeEidasProfile(
@@ -126,13 +131,16 @@ public class ProfileController {
   @ApiResponses({
     @ApiResponse(responseCode = "204", description = "Certificate revoked"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
-    @ApiResponse(responseCode = "400", description = "Validation failed")
+    @ApiResponse(
+        responseCode = "400",
+        description = "Validation failed",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PreAuthorize("hasAuthority('PROFILE:WRITE')")
   @SecurityRequirement(name = "bearerAuth")
   @DeleteMapping("/certificates/{credentialId}")
   public ResponseEntity<Void> removeCertificate(
-      @PathVariable Long credentialId,
+      @PathVariable UUID credentialId,
       @RequestParam(defaultValue = "USER_REQUEST") String reason,
       Authentication authentication) {
     profileService.removeCertificate(credentialId, reason, authentication);
@@ -143,13 +151,16 @@ public class ProfileController {
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Primary certificate updated"),
     @ApiResponse(responseCode = "401", description = "Unauthorized"),
-    @ApiResponse(responseCode = "400", description = "Validation failed")
+    @ApiResponse(
+        responseCode = "400",
+        description = "Validation failed",
+        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @SecurityRequirement(name = "bearerAuth")
   @PreAuthorize("hasAuthority('PROFILE:WRITE')")
   @PostMapping("/certificates/{credentialId}/primary")
   public ResponseEntity<ProfileCertificateResponse> setPrimaryCertificate(
-      @PathVariable Long credentialId,
+      @PathVariable UUID credentialId,
       Authentication authentication) {
     CertificateCredentialView updated = profileService.setPrimaryCertificate(credentialId, authentication);
     return ResponseEntity.ok(toResponse(updated));

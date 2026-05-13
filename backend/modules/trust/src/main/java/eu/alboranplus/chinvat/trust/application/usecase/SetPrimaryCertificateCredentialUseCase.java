@@ -4,6 +4,7 @@ import eu.alboranplus.chinvat.trust.application.dto.CertificateCredentialView;
 import eu.alboranplus.chinvat.trust.application.port.out.CertificateCredentialLifecyclePort;
 import eu.alboranplus.chinvat.trust.domain.exception.CertificateCredentialNotFoundException;
 import java.time.Instant;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +19,7 @@ public class SetPrimaryCertificateCredentialUseCase {
   }
 
   @Transactional
-  public CertificateCredentialView execute(Long userId, Long credentialId) {
+  public CertificateCredentialView execute(UUID userId, UUID credentialId) {
     CertificateCredentialView existing =
         certificateCredentialLifecyclePort
             .findById(credentialId)

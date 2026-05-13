@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface UserCertificateJpaRepository extends JpaRepository<UserCertificateJpaEntity, Long> {
+import java.util.UUID;
+
+public interface UserCertificateJpaRepository extends JpaRepository<UserCertificateJpaEntity, UUID> {
 
   @Query(
       """
@@ -18,6 +20,6 @@ public interface UserCertificateJpaRepository extends JpaRepository<UserCertific
         and certificate.notBefore <= :now
         and certificate.notAfter >= :now
       """)
-  Optional<Long> findActiveUserIdByThumbprintSha256(
+  Optional<UUID> findActiveUserIdByThumbprintSha256(
       @Param("thumbprintSha256") String thumbprintSha256, @Param("now") Instant now);
 }

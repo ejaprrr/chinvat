@@ -3,6 +3,7 @@ package eu.alboranplus.chinvat.rbac.application.usecase;
 import eu.alboranplus.chinvat.rbac.application.dto.UserRolesView;
 import eu.alboranplus.chinvat.rbac.application.port.out.RbacRepositoryPort;
 import eu.alboranplus.chinvat.rbac.domain.exception.UserNotFoundException;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,7 +15,7 @@ public class GetUserRolesUseCase {
     this.rbacRepositoryPort = rbacRepositoryPort;
   }
 
-  public UserRolesView execute(Long userId) {
+  public UserRolesView execute(UUID userId) {
     if (!rbacRepositoryPort.userExists(userId)) {
       throw new UserNotFoundException("User not found: " + userId);
     }

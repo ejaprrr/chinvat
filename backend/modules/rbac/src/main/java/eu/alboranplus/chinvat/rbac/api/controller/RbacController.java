@@ -1,11 +1,11 @@
 package eu.alboranplus.chinvat.rbac.api.controller;
 
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import eu.alboranplus.chinvat.rbac.api.dto.CreatePermissionRequest;
 import eu.alboranplus.chinvat.rbac.api.dto.PermissionResponse;
 import eu.alboranplus.chinvat.rbac.api.dto.RoleResponse;
 import eu.alboranplus.chinvat.rbac.api.dto.UpdatePermissionRequest;
 import eu.alboranplus.chinvat.rbac.api.dto.UserRolesResponse;
-import eu.alboranplus.chinvat.rbac.api.exception.RbacApiExceptionHandler.RbacErrorResponse;
 import eu.alboranplus.chinvat.rbac.api.mapper.RbacApiMapper;
 import eu.alboranplus.chinvat.rbac.application.dto.PermissionView;
 import eu.alboranplus.chinvat.rbac.application.dto.RoleView;
@@ -19,7 +19,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -31,6 +34,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "RBAC", description = "Role-based access control — role inspection")
 @RestController
@@ -66,7 +70,7 @@ public class RbacController {
         content =
             @Content(
                 mediaType = "application/json",
-                schema = @Schema(implementation = RbacErrorResponse.class)))
+                schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @GetMapping("/roles/{roleName}")
   public ResponseEntity<RoleResponse> getRole(
@@ -99,6 +103,30 @@ public class RbacController {
     return ResponseEntity.ok(permissions);
   }
 
+  @Operation(
+      summary = "List permissions with pagination",
+      description = "Returns all defined permissions with pagination support.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Permissions returned"),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized — missing or invalid bearer token",
+        content = @Content(schema = @Schema(hidden = true)))
+  })
+  @GetMapping("/permissions/paged")
+  public ResponseEntity<PageResponse<PermissionResponse>> listPermissionsPaged(
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(required = false) String sort) {
+    PaginationRequest paginationRequest = new PaginationRequest(page, size, sort);
+    PageResponse<PermissionView> pageResponse = rbacFacade.listPermissionsPaged(paginationRequest);
+
+    List<PermissionResponse> responseData =
+        pageResponse.data().stream().map(rbacApiMapper::toResponse).toList();
+
+    return ResponseEntity.ok(PageResponse.of(responseData, pageResponse.pagination()));
+  }
+
   @PostMapping("/permissions")
   @PreAuthorize("hasAuthority('RBAC:MANAGE')")
     @Operation(
@@ -126,7 +154,7 @@ public class RbacController {
       content =
         @Content(
           mediaType = "application/json",
-          schema = @Schema(implementation = RbacErrorResponse.class)))
+          schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public ResponseEntity<PermissionResponse> createPermission(
       @Valid @RequestBody CreatePermissionRequest request, Authentication authentication) {
@@ -162,7 +190,7 @@ public class RbacController {
       content =
         @Content(
           mediaType = "application/json",
-          schema = @Schema(implementation = RbacErrorResponse.class)))
+          schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public ResponseEntity<PermissionResponse> updatePermission(
       @PathVariable String code,
@@ -194,7 +222,7 @@ public class RbacController {
       content =
         @Content(
           mediaType = "application/json",
-          schema = @Schema(implementation = RbacErrorResponse.class)))
+          schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public ResponseEntity<Void> deletePermission(@PathVariable String code, Authentication authentication) {
     rbacFacade.deletePermission(code, actor(authentication));
@@ -223,9 +251,9 @@ public class RbacController {
       content =
         @Content(
           mediaType = "application/json",
-          schema = @Schema(implementation = RbacErrorResponse.class)))
+          schema = @Schema(implementation = ApiErrorResponse.class)))
     })
-  public ResponseEntity<UserRolesResponse> getUserRoles(@PathVariable Long userId) {
+  public ResponseEntity<UserRolesResponse> getUserRoles(@PathVariable UUID userId) {
     UserRolesView rolesView = rbacFacade.getUserRoles(userId);
     return ResponseEntity.ok(rbacApiMapper.toResponse(rolesView));
   }
@@ -251,11 +279,11 @@ public class RbacController {
       content =
         @Content(
           mediaType = "application/json",
-          schema = @Schema(implementation = RbacErrorResponse.class)))
+          schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public ResponseEntity<Void> assignRoleToUser(
-      @PathVariable Long userId, @PathVariable String roleName, Authentication authentication) {
-    rbacFacade.assignRoleToUser(userId, roleName, actor(authentication));
+      @PathVariable String userId, @PathVariable String roleName, Authentication authentication) {
+    rbacFacade.assignRoleToUser(parseUserId(userId), roleName, actor(authentication));
     return ResponseEntity.noContent().build();
   }
 
@@ -280,12 +308,24 @@ public class RbacController {
       content =
         @Content(
           mediaType = "application/json",
-          schema = @Schema(implementation = RbacErrorResponse.class)))
+              schema = @Schema(implementation = ApiErrorResponse.class)))
     })
   public ResponseEntity<Void> removeRoleFromUser(
-      @PathVariable Long userId, @PathVariable String roleName, Authentication authentication) {
-    rbacFacade.removeRoleFromUser(userId, roleName, actor(authentication));
+      @PathVariable String userId, @PathVariable String roleName, Authentication authentication) {
+    rbacFacade.removeRoleFromUser(parseUserId(userId), roleName, actor(authentication));
     return ResponseEntity.noContent().build();
+  }
+
+  private static UUID parseUserId(String userId) {
+    try {
+      return UUID.fromString(userId);
+    } catch (IllegalArgumentException ignored) {
+      long compactId = Long.parseLong(userId);
+      if (compactId < 0) {
+        throw new IllegalArgumentException("User ID must be non-negative: " + userId);
+      }
+      return UUID.fromString(String.format("00000000-0000-0000-0000-%012x", compactId));
+    }
   }
 
   private static String actor(Authentication authentication) {

@@ -12,6 +12,7 @@ import eu.alboranplus.chinvat.auth.application.service.AuthPermissionService;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
 import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
 import java.time.Instant;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,7 @@ public class RefreshTokenUseCase {
   public AuthResult execute(RefreshCommand command) {
     Instant now = authClockPort.now();
 
-    Long userId =
+    UUID userId =
         authSessionPort
             .findActiveUserId(command.refreshToken(), now)
             .orElseThrow(() -> new InvalidAuthenticationException("Invalid or expired refresh token"));

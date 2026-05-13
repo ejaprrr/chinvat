@@ -13,6 +13,7 @@ import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -29,24 +30,26 @@ class GetUserSecurityViewUseCaseTest {
 
   private static final Instant NOW = Instant.parse("2026-01-01T00:00:00Z");
 
+  private static final UUID TEST_UUID = UUID.fromString("00000000-0000-0000-0000-00000000002a");
+
   private final UserAccount existingUser =
       new UserAccount(
-          42L, "alice", "Alice Smith", null,
+          TEST_UUID, "alice", "Alice Smith", null,
           UserEmail.of("alice@example.com"),
           UserType.INDIVIDUAL, AccessLevel.GOLD,
-          null, null, null, null, "en", NOW, NOW);
+        null, null, null, null, "en", NOW, NOW, null);
 
   @Test
   void execute_byEmail_found_returnsMappedView() {
     given(usersRepositoryPort.findByEmail(UserEmail.of("alice@example.com")))
         .willReturn(Optional.of(existingUser));
-    given(usersRoleRepositoryPort.findRoleNamesByUserId(42L)).willReturn(Set.of("USER"));
+    given(usersRoleRepositoryPort.findRoleNamesByUserId(TEST_UUID)).willReturn(Set.of("USER"));
 
     Optional<UserSecurityView> result = sut.execute("alice@example.com");
 
     assertThat(result).isPresent();
     UserSecurityView view = result.get();
-    assertThat(view.id()).isEqualTo(42L);
+    assertThat(view.id()).isEqualTo(TEST_UUID);
     assertThat(view.email()).isEqualTo("alice@example.com");
     assertThat(view.displayName()).isEqualTo("Alice Smith");
     assertThat(view.roles()).containsExactlyInAnyOrder("GOLD", "USER");
@@ -63,20 +66,20 @@ class GetUserSecurityViewUseCaseTest {
 
   @Test
   void executeById_found_returnsMappedView() {
-    given(usersRepositoryPort.findById(42L)).willReturn(Optional.of(existingUser));
-    given(usersRoleRepositoryPort.findRoleNamesByUserId(42L)).willReturn(Set.of());
+    given(usersRepositoryPort.findById(TEST_UUID)).willReturn(Optional.of(existingUser));
+    given(usersRoleRepositoryPort.findRoleNamesByUserId(TEST_UUID)).willReturn(Set.of());
 
-    Optional<UserSecurityView> result = sut.executeById(42L);
+    Optional<UserSecurityView> result = sut.executeById(TEST_UUID);
 
     assertThat(result).isPresent();
-    assertThat(result.get().id()).isEqualTo(42L);
+    assertThat(result.get().id()).isEqualTo(TEST_UUID);
   }
 
   @Test
   void executeById_notFound_returnsEmpty() {
-    given(usersRepositoryPort.findById(999L)).willReturn(Optional.empty());
+    given(usersRepositoryPort.findById(UUID.fromString("00000000-0000-0000-0000-0000000003e7"))).willReturn(Optional.empty());
 
-    assertThat(sut.executeById(999L)).isEmpty();
+    assertThat(sut.executeById(UUID.fromString("00000000-0000-0000-0000-0000000003e7"))).isEmpty();
   }
 }
 

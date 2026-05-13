@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -16,14 +17,15 @@ import org.hibernate.type.SqlTypes;
 public class AuditEventJpaEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(columnDefinition = "uuid")
+  private UUID id;
 
   @Column(name = "event_type", nullable = false, length = 120)
   private String eventType;
 
-  @Column(name = "user_id")
-  private Long userId;
+  @Column(name = "user_id", columnDefinition = "uuid")
+  private UUID userId;
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "details", nullable = false)
@@ -35,14 +37,14 @@ public class AuditEventJpaEntity {
   public AuditEventJpaEntity() {}
 
   public AuditEventJpaEntity(
-      String eventType, Long userId, Map<String, Object> details, Instant createdAt) {
+      String eventType, UUID userId, Map<String, Object> details, Instant createdAt) {
     this.eventType = eventType;
     this.userId = userId;
     this.details = details;
     this.createdAt = createdAt;
   }
 
-  public Long getId() {
+  public UUID getId() {
     return id;
   }
 
@@ -50,7 +52,7 @@ public class AuditEventJpaEntity {
     return eventType;
   }
 
-  public Long getUserId() {
+  public UUID getUserId() {
     return userId;
   }
 

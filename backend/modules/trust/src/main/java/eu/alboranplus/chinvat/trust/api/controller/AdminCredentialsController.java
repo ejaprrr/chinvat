@@ -1,9 +1,9 @@
 package eu.alboranplus.chinvat.trust.api.controller;
 
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import eu.alboranplus.chinvat.trust.api.dto.BindCertificateCredentialRequest;
 import eu.alboranplus.chinvat.trust.api.dto.CertificateCredentialResponse;
 import eu.alboranplus.chinvat.trust.api.dto.RevokeCertificateCredentialRequest;
-import eu.alboranplus.chinvat.trust.api.dto.TrustApiErrorResponse;
 import eu.alboranplus.chinvat.trust.api.mapper.TrustApiMapper;
 import eu.alboranplus.chinvat.trust.application.facade.TrustFacade;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +14,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
+import eu.alboranplus.chinvat.trust.application.dto.CertificateCredentialView;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -49,7 +53,7 @@ public class AdminCredentialsController {
     @ApiResponse(
         responseCode = "400",
         description = "Validation failed",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = TrustApiErrorResponse.class)))
+      content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping
@@ -67,11 +71,16 @@ public class AdminCredentialsController {
   @SecurityRequirement(name = "bearerAuth")
   @GetMapping
   @PreAuthorize("hasAuthority('USERS:MANAGE') or hasAuthority('RBAC:MANAGE')")
-  public ResponseEntity<List<CertificateCredentialResponse>> listCertificateCredentials(
-      @RequestParam(required = false) Long userId) {
-    List<CertificateCredentialResponse> response =
-        trustFacade.listCertificateCredentials(userId).stream().map(trustApiMapper::toResponse).toList();
-    return ResponseEntity.ok(response);
+  public ResponseEntity<PageResponse<CertificateCredentialResponse>> listCertificateCredentials(
+      @RequestParam(required = false) UUID userId,
+      @RequestParam(defaultValue = "0") int page,
+      @RequestParam(defaultValue = "20") int size,
+      @RequestParam(required = false) String sort) {
+    PaginationRequest paginationRequest = new PaginationRequest(page, size, sort);
+    PageResponse<CertificateCredentialView> pageResponse = trustFacade.listCertificateCredentialsPaged(userId, paginationRequest);
+    List<CertificateCredentialResponse> responseData = pageResponse.data().stream()
+        .map(trustApiMapper::toResponse).toList();
+    return ResponseEntity.ok(PageResponse.of(responseData, pageResponse.pagination()));
   }
 
   @Operation(summary = "Revoke certificate credential", description = "Revokes a certificate credential and records the reason.")
@@ -80,13 +89,13 @@ public class AdminCredentialsController {
     @ApiResponse(
         responseCode = "404",
         description = "Credential not found",
-        content = @Content(mediaType = "application/json", schema = @Schema(implementation = TrustApiErrorResponse.class)))
+      content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping("/{credentialId}/revoke")
   @PreAuthorize("hasAuthority('USERS:MANAGE') or hasAuthority('RBAC:MANAGE')")
   public ResponseEntity<Void> revokeCertificateCredential(
-      @PathVariable Long credentialId,
+      @PathVariable UUID credentialId,
       @Valid @RequestBody RevokeCertificateCredentialRequest request,
       Authentication authentication) {
     trustFacade.revokeCertificateCredential(credentialId, actor(authentication), request.reason());

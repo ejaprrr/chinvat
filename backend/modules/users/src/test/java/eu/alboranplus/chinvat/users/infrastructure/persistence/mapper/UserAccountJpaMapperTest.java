@@ -8,6 +8,7 @@ import eu.alboranplus.chinvat.users.domain.model.UserType;
 import eu.alboranplus.chinvat.users.domain.vo.UserEmail;
 import eu.alboranplus.chinvat.users.infrastructure.persistence.entity.UserAccountJpaEntity;
 import java.time.Instant;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class UserAccountJpaMapperTest {
@@ -17,17 +18,18 @@ class UserAccountJpaMapperTest {
 
   @Test
   void toEntity_mapsAllFields() {
+    UUID id1 = UUID.fromString("00000000-0000-0000-0000-000000000001");
     UserAccount domain =
         new UserAccount(
-            1L, "alice", "Alice Smith", "+34 600 000 000",
+            id1, "alice", "Alice Smith", "+34 600 000 000",
             UserEmail.of("alice@example.com"),
             UserType.INDIVIDUAL, AccessLevel.GOLD,
             "Street 1", "29001", "Malaga", "Spain", "es",
-            NOW, NOW);
+        NOW, NOW, null);
 
     UserAccountJpaEntity entity = mapper.toEntity(domain);
 
-    assertThat(entity.getId()).isEqualTo(1L);
+    assertThat(entity.getId()).isEqualTo(id1);
     assertThat(entity.getUsername()).isEqualTo("alice");
     assertThat(entity.getFullName()).isEqualTo("Alice Smith");
     assertThat(entity.getPhoneNumber()).isEqualTo("+34 600 000 000");
@@ -41,12 +43,14 @@ class UserAccountJpaMapperTest {
     assertThat(entity.getDefaultLanguage()).isEqualTo("es");
     assertThat(entity.getCreatedAt()).isEqualTo(NOW);
     assertThat(entity.getUpdatedAt()).isEqualTo(NOW);
+    assertThat(entity.getDeletedAt()).isNull();
   }
 
   @Test
   void toDomain_mapsAllFields() {
+    UUID id2 = UUID.fromString("00000000-0000-0000-0000-000000000002");
     UserAccountJpaEntity entity = new UserAccountJpaEntity();
-    entity.setId(2L);
+    entity.setId(id2);
     entity.setUsername("bob");
     entity.setFullName("Bob Builder");
     entity.setPhoneNumber(null);
@@ -60,10 +64,11 @@ class UserAccountJpaMapperTest {
     entity.setDefaultLanguage("en");
     entity.setCreatedAt(NOW);
     entity.setUpdatedAt(NOW);
+    entity.setDeletedAt(null);
 
     UserAccount domain = mapper.toDomain(entity);
 
-    assertThat(domain.id()).isEqualTo(2L);
+    assertThat(domain.id()).isEqualTo(id2);
     assertThat(domain.username()).isEqualTo("bob");
     assertThat(domain.fullName()).isEqualTo("Bob Builder");
     assertThat(domain.email().value()).isEqualTo("bob@example.com");
@@ -72,17 +77,19 @@ class UserAccountJpaMapperTest {
     assertThat(domain.defaultLanguage()).isEqualTo("en");
     assertThat(domain.createdAt()).isEqualTo(NOW);
     assertThat(domain.updatedAt()).isEqualTo(NOW);
+    assertThat(domain.deletedAt()).isNull();
   }
 
   @Test
   void roundtrip_domainToEntityToDomain_preservesData() {
+    UUID id5 = UUID.fromString("00000000-0000-0000-0000-000000000005");
     UserAccount original =
         new UserAccount(
-            5L, "roundtrip", "Roundtrip User", null,
+            id5, "roundtrip", "Roundtrip User", null,
             UserEmail.of("roundtrip@example.com"),
             UserType.INDIVIDUAL, AccessLevel.PREMIUM,
             null, null, null, null, "cs",
-            NOW, NOW);
+        NOW, NOW, null);
 
     UserAccount roundtripped = mapper.toDomain(mapper.toEntity(original));
 

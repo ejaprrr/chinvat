@@ -8,6 +8,7 @@ import eu.alboranplus.chinvat.auth.application.port.out.AuthSessionPort;
 import eu.alboranplus.chinvat.auth.application.port.out.AuthUsersPort;
 import eu.alboranplus.chinvat.auth.domain.exception.InvalidAuthenticationException;
 import java.time.Instant;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +37,7 @@ public class ConfirmPasswordResetUseCase {
   @Transactional
   public void execute(ConfirmPasswordResetCommand command) {
     Instant now = authClockPort.now();
-    Long userId =
+    UUID userId =
       authUsersPort
         .findByEmail(command.email())
         .filter(user -> user.active())

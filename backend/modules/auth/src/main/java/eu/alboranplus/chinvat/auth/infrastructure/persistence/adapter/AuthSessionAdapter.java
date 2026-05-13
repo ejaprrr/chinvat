@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.HexFormat;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import eu.alboranplus.chinvat.auth.domain.model.AuthSessionTokenKind;
@@ -29,7 +31,7 @@ public class AuthSessionAdapter implements AuthSessionPort {
   @Override
   @Transactional
   public void save(
-      Long userId,
+      UUID userId,
       AuthSessionTokenKind tokenKind,
       String rawToken,
       Instant issuedAt,
@@ -47,7 +49,7 @@ public class AuthSessionAdapter implements AuthSessionPort {
 
   @Override
   @Transactional(readOnly = true)
-  public Optional<Long> findActiveUserId(String rawToken, Instant now) {
+  public Optional<UUID> findActiveUserId(String rawToken, Instant now) {
     String hash = sha256Hex(rawToken);
     return repository
         .findBySessionTokenHash(hash)
@@ -65,18 +67,26 @@ public class AuthSessionAdapter implements AuthSessionPort {
 
   @Override
   @Transactional
-  public void revokeAllByUserId(Long userId, Instant now) {
+  public void revokeAllByUserId(UUID userId, Instant now) {
     repository.revokeAllByUserId(userId, now);
   }
 
   @Override
   @Transactional(readOnly = true)
-  public List<AuthSessionView> listActiveSessionsByUserId(Long userId, Instant now) {
+  public List<AuthSessionView> listActiveSessionsByUserId(UUID userId, Instant now) {
     return repository
         .findActiveByUserIdOrderByIssuedAtDesc(userId, now)
         .stream()
         .map(this::toView)
         .toList();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<AuthSessionView> listActiveSessionsByUserIdPaged(UUID userId, Instant now, Pageable pageable) {
+    return repository
+        .findActiveByUserIdOrderByIssuedAtDescPaged(userId, now, pageable)
+        .map(this::toView);
   }
 
   @Override

@@ -7,6 +7,7 @@ import eu.alboranplus.chinvat.rbac.infrastructure.persistence.entity.RoleJpaEnti
 import eu.alboranplus.chinvat.rbac.infrastructure.persistence.jpa.RoleJpaRepository;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -100,9 +101,9 @@ class RbacRepositoryAdapterIT {
           java.sql.Timestamp.from(java.time.Instant.now()));
 
       // Get permission ID
-      Long permId = jdbcTemplate.queryForObject(
+      UUID permId = jdbcTemplate.queryForObject(
           "SELECT id FROM rbac_permission WHERE UPPER(permission_code) = UPPER(?)",
-          Long.class,
+          UUID.class,
           permCode);
 
       // Link role to permission

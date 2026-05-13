@@ -3,6 +3,7 @@ package eu.alboranplus.chinvat.rbac.application.usecase;
 import eu.alboranplus.chinvat.rbac.application.port.out.RbacRepositoryPort;
 import eu.alboranplus.chinvat.rbac.domain.exception.RoleNotFoundException;
 import eu.alboranplus.chinvat.rbac.domain.exception.UserNotFoundException;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +17,7 @@ public class RemoveRoleFromUserUseCase {
   }
 
   @Transactional
-  public void execute(Long userId, String roleName) {
+  public void execute(UUID userId, String roleName) {
     if (!rbacRepositoryPort.userExists(userId)) {
       throw new UserNotFoundException("User not found: " + userId);
     }

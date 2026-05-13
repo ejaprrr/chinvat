@@ -12,11 +12,15 @@ import eu.alboranplus.chinvat.rbac.application.usecase.DeletePermissionUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.GetUserRolesUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.GetRoleUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ListPermissionsUseCase;
+import eu.alboranplus.chinvat.rbac.application.usecase.ListPermissionsPagedUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.RemoveRoleFromUserUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ResolvePermissionsUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.UpdatePermissionUseCase;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,6 +29,7 @@ public class RbacFacadeService implements RbacFacade {
   private final GetRoleUseCase getRoleUseCase;
   private final ResolvePermissionsUseCase resolvePermissionsUseCase;
   private final ListPermissionsUseCase listPermissionsUseCase;
+  private final ListPermissionsPagedUseCase listPermissionsPagedUseCase;
   private final CreatePermissionUseCase createPermissionUseCase;
   private final UpdatePermissionUseCase updatePermissionUseCase;
   private final DeletePermissionUseCase deletePermissionUseCase;
@@ -38,6 +43,7 @@ public class RbacFacadeService implements RbacFacade {
       GetRoleUseCase getRoleUseCase,
       ResolvePermissionsUseCase resolvePermissionsUseCase,
       ListPermissionsUseCase listPermissionsUseCase,
+      ListPermissionsPagedUseCase listPermissionsPagedUseCase,
       CreatePermissionUseCase createPermissionUseCase,
       UpdatePermissionUseCase updatePermissionUseCase,
       DeletePermissionUseCase deletePermissionUseCase,
@@ -49,6 +55,7 @@ public class RbacFacadeService implements RbacFacade {
     this.getRoleUseCase = getRoleUseCase;
     this.resolvePermissionsUseCase = resolvePermissionsUseCase;
     this.listPermissionsUseCase = listPermissionsUseCase;
+    this.listPermissionsPagedUseCase = listPermissionsPagedUseCase;
     this.createPermissionUseCase = createPermissionUseCase;
     this.updatePermissionUseCase = updatePermissionUseCase;
     this.deletePermissionUseCase = deletePermissionUseCase;
@@ -116,12 +123,12 @@ public class RbacFacadeService implements RbacFacade {
   }
 
   @Override
-  public UserRolesView getUserRoles(Long userId) {
+  public UserRolesView getUserRoles(UUID userId) {
     return getUserRolesUseCase.execute(userId);
   }
 
   @Override
-  public void assignRoleToUser(Long userId, String roleName, String assignedBy) {
+  public void assignRoleToUser(UUID userId, String roleName, String assignedBy) {
     assignRoleToUserUseCase.execute(userId, roleName, assignedBy);
     permissionCacheFacade.evictUserPermissions(userId);
     auditFacade.log(
@@ -136,7 +143,7 @@ public class RbacFacadeService implements RbacFacade {
   }
 
   @Override
-  public void removeRoleFromUser(Long userId, String roleName, String actor) {
+  public void removeRoleFromUser(UUID userId, String roleName, String actor) {
     removeRoleFromUserUseCase.execute(userId, roleName);
     permissionCacheFacade.evictUserPermissions(userId);
     auditFacade.log(
@@ -144,5 +151,10 @@ public class RbacFacadeService implements RbacFacade {
         actor,
         null,
         AuditDetails.builder().add("userId", userId).add("roleName", roleName).build());
+  }
+  
+  @Override
+  public PageResponse<PermissionView> listPermissionsPaged(PaginationRequest paginationRequest) {
+    return listPermissionsPagedUseCase.execute(paginationRequest);
   }
 }

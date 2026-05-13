@@ -24,6 +24,7 @@ import eu.alboranplus.chinvat.auth.application.usecase.ConfirmPasswordResetUseCa
 import eu.alboranplus.chinvat.auth.application.usecase.LogoutUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.GetMeUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.ListSessionsUseCase;
+import eu.alboranplus.chinvat.auth.application.usecase.ListSessionsPagedUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.RevokeSessionUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.LogoutAllSessionsUseCase;
 import eu.alboranplus.chinvat.auth.application.usecase.RefreshTokenUseCase;
@@ -32,6 +33,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
+import eu.alboranplus.chinvat.common.pagination.PageResponse;
+import eu.alboranplus.chinvat.common.pagination.PaginationRequest;
 
 @Service
 public class AuthFacadeService implements AuthFacade {
@@ -47,6 +50,7 @@ public class AuthFacadeService implements AuthFacade {
   private final AuthChangePasswordUseCase changePasswordUseCase;
   private final GetMeUseCase getMeUseCase;
   private final ListSessionsUseCase listSessionsUseCase;
+  private final ListSessionsPagedUseCase listSessionsPagedUseCase;
   private final RevokeSessionUseCase revokeSessionUseCase;
   private final LogoutAllSessionsUseCase logoutAllSessionsUseCase;
   private final AuditFacade auditFacade;
@@ -63,6 +67,7 @@ public class AuthFacadeService implements AuthFacade {
       AuthChangePasswordUseCase changePasswordUseCase,
       GetMeUseCase getMeUseCase,
       ListSessionsUseCase listSessionsUseCase,
+      ListSessionsPagedUseCase listSessionsPagedUseCase,
       RevokeSessionUseCase revokeSessionUseCase,
       LogoutAllSessionsUseCase logoutAllSessionsUseCase,
       AuditFacade auditFacade) {
@@ -77,6 +82,7 @@ public class AuthFacadeService implements AuthFacade {
     this.changePasswordUseCase = changePasswordUseCase;
     this.getMeUseCase = getMeUseCase;
     this.listSessionsUseCase = listSessionsUseCase;
+    this.listSessionsPagedUseCase = listSessionsPagedUseCase;
     this.revokeSessionUseCase = revokeSessionUseCase;
     this.logoutAllSessionsUseCase = logoutAllSessionsUseCase;
     this.auditFacade = auditFacade;
@@ -214,5 +220,10 @@ public class AuthFacadeService implements AuthFacade {
         principal.email(),
         principal.userId(),
         AuditDetails.builder().build());
+  }
+
+  @Override
+  public PageResponse<AuthSessionView> listSessionsPaged(TokenPrincipal principal, PaginationRequest paginationRequest) {
+    return listSessionsPagedUseCase.execute(principal, paginationRequest);
   }
 }

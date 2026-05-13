@@ -6,6 +6,7 @@ import eu.alboranplus.chinvat.users.application.command.CreateUserCommand;
 import eu.alboranplus.chinvat.users.application.facade.UsersFacade;
 import eu.alboranplus.chinvat.users.domain.model.AccessLevel;
 import eu.alboranplus.chinvat.users.domain.model.UserType;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,7 +19,7 @@ public class AuthUserRegistrationFacadeAdapter implements AuthUserRegistrationPo
   }
 
   @Override
-  public Long register(RegisterCommand command) {
+  public UUID register(RegisterCommand command) {
     CreateUserCommand createCommand =
         new CreateUserCommand(
             command.username(),

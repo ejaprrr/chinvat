@@ -7,20 +7,22 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "external_identity")
 public class ExternalIdentityJpaEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(columnDefinition = "uuid")
+  private UUID id;
 
-  @Column(name = "user_id")
-  private Long userId;
+  @Column(name = "user_id", columnDefinition = "uuid")
+  private UUID userId;
 
-  @Column(name = "provider_id")
-  private Long providerId;
+  @Column(name = "provider_id", columnDefinition = "uuid")
+  private UUID providerId;
 
   @Column(nullable = false, length = 80)
   private String providerCode;
@@ -79,27 +81,27 @@ public class ExternalIdentityJpaEntity {
   @Column(nullable = false)
   private Instant updatedAt;
 
-  public Long getId() {
+  public UUID getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(UUID id) {
     this.id = id;
   }
 
-  public Long getUserId() {
+  public UUID getUserId() {
     return userId;
   }
 
-  public void setUserId(Long userId) {
+  public void setUserId(UUID userId) {
     this.userId = userId;
   }
 
-  public Long getProviderId() {
+  public UUID getProviderId() {
     return providerId;
   }
 
-  public void setProviderId(Long providerId) {
+  public void setProviderId(UUID providerId) {
     this.providerId = providerId;
   }
 
