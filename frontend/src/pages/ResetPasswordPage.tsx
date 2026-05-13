@@ -47,7 +47,9 @@ function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [statusMessage, setStatusMessage] = useState<StatusMessage | ErrorDisplay | string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | ErrorDisplay | string | null>(
+    null,
+  );
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const codeInputRef = useRef<HTMLInputElement>(null);

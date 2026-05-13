@@ -4,4 +4,5 @@ export const appRoutes = {
   admin: '/admin',
   register: '/register',
   resetPassword: '/reset-password',
+  eidasCallback: '/auth/eidas/callback',
 } as const;
