@@ -3,7 +3,8 @@
     "pageTitle": "Sign in to chinvat",
     "registerPageTitle": "Create account | chinvat",
     "resetPasswordPageTitle": "Reset password | chinvat",
-    "profilePageTitle": "Profile | chinvat"
+    "profilePageTitle": "Profile | chinvat",
+    "adminPageTitle": "Administration | chinvat"
   },
   "accessibility": {
     "skipToContent": "Skip to main content",
@@ -297,6 +298,105 @@
         "hide": "Hide confirm password",
         "show": "Show confirm password"
       }
+    }
+  },
+  "admin": {
+    "title": "Administration",
+    "subtitle": "Manage users, certificates, and roles",
+    "accessDenied": "Access Denied",
+    "accessDeniedMessage": "You don't have permission to access the administration panel. Only administrators can access this section.",
+    "backToProfile": "Back to Profile",
+    "users": "Users",
+    "certificates": "Certificates",
+    "rbac": "Roles & Permissions",
+    "userManagement": "User Management",
+    "certificateManagement": "Certificate Management",
+    "roleManagement": "Role Management",
+    "loading": "Loading...",
+    "email": "Email",
+    "fullName": "Full Name",
+    "username": "Username",
+    "userType": "User Type",
+    "accessLevel": "Access Level",
+    "actions": "Actions",
+    "subjectDn": "Subject DN",
+    "userId": "User ID",
+    "status": "Status",
+    "notAfter": "Expires",
+    "roles": "Roles",
+    "manage": "Manage",
+    "noUsers": "No users found",
+    "noCertificates": "No certificates found",
+    "editUser": "Edit User",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "edit": "Edit",
+    "delete": "Delete",
+    "revoke": "Revoke",
+    "assign": "Assign",
+    "remove": "Remove",
+    "deleteUser": "Delete User",
+    "restoreUser": "Restore User",
+    "permanentDelete": "Permanently Delete",
+    "confirmDeleteUser": "Are you sure you want to delete this user? This action is reversible (soft delete).",
+    "confirmPermanentDelete": "Are you sure you want to permanently delete this user? This action is IRREVERSIBLE and will remove all user data.",
+    "confirmRemoveRole": "Are you sure you want to remove this role from the user?",
+    "userUpdated": "User updated successfully",
+    "userDeleted": "User deleted successfully",
+    "userRestored": "User restored successfully",
+    "userPermanentlyDeleted": "User permanently deleted",
+    "certificateRevoked": "Certificate revoked successfully",
+    "roleAssigned": "Role assigned successfully",
+    "roleRemoved": "Role removed successfully",
+    "provideRevokeReason": "Please provide a reason for revoking the certificate",
+    "revokeReason": "Revocation Reason",
+    "provideReason": "Explain why you are revoking this certificate",
+    "revokeCertificate": "Revoke Certificate",
+    "filterByUserId": "Filter by User ID",
+    "manageUserRoles": "Manage User Roles",
+    "assignRole": "Assign Role to User",
+    "page": "Page"
+  },
+  "error": {
+    "auth": {
+      "invalid-authentication": "Invalid authentication credentials.",
+      "resource-not-found": "Requested authentication resource was not found."
+    },
+    "users": {
+      "already-exists": "User already exists.",
+      "not-found": "User was not found."
+    },
+    "rbac": {
+      "role-not-found": "Role was not found.",
+      "permission-not-found": "Permission was not found.",
+      "user-not-found": "RBAC user was not found.",
+      "permission-already-exists": "Permission already exists."
+    },
+    "eidas": {
+      "provider-not-found": "eIDAS provider was not found.",
+      "invalid-state": "eIDAS session state is invalid or expired.",
+      "broker-unavailable": "eIDAS broker is currently unavailable.",
+      "external-identity-not-found": "Pending eIDAS external identity was not found.",
+      "profile-completion-required": "Profile completion is required."
+    },
+    "trust": {
+      "validation-failed": "Certificate validation failed.",
+      "provider-sync-failed": "Trust provider synchronization failed.",
+      "credential-not-found": "Certificate credential was not found."
+    },
+    "profile": {
+      "validation-failed": "Profile validation failed.",
+      "invalid-state": "Profile request is not valid in the current state.",
+      "credential-not-found": "Profile certificate credential was not found."
+    },
+    "common": {
+      "validation-failed": "Validation failed.",
+      "resource-not-found": "Requested resource was not found.",
+      "unauthorized": "Authentication is required.",
+      "forbidden": "Access is forbidden.",
+      "rate-limit-exceeded": "Rate limit exceeded.",
+      "internal-error": "Unexpected internal error."
     }
   }
 }

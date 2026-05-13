@@ -5,7 +5,8 @@ import { Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { confirmPasswordReset, requestPasswordReset } from '@/features/auth/api';
 import { useAuth } from '@/shared/auth';
-import { getErrorDisplay } from '@/shared/api/errors';
+import { getErrorDisplay, type ErrorDisplay } from '@/shared/api/errors';
+import { useErrorDisplay } from '@/shared/hooks/useErrorDisplay';
 import { isPasswordLongEnough, PASSWORD_MIN_LENGTH } from '@/shared/lib/validation/password';
 import { appRoutes } from '../router/routes.ts';
 import { ActionButton, ActionLink } from '@/shared/ui/Action';
@@ -36,6 +37,7 @@ function ResetPasswordPage() {
   useDocumentTitle('meta.resetPasswordPageTitle');
 
   const { t } = useTranslation();
+  const { getDisplayMessage } = useErrorDisplay();
   const { error: authError, reportError, clearError } = useAuth();
   const [currentStep, setCurrentStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
@@ -45,7 +47,7 @@ function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [statusMessage, setStatusMessage] = useState<StatusMessage>(null);
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | ErrorDisplay | string | null>(null);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const codeInputRef = useRef<HTMLInputElement>(null);
@@ -128,11 +130,8 @@ function ResetPasswordPage() {
         setFieldErrors({
           email: t('auth.resetPassword.form.email.invalid'),
         });
-        setStatusMessage({
-          tone: 'warning',
-          text: detail.message,
-        });
-        reportError(detail.message);
+        setStatusMessage(detail);
+        reportError(detail);
         emailInputRef.current?.focus();
       }
     })();
@@ -217,11 +216,8 @@ function ResetPasswordPage() {
           fallbackCode: 'AUTH_PASSWORD_RESET_CONFIRM_FAILED',
           fallbackMessage: t('auth.resetPassword.form.code.required'),
         });
-        setStatusMessage({
-          tone: 'warning',
-          text: detail.message,
-        });
-        reportError(detail.message);
+        setStatusMessage(detail);
+        reportError(detail);
       }
     })();
   };
@@ -279,8 +275,18 @@ function ResetPasswordPage() {
       status={
         statusMessage || authError
           ? {
-              content: statusMessage?.text || authError,
-              tone: statusMessage?.tone === 'warning' ? 'warning' : 'default',
+              content:
+                statusMessage && typeof statusMessage !== 'string'
+                  ? 'text' in statusMessage
+                    ? statusMessage.text
+                    : getDisplayMessage(statusMessage)
+                  : authError
+                    ? getDisplayMessage(authError)
+                    : statusMessage || '',
+              tone:
+                statusMessage && typeof statusMessage !== 'string' && 'tone' in statusMessage
+                  ? statusMessage.tone
+                  : 'default',
             }
           : null
       }

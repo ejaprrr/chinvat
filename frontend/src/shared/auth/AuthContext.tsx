@@ -8,7 +8,7 @@ import {
   getRefreshToken,
   setTokens,
 } from '@/shared/auth/tokenStorage';
-import { getErrorDisplay } from '@/shared/api/errors';
+import { getErrorDisplay, type ErrorDisplay } from '@/shared/api/errors';
 import type { AuthUser, RegisterRequest } from '@/shared/types/auth';
 import type { UpdateUserRequest } from '@/shared/types/user';
 
@@ -16,13 +16,13 @@ export interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   authenticated: boolean;
-  error: string | null;
+  error: ErrorDisplay | string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   clearError: () => void;
-  reportError: (message: string) => void;
+  reportError: (message: ErrorDisplay | string) => void;
   hasRole: (role: string) => boolean;
   hasPermission: (permission: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
@@ -33,11 +33,11 @@ export interface AuthContextType {
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-function getErrorMessage(error: unknown, fallbackCode: string) {
+function getErrorState(error: unknown, fallbackCode: string) {
   return getErrorDisplay(error, {
     fallbackCode,
     fallbackMessage: fallbackCode,
-  }).message;
+  });
 }
 
 interface AuthProviderProps {
@@ -48,13 +48,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ErrorDisplay | string | null>(null);
 
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  const reportError = useCallback((message: string) => {
+  const reportError = useCallback((message: ErrorDisplay | string) => {
     setError(message);
   }, []);
 
@@ -73,7 +73,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         clearTokens();
         setUser(null);
         setAuthenticated(false);
-        setError(getErrorMessage(refreshError, 'AUTH_SESSION_RESTORE_FAILED'));
+        setError(getErrorState(refreshError, 'AUTH_SESSION_RESTORE_FAILED'));
         return;
       }
 
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         clearTokens();
         setUser(null);
         setAuthenticated(false);
-        setError(getErrorMessage(tokenRefreshError, 'AUTH_SESSION_RESTORE_FAILED'));
+        setError(getErrorState(tokenRefreshError, 'AUTH_SESSION_RESTORE_FAILED'));
       }
     } finally {
       setLoading(false);
@@ -116,7 +116,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       clearTokens();
       setAuthenticated(false);
       setUser(null);
-      setError(getErrorMessage(loginError, 'AUTH_LOGIN_FAILED'));
+      setError(getErrorState(loginError, 'AUTH_LOGIN_FAILED'));
       throw loginError;
     } finally {
       setLoading(false);
@@ -135,7 +135,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       clearTokens();
       setAuthenticated(false);
       setUser(null);
-      setError(getErrorMessage(registerError, 'AUTH_REGISTER_FAILED'));
+      setError(getErrorState(registerError, 'AUTH_REGISTER_FAILED'));
       throw registerError;
     } finally {
       setLoading(false);
@@ -184,7 +184,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             : current,
         );
       } catch (profileError) {
-        setError(getErrorMessage(profileError, 'PROFILE_UPDATE_FAILED'));
+        setError(getErrorState(profileError, 'PROFILE_UPDATE_FAILED'));
         throw profileError;
       } finally {
         setLoading(false);
@@ -198,7 +198,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setLoading(true);
       await authApi.changePassword({ currentPassword, newPassword });
     } catch (passwordError) {
-      setError(getErrorMessage(passwordError, 'AUTH_PASSWORD_CHANGE_FAILED'));
+      setError(getErrorState(passwordError, 'AUTH_PASSWORD_CHANGE_FAILED'));
       throw passwordError;
     } finally {
       setLoading(false);

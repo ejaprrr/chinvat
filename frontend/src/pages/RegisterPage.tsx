@@ -13,6 +13,8 @@ import { MapPin, UserRound } from 'lucide-react';
 import { getCountries, getCountryCallingCode, type CountryCode } from 'libphonenumber-js/min';
 import { useTranslation } from 'react-i18next';
 import { languageLabels, type Locale } from '@/shared/i18n';
+import { useErrorDisplay } from '@/shared/hooks/useErrorDisplay';
+import type { ErrorDisplay } from '@/shared/api/errors';
 import { appRoutes } from '../router/routes.ts';
 import { ActionButton, ActionLink } from '@/shared/ui/Action';
 import { FlowStepForm, FormActions } from '@/shared/ui/FlowForm';
@@ -103,6 +105,7 @@ function getDefaultPhoneCountry(language: string | undefined): CountryCode {
 function RegisterPage() {
   useDocumentTitle('meta.registerPageTitle');
   const { t, i18n } = useTranslation();
+  const { getDisplayMessage } = useErrorDisplay();
   const navigate = useNavigate();
   const { register, error: authError, reportError, clearError } = useAuth();
   const uid = useId();
@@ -146,7 +149,7 @@ function RegisterPage() {
         : 'en',
   }));
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [statusMessage, setStatusMessage] = useState<StatusMessage>(null);
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | ErrorDisplay | string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Location
@@ -351,11 +354,8 @@ function RegisterPage() {
         fallbackCode: 'AUTH_REGISTER_FAILED',
         fallbackMessage: t('auth.register.status.error'),
       });
-      setStatusMessage({
-        tone: 'critical',
-        text: detail.message,
-      });
-      reportError(detail.message);
+      setStatusMessage(detail);
+      reportError(detail);
     } finally {
       setIsSubmitting(false);
     }
@@ -465,8 +465,18 @@ function RegisterPage() {
       status={
         statusMessage || authError
           ? {
-              content: statusMessage?.text || authError,
-              tone: statusMessage?.tone === 'critical' ? 'critical' : 'default',
+              content:
+                statusMessage && typeof statusMessage !== 'string'
+                  ? 'text' in statusMessage
+                    ? statusMessage.text
+                    : getDisplayMessage(statusMessage)
+                  : authError
+                    ? getDisplayMessage(authError)
+                    : statusMessage || '',
+              tone:
+                statusMessage && typeof statusMessage !== 'string' && 'tone' in statusMessage
+                  ? statusMessage.tone
+                  : 'critical',
             }
           : null
       }

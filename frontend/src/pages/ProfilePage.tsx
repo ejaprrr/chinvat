@@ -2,8 +2,10 @@ import { useEffect, useId, useMemo, useState, type FormEvent, type KeyboardEvent
 import { Languages, Mail, MapPin, Save, ShieldCheck, UserRound } from 'lucide-react';
 import { getCountries, getCountryCallingCode, type CountryCode } from 'libphonenumber-js/min';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 import { useAuth } from '@/shared/auth';
 import { languageLabels, type Locale } from '@/shared/i18n';
+import { appRoutes } from '@/router/routes';
 import { ActionButton } from '@/shared/ui/Action';
 import FormPage from '@/shared/ui/FormPage';
 import { FlowForm, FlowFormSection, FormActions } from '@/shared/ui/FlowForm';
@@ -17,7 +19,9 @@ import LanguageSwitcher from '@/shared/ui/LanguageSwitcher';
 import { useDocumentTitle } from '@/shared/lib/documentTitle';
 import { useGeocoding } from '@/shared/hooks/useGeocoding';
 import { useProfile } from '@/features/profile/useProfile';
-import { getErrorDisplay } from '@/shared/api/errors';
+import { deleteUser as deleteProfileUser } from '@/features/profile/api';
+import { getErrorDisplay, type ErrorDisplay } from '@/shared/api/errors';
+import { useErrorDisplay } from '@/shared/hooks/useErrorDisplay';
 import { isPasswordLongEnough } from '@/shared/lib/validation/password';
 import {
   EMAIL_MAX_LENGTH,
@@ -86,17 +90,24 @@ function getDefaultPhoneCountry(language: string | undefined): CountryCode {
 
 function ProfilePage() {
   const { t } = useTranslation();
-  const { user, changePassword, error: authError, reportError, clearError } = useAuth();
+  const { getDisplayMessage } = useErrorDisplay();
+  const navigate = useNavigate();
+  const { user, changePassword, logout, error: authError, reportError, clearError } = useAuth();
   const { profile: backendProfile, saveProfile } = useProfile(user?.id);
   const uid = useId();
   const [profile, setProfile] = useState<ProfileForm>(initialProfile);
   const [savedProfile, setSavedProfile] = useState<ProfileForm>(initialProfile);
   const [profileErrors, setProfileErrors] = useState<ProfileErrors>({});
   const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
-  const [statusMessage, setStatusMessage] = useState<{
-    tone: 'default' | 'critical' | 'warning';
-    text: string;
-  } | null>(null);
+  const [statusMessage, setStatusMessage] = useState<
+    | {
+        tone: 'default' | 'critical' | 'warning';
+        text: string;
+      }
+    | ErrorDisplay
+    | string
+    | null
+  >(null);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -370,11 +381,8 @@ function ProfilePage() {
           fallbackCode: 'PROFILE_UPDATE_FAILED',
           fallbackMessage: t('profile.status.saveError'),
         });
-        setStatusMessage({
-          tone: 'critical',
-          text: detail.message,
-        });
-        reportError(detail.message);
+        setStatusMessage(detail);
+        reportError(detail);
       }
     })();
   };
@@ -427,13 +435,54 @@ function ProfilePage() {
           fallbackCode: 'AUTH_PASSWORD_CHANGE_FAILED',
           fallbackMessage: t('profile.status.passwordChangeError'),
         });
-        setStatusMessage({
-          tone: 'critical',
-          text: detail.message,
-        });
-        reportError(detail.message);
+        setStatusMessage(detail);
+        reportError(detail);
       }
     })();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate(appRoutes.login);
+    } catch (logoutError) {
+      const detail = getErrorDisplay(logoutError, {
+        fallbackCode: 'AUTH_LOGOUT_FAILED',
+        fallbackMessage: t('auth.errors.logoutFailed', { defaultValue: 'Could not log out' }),
+      });
+      setStatusMessage(detail);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      t('profile.actions.confirmDeleteAccount', {
+        defaultValue: 'Delete your account permanently? This cannot be undone.',
+      }),
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await deleteProfileUser(user.id);
+      await logout();
+      navigate(appRoutes.login);
+    } catch (deleteError) {
+      const detail = getErrorDisplay(deleteError, {
+        fallbackCode: 'PROFILE_DELETE_FAILED',
+        fallbackMessage: t('profile.actions.deleteAccountFailed', {
+          defaultValue: 'Could not delete account',
+        }),
+      });
+      setStatusMessage(detail);
+      reportError(detail);
+    }
   };
 
   return (
@@ -441,19 +490,25 @@ function ProfilePage() {
       <section className="auth-popup max-w-6xl p-4 sm:p-5 lg:p-6">
         <FormPage
           aria-labelledby={fieldId('title')}
-          action={
-            <div className="auth-floating-language">
-              <LanguageSwitcher />
-            </div>
-          }
+          action={<LanguageSwitcher />}
           titleId={fieldId('title')}
           title={t('profile.title')}
           intro={t('profile.intro')}
           status={
             statusMessage || authError
               ? {
-                  content: statusMessage?.text || authError,
-                  tone: statusMessage?.tone || 'critical',
+                  content:
+                    statusMessage && typeof statusMessage !== 'string'
+                      ? 'text' in statusMessage
+                        ? statusMessage.text
+                        : getDisplayMessage(statusMessage)
+                      : authError
+                        ? getDisplayMessage(authError)
+                        : statusMessage || '',
+                  tone:
+                    statusMessage && typeof statusMessage !== 'string' && 'tone' in statusMessage
+                      ? statusMessage.tone
+                      : 'critical',
                 }
               : null
           }
@@ -720,6 +775,17 @@ function ProfilePage() {
                 <ActionButton type="submit" className="gap-2">
                   <ShieldCheck size={16} aria-hidden="true" />
                   {t('profile.actions.updatePassword')}{' '}
+                </ActionButton>
+                <ActionButton type="button" variant="secondary" onClick={() => void handleLogout()}>
+                  {t('profile.actions.logout', { defaultValue: 'Log out' })}
+                </ActionButton>
+                <ActionButton
+                  type="button"
+                  variant="secondary"
+                  className="border-danger-200 text-danger-700 hover:border-danger-700 hover:bg-danger-50"
+                  onClick={() => void handleDeleteAccount()}
+                >
+                  {t('profile.actions.deleteAccount', { defaultValue: 'Delete account' })}
                 </ActionButton>
               </FormActions>
             </FlowForm>

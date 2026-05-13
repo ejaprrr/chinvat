@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/shared/lib/documentTitle';
 import { useAuth } from '@/shared/auth';
 import { eidasLogin } from '@/features/auth/api';
-import { getErrorDisplay } from '@/shared/api/errors';
+import { getErrorDisplay, type ErrorDisplay } from '@/shared/api/errors';
+import { useErrorDisplay } from '@/shared/hooks/useErrorDisplay';
 import { setTokens } from '@/shared/auth/tokenStorage';
 import { isWellFormedEmail } from '@/shared/lib/validation/user';
 import { appRoutes } from '../router/routes.ts';
@@ -22,6 +23,7 @@ type FieldErrors = {
 function LoginPage() {
   useDocumentTitle('meta.pageTitle');
   const { t } = useTranslation();
+  const { getDisplayMessage } = useErrorDisplay();
   const navigate = useNavigate();
   const { login, refreshUser, error: authError, reportError } = useAuth();
 
@@ -30,7 +32,7 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<ErrorDisplay | string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpeningCert, setIsOpeningCert] = useState(false);
 
@@ -84,8 +86,8 @@ function LoginPage() {
         fallbackCode: 'AUTH_LOGIN_FAILED',
         fallbackMessage: t('auth.status.loginError'),
       });
-      setStatusMessage(detail.message);
-      reportError(detail.message);
+      setStatusMessage(detail);
+      reportError(detail);
     } finally {
       setIsSubmitting(false);
     }
@@ -105,8 +107,8 @@ function LoginPage() {
         fallbackCode: 'AUTH_EIDAS_LOGIN_FAILED',
         fallbackMessage: t('auth.status.loginError'),
       });
-      setStatusMessage(detail.message);
-      reportError(detail.message);
+      setStatusMessage(detail);
+      reportError(detail);
     } finally {
       setIsOpeningCert(false);
     }
@@ -139,7 +141,7 @@ function LoginPage() {
       status={
         statusMessage || authError
           ? {
-              content: statusMessage || authError,
+              content: getDisplayMessage(statusMessage || authError || ''),
               tone: 'critical',
             }
           : null

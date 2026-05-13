@@ -59,7 +59,7 @@ function detectLanguage(): Locale {
 const initialLanguage = detectLanguage();
 syncDocumentLanguage(initialLanguage);
 
-void i18n.use(initReactI18next).init({
+export const i18nReady = i18n.use(initReactI18next).init({
   resources,
   lng: initialLanguage,
   fallbackLng: 'en',

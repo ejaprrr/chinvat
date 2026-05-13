@@ -5,7 +5,8 @@ export type DocumentTitleKey =
   | 'meta.pageTitle'
   | 'meta.registerPageTitle'
   | 'meta.resetPasswordPageTitle'
-  | 'meta.profilePageTitle';
+  | 'meta.profilePageTitle'
+  | 'meta.adminPageTitle';
 export function useDocumentTitle(titleKey: DocumentTitleKey) {
   const { i18n, t } = useTranslation();
 
