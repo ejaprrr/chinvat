@@ -10,7 +10,11 @@ export interface RegisterRequest {
   phoneNumber?: string;
   email: string;
   password: string;
+<<<<<<< HEAD
+  userType: 'INDIVIDUAL' | 'LIBRARY';
+=======
   userType: "INDIVIDUAL" | "LIBRARY";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
   addressLine?: string;
   postalCode?: string;
   city?: string;
@@ -76,7 +80,11 @@ export interface PasswordResetRequestResponse {
 
 export interface AuthSessionResponse {
   sessionId: string;
+<<<<<<< HEAD
+  tokenKind: 'ACCESS' | 'REFRESH';
+=======
   tokenKind: "ACCESS" | "REFRESH";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
   issuedAt: string;
   expiresAt: string;
   clientIp: string;

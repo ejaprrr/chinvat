@@ -7,7 +7,8 @@
   },
   "accessibility": {
     "skipToContent": "Joan eduki nagusira",
-    "languageLabel": "Aldatu hizkuntza"
+    "languageLabel": "Aldatu hizkuntza",
+    "closeError": "Itxi errorea"
   },
   "brand": {
     "projectName": "chinvat",
@@ -15,7 +16,7 @@
   },
   "auth": {
     "title": "Ongi etorri berriro",
-    "intro": "Sartu zure erabiltzaile-izenarekin eta pasahitzarekin. Nahi baduzu, jarraitu zure FNMT ziurtagiriarekin.",
+    "intro": "Sartu zure erabiltzaile-izenarekin eta pasahitzarekin. Nahi baduzu, jarraitu zure eIDAS ziurtagiriarekin.",
     "divider": "edo",
     "actions": {
       "continue": "Sartu",
@@ -25,16 +26,17 @@
       "backToSignIn": "Itzuli saio-hasierara"
     },
     "status": {
-      "certificateOpening": "Ziurtagiriarekin sartzera birbideratzen…",
+      "certificateOpening": "eIDAS bidez sartzera birbideratzen…",
       "loginSuccess": "Saio-hasiera ondo osatu da.",
       "loginError": "Ezin izan dugu saioa hasi. Egiaztatu datuak eta saiatu berriro.",
       "networkError": "Ezin izan da zerbitzura konektatu. Egiaztatu konexioa eta saiatu berriro."
     },
     "fields": {
-      "username": {
-        "label": "Erabiltzailea",
-        "hint": "Erabili zure kontuari esleitutako erabiltzaile-izena.",
-        "required": "Idatzi zure erabiltzaile-izena."
+      "email": {
+        "label": "Posta elektronikoko helbidea",
+        "hint": "Erabili zure kontuarekin lotutako posta elektronikoko helbidea.",
+        "required": "Idatzi posta elektronikoko helbidea.",
+        "invalid": "Idatzi baliozko posta elektronikoko helbidea."
       },
       "password": {
         "label": "Pasahitza",
@@ -46,9 +48,9 @@
       }
     },
     "certificate": {
-      "action": "Erabili FNMT ziurtagiria",
-      "hint": "Ziurtagiriarekin sartzera eramango zaitugu. Nabigatzaileak FNMT ziurtagiri bat aurkitzen badu, hautatu eskatzen dizunean.",
-      "unavailable": "FNMT ziurtagiriarekin sartzea mahaigaineko nabigatzaileetan bakarrik dago erabilgarri."
+      "action": "Erabili eIDAS ziurtagiria",
+      "hint": "eIDAS bidez sartzera eramango zaitugu. Nabigatzaileak eIDAS ziurtagiri bat aurkitzen badu, hautatu eskatzen dizunean.",
+      "unavailable": "eIDAS ziurtagiriarekin sartzea mahaigaineko nabigatzaileetan bakarrik dago erabilgarri."
     },
     "resetPassword": {
       "title": "Berrezarri pasahitza",
@@ -105,6 +107,9 @@
   "profile": {
     "title": "Zure profila",
     "intro": "Eguneratu zure kontuaren datuak eta hobespenak.",
+    "sections": {
+      "accountDetails": "Kontuaren xehetasunak"
+    },
     "actions": {
       "save": "Gorde aldaketak",
       "saving": "Gordetzen...",
@@ -153,6 +158,16 @@
         "loading": "Kokapenak bilatzen...",
         "resolved": "Kokapena {{location}} ezarrita."
       },
+      "errors": {
+        "usernameRequired": "Sartu erabiltzaile-izen bat.",
+        "fullNameRequired": "Sartu izen osoa.",
+        "phoneRequired": "Sartu herrialde-aurrizkia duen telefono-zenbaki bat.",
+        "emailRequired": "Sartu helbide elektroniko bat.",
+        "emailInvalid": "Sartu baliozko helbide elektroniko bat.",
+        "locationRequired": "Aukeratu kokapen bat iradokizunetatik.",
+        "passwordRequired": "Sartu pasahitza bat.",
+        "passwordMismatch": "Pasahitzak ez datoz bat."
+      },
       "defaultLanguage": {
         "label": "Hizkuntza lehenetsia",
         "hint": "Interfazearen hizkuntza hobetsia."
@@ -176,4 +191,8 @@
       }
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0

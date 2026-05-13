@@ -1,7 +1,11 @@
 {
   "files": [],
+<<<<<<< HEAD
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
+=======
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ]
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 }

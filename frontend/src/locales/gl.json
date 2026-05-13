@@ -7,7 +7,8 @@
   },
   "accessibility": {
     "skipToContent": "Ir ao contido principal",
-    "languageLabel": "Cambiar idioma"
+    "languageLabel": "Cambiar idioma",
+    "closeError": "Pechar erro"
   },
   "brand": {
     "projectName": "chinvat",
@@ -15,7 +16,7 @@
   },
   "auth": {
     "title": "Benvido de novo",
-    "intro": "Accede co teu usuario e contrasinal. Se o prefires, continúa co teu certificado FNMT.",
+    "intro": "Accede co teu usuario e contrasinal. Se o prefires, continúa co teu certificado eIDAS.",
     "divider": "ou",
     "actions": {
       "continue": "Acceder",
@@ -25,16 +26,17 @@
       "backToSignIn": "Volver ao acceso"
     },
     "status": {
-      "certificateOpening": "Redirixindo ao acceso con certificado…",
+      "certificateOpening": "Redirixindo ao acceso eIDAS…",
       "loginSuccess": "O acceso completouse correctamente.",
       "loginError": "Non puidemos iniciar a sesión. Revisa os datos e téntao de novo.",
       "networkError": "Non se puido conectar co servizo. Revisa a conexión e téntao de novo."
     },
     "fields": {
-      "username": {
-        "label": "Usuario",
-        "hint": "Usa o nome de usuario asignado á túa conta.",
-        "required": "Introduce o teu nome de usuario."
+      "email": {
+        "label": "Enderezo de correo electrónico",
+        "hint": "Usa o enderezo de correo electrónico asociado á túa conta.",
+        "required": "Introduce o enderezo de correo electrónico.",
+        "invalid": "Introduce un enderezo de correo electrónico válido."
       },
       "password": {
         "label": "Contrasinal",
@@ -46,9 +48,9 @@
       }
     },
     "certificate": {
-      "action": "Usar certificado FNMT",
-      "hint": "Levarémoste ao acceso con certificado. Se o navegador atopa un certificado FNMT, selecciónao cando cho pida.",
-      "unavailable": "O acceso con certificado FNMT só está dispoñible en navegadores de escritorio."
+      "action": "Usar certificado eIDAS",
+      "hint": "Levarémoste ao acceso eIDAS. Se o navegador atopa un certificado eIDAS, selecciónao cando cho pida.",
+      "unavailable": "O acceso eIDAS só está dispoñible en navegadores de escritorio."
     },
     "resetPassword": {
       "title": "Restablecer o contrasinal",
@@ -105,6 +107,9 @@
   "profile": {
     "title": "O teu perfil",
     "intro": "Actualiza os datos da túa conta e preferencias.",
+    "sections": {
+      "accountDetails": "Detalles da conta"
+    },
     "actions": {
       "save": "Gardar cambios",
       "saving": "Gardando...",
@@ -153,6 +158,16 @@
         "loading": "Buscando ubicacións...",
         "resolved": "Ubicación establecida en {{location}}."
       },
+      "errors": {
+        "usernameRequired": "Introduce un nome de usuario.",
+        "fullNameRequired": "Introduce o nome completo.",
+        "phoneRequired": "Introduce un número de teléfono co prefixo do país.",
+        "emailRequired": "Introduce un enderezo de correo electrónico.",
+        "emailInvalid": "Introduce un enderezo de correo electrónico válido.",
+        "locationRequired": "Elixe unha ubicación das suxestións.",
+        "passwordRequired": "Introduce un contrasinal.",
+        "passwordMismatch": "Os contrasinais non coinciden."
+      },
       "defaultLanguage": {
         "label": "Idioma por defecto",
         "hint": "O teu idioma preferido para a interface."
@@ -176,4 +191,8 @@
       }
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0

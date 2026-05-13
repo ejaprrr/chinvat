@@ -1,4 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
+<<<<<<< HEAD
+import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
+import * as authApi from '../../lib/api/auth';
+import * as usersApi from '../../lib/api/users';
+import { getErrorDisplay } from '../../lib/http/errors';
+import { clearTokens, getAccessToken, setTokens } from '../../lib/auth/tokenStorage';
+import type { AuthUser, RegisterRequest } from '../../types/auth';
+import type { UpdateUserRequest } from '../../types/user';
+=======
 import {
   createContext,
   useCallback,
@@ -9,6 +18,7 @@ import {
 } from "react";
 import * as authApi from "../../lib/api/auth";
 import * as usersApi from "../../lib/api/users";
+import { getErrorDisplay } from "../../lib/http/errors";
 import {
   clearTokens,
   getAccessToken,
@@ -16,6 +26,7 @@ import {
 } from "../../lib/auth/tokenStorage";
 import type { AuthUser, RegisterRequest } from "../../types/auth";
 import type { UpdateUserRequest } from "../../types/user";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
 export interface AuthContextType {
   user: AuthUser | null;
@@ -27,11 +38,18 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   clearError: () => void;
+  reportError: (message: string) => void;
   hasRole: (role: string) => boolean;
   hasPermission: (permission: string) => boolean;
   hasAnyRole: (roles: string[]) => boolean;
   hasAnyPermission: (permissions: string[]) => boolean;
   updateProfile: (data: UpdateUserRequest) => Promise<void>;
+<<<<<<< HEAD
+  changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+=======
   changePassword: (
     currentPassword: string,
     newPassword: string,
@@ -41,19 +59,13 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined,
 );
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
-function getErrorMessage(error: unknown, fallback: string) {
-  if (typeof error === "object" && error && "response" in error) {
-    const response = (error as { response?: { data?: { message?: string } } })
-      .response;
-    return response?.data?.message || fallback;
-  }
-
-  if (error instanceof Error) {
-    return error.message || fallback;
-  }
-
-  return fallback;
+function getErrorMessage(error: unknown, fallbackCode: string) {
+  return getErrorDisplay(error, {
+    fallbackCode,
+    fallbackMessage: fallbackCode,
+  }).message;
 }
 
 interface AuthProviderProps {
@@ -66,8 +78,51 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+<<<<<<< HEAD
   const clearError = useCallback(() => {
+=======
+  useEffect(() => {
+    if (!error) return;
+    try {
+      // expose last error for debugging regardless of how it was set
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (typeof window !== "undefined") window.__lastAuthError = error;
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line no-console
+    console.error("AuthProvider.error changed:", error);
+  }, [error]);
+
+  const clearError = useCallback(() => {
+    try {
+      // Debug: log when error is cleared and stack trace
+      // eslint-disable-next-line no-console
+      console.error("clearError() called. Stack:", new Error().stack);
+    } catch {
+      /* ignore */
+    }
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
     setError(null);
+  }, []);
+
+  const reportError = useCallback((message: string) => {
+<<<<<<< HEAD
+=======
+    try {
+      // Helpful debug hook for runtime inspection
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (typeof window !== "undefined") window.__lastAuthError = message;
+    } catch {
+      /* ignore */
+    }
+    // also log so it's visible in devtools console when reproducing
+    // eslint-disable-next-line no-console
+    console.error("AuthProvider.reportError:", message);
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
+    setError(message);
   }, []);
 
   const refreshUser = useCallback(async () => {
@@ -80,7 +135,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (refreshError) {
       setUser(null);
       setAuthenticated(false);
-      setError(getErrorMessage(refreshError, "Unable to restore session"));
+<<<<<<< HEAD
+      setError(getErrorMessage(refreshError, 'AUTH_SESSION_RESTORE_FAILED'));
+=======
+      setError(getErrorMessage(refreshError, "AUTH_SESSION_RESTORE_FAILED"));
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       clearTokens();
     } finally {
       setLoading(false);
@@ -109,7 +168,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (loginError) {
       setAuthenticated(false);
       setUser(null);
-      setError(getErrorMessage(loginError, "Login failed"));
+<<<<<<< HEAD
+      setError(getErrorMessage(loginError, 'AUTH_LOGIN_FAILED'));
+=======
+      setError(getErrorMessage(loginError, "AUTH_LOGIN_FAILED"));
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       clearTokens();
       throw loginError;
     } finally {
@@ -128,7 +191,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (registerError) {
       setAuthenticated(false);
       setUser(null);
-      setError(getErrorMessage(registerError, "Registration failed"));
+<<<<<<< HEAD
+      setError(getErrorMessage(registerError, 'AUTH_REGISTER_FAILED'));
+=======
+      setError(getErrorMessage(registerError, "AUTH_REGISTER_FAILED"));
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       clearTokens();
       throw registerError;
     } finally {
@@ -140,7 +207,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       setLoading(true);
       const accessToken = getAccessToken();
+<<<<<<< HEAD
+      const refreshToken = localStorage.getItem('refreshToken');
+=======
       const refreshToken = localStorage.getItem("refreshToken");
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       if (accessToken && refreshToken) {
         try {
           await authApi.logout({ accessToken, refreshToken });
@@ -162,7 +233,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         setLoading(true);
         if (!user?.id) {
+<<<<<<< HEAD
+          throw new Error('User not authenticated');
+=======
           throw new Error("User not authenticated");
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
         }
 
         const updated = await usersApi.updateUser(user.id, data);
@@ -176,7 +251,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
             : current,
         );
       } catch (profileError) {
-        setError(getErrorMessage(profileError, "Profile update failed"));
+<<<<<<< HEAD
+        setError(getErrorMessage(profileError, 'PROFILE_UPDATE_FAILED'));
+=======
+        setError(getErrorMessage(profileError, "PROFILE_UPDATE_FAILED"));
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
         throw profileError;
       } finally {
         setLoading(false);
@@ -185,13 +264,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [user],
   );
 
+<<<<<<< HEAD
+  const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {
+    try {
+      setLoading(true);
+      await authApi.changePassword({ currentPassword, newPassword });
+    } catch (passwordError) {
+      setError(getErrorMessage(passwordError, 'AUTH_PASSWORD_CHANGE_FAILED'));
+      throw passwordError;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const hasRole = useCallback((role: string) => user?.roles?.includes(role) ?? false, [user]);
+=======
   const changePassword = useCallback(
     async (currentPassword: string, newPassword: string) => {
       try {
         setLoading(true);
         await authApi.changePassword({ currentPassword, newPassword });
       } catch (passwordError) {
-        setError(getErrorMessage(passwordError, "Password change failed"));
+        setError(getErrorMessage(passwordError, "AUTH_PASSWORD_CHANGE_FAILED"));
         throw passwordError;
       } finally {
         setLoading(false);
@@ -204,20 +298,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     (role: string) => user?.roles?.includes(role) ?? false,
     [user],
   );
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
   const hasPermission = useCallback(
     (permission: string) => user?.permissions?.includes(permission) ?? false,
     [user],
   );
   const hasAnyRole = useCallback(
+<<<<<<< HEAD
+    (roles: string[]) => roles.some((role) => user?.roles?.includes(role ?? '')),
+=======
     (roles: string[]) =>
       roles.some((role) => user?.roles?.includes(role ?? "")),
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
     [user],
   );
   const hasAnyPermission = useCallback(
     (permissions: string[]) =>
+<<<<<<< HEAD
+      permissions.some((permission) => user?.permissions?.includes(permission ?? '')),
+=======
       permissions.some((permission) =>
         user?.permissions?.includes(permission ?? ""),
       ),
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
     [user],
   );
 
@@ -231,6 +334,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     logout,
     refreshUser,
     clearError,
+    reportError,
     hasRole,
     hasPermission,
     hasAnyRole,
@@ -244,6 +348,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
+<<<<<<< HEAD
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+=======
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
   return ctx;
 }

@@ -30,16 +30,35 @@
   <body>
     <div class="page-shell">
       <div>
+<<<<<<< HEAD
+        <button id="open-popup" class="action action--primary">Login with chinvat</button>
+        <p class="note">This opens the login page in a new popup window (module style).</p>
+=======
         <button id="open-popup" class="action action--primary">
           Login with chinvat
         </button>
         <p class="note">
           This opens the login page in a new popup window (module style).
         </p>
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       </div>
     </div>
 
     <script>
+<<<<<<< HEAD
+      const openButton = document.getElementById('open-popup');
+      const popupUrl = '/';
+
+      openButton?.addEventListener('click', () => {
+        const width = 420;
+        const height = 640;
+        const left = Math.max(0, Math.round(window.screenX + (window.outerWidth - width) / 2));
+        const top = Math.max(0, Math.round(window.screenY + (window.outerHeight - height) / 2));
+
+        window.open(
+          popupUrl,
+          'chinvat-login',
+=======
       const openButton = document.getElementById("open-popup");
       const popupUrl = "/";
 
@@ -58,6 +77,7 @@
         window.open(
           popupUrl,
           "chinvat-login",
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
           `popup=yes,width=${width},height=${height},left=${left},top=${top}`,
         );
       });

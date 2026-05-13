@@ -1,9 +1,18 @@
+<<<<<<< HEAD
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+=======
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
   --color-canvas: #f3f4f6;
   --color-panel: #ffffff;
@@ -35,8 +44,12 @@
     0 1px 2px rgba(17, 17, 17, 0.04), 0 12px 32px rgba(17, 17, 17, 0.08),
     0 28px 64px rgba(17, 17, 17, 0.1);
 
+<<<<<<< HEAD
+  --shadow-shell: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 24px 80px rgba(17, 17, 17, 0.08);
+=======
   --shadow-shell:
     inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 24px 80px rgba(17, 17, 17, 0.08);
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
   --animate-panel-in: panel-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -71,11 +84,15 @@
     min-height: 100vh;
     min-height: 100dvh;
     background:
+<<<<<<< HEAD
+      radial-gradient(circle at top left, rgba(255, 255, 255, 0.92), transparent 36%),
+=======
       radial-gradient(
         circle at top left,
         rgba(255, 255, 255, 0.92),
         transparent 36%
       ),
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       linear-gradient(180deg, #fafafa 0%, var(--color-canvas) 100%);
     color: var(--color-ink);
     font-family: var(--font-sans);
@@ -166,6 +183,21 @@
   }
 
   .auth-popup-shell {
+<<<<<<< HEAD
+    @apply flex min-h-dvh items-center justify-center px-3 py-5 overflow-y-auto sm:px-6;
+  }
+
+  .auth-popup-shell--window {
+    @apply items-center px-2 py-3 overflow-y-auto sm:px-3;
+  }
+
+  .auth-popup {
+    @apply relative mx-auto w-full max-w-md rounded-2xl border border-border-subtle bg-panel p-4 sm:p-5 md:max-w-lg lg:max-w-xl;
+  }
+
+  .auth-popup--window {
+    @apply max-w-[24rem] rounded-xl p-3 sm:p-4 md:max-w-[28rem] lg:max-w-[32rem];
+=======
     @apply flex min-h-dvh items-start justify-center px-3 py-5 sm:items-center sm:px-6;
   }
 
@@ -179,6 +211,7 @@
 
   .auth-popup--window {
     @apply max-w-[24rem] rounded-xl p-3 sm:p-4;
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
   }
 
   .auth-floating-language {

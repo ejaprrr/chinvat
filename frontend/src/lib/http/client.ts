@@ -1,5 +1,15 @@
+<<<<<<< HEAD
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
+import { API_BASE_URL, API_PREFIX } from '../../config';
+import { normalizeHttpError } from './errors';
+import { clearTokens, getAccessToken, getRefreshToken, setTokens } from '../auth/tokenStorage';
+
+const baseURL = API_BASE_URL
+  ? `${API_BASE_URL.replace(/\/$/, '')}${API_PREFIX}`
+=======
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { API_BASE_URL, API_PREFIX } from "../../config";
+import { normalizeHttpError } from "./errors";
 import {
   clearTokens,
   getAccessToken,
@@ -9,6 +19,7 @@ import {
 
 const baseURL = API_BASE_URL
   ? `${API_BASE_URL.replace(/\/$/, "")}${API_PREFIX}`
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
   : `http://localhost:8080${API_PREFIX}`;
 
 const api = axios.create({
@@ -38,7 +49,11 @@ async function refreshAccessToken(): Promise<string | null> {
   }
 
   try {
+<<<<<<< HEAD
+    const response = await refreshClient.post('/auth/refresh', {
+=======
     const response = await refreshClient.post("/auth/refresh", {
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       refreshToken,
     });
     const tokens = response.data?.tokens;
@@ -67,7 +82,7 @@ api.interceptors.response.use(
       originalRequest._retry ||
       !getRefreshToken()
     ) {
-      return Promise.reject(error);
+      return Promise.reject(normalizeHttpError(error));
     }
 
     originalRequest._retry = true;
@@ -81,13 +96,18 @@ api.interceptors.response.use(
     const newAccessToken = await refreshPromise;
     if (!newAccessToken) {
       clearTokens();
+<<<<<<< HEAD
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.assign('/login');
+=======
       if (
         typeof window !== "undefined" &&
         window.location.pathname !== "/login"
       ) {
         window.location.assign("/login");
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       }
-      return Promise.reject(error);
+      return Promise.reject(normalizeHttpError(error));
     }
 
     originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

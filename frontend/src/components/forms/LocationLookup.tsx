@@ -1,5 +1,10 @@
+<<<<<<< HEAD
+import { cx } from '../../lib/cx';
+import type { LocationResult } from '../../lib/geocoding';
+=======
 import { cx } from "../../lib/cx";
 import type { LocationResult } from "../../lib/geocoding";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
 type LocationSuggestion = LocationResult;
 
@@ -28,9 +33,13 @@ function LocationLookup({
   statusMessage,
   suggestions,
 }: LocationLookupProps) {
+<<<<<<< HEAD
+  const visibleStatus = loading ? loadingText : statusMessage || resolvedText || '';
+=======
   const visibleStatus = loading
     ? loadingText
     : statusMessage || resolvedText || "";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
   return (
     <div className="space-y-2">
@@ -60,13 +69,23 @@ function LocationLookup({
               <button
                 type="button"
                 className={cx(
+<<<<<<< HEAD
+                  'block w-full border-b border-border-subtle px-4 py-3 text-left text-sm text-ink transition last:border-b-0 hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15',
+                  index === activeSuggestionIndex && 'bg-surface-subtle',
+=======
                   "block w-full border-b border-border-subtle px-4 py-3 text-left text-sm text-ink transition last:border-b-0 hover:bg-surface-subtle focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/15",
                   index === activeSuggestionIndex && "bg-surface-subtle",
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
                 )}
                 onClick={() => onSuggestionSelect(suggestion)}
               >
                 <span>{suggestion.displayName}</span>
                 <span className="mt-0.5 block text-[0.8125rem] leading-5 text-muted">
+<<<<<<< HEAD
+                  {[suggestion.address, suggestion.postalCode, suggestion.city, suggestion.country]
+                    .filter(Boolean)
+                    .join(' · ')}
+=======
                   {[
                     suggestion.address,
                     suggestion.postalCode,
@@ -75,6 +94,7 @@ function LocationLookup({
                   ]
                     .filter(Boolean)
                     .join(" · ")}
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
                 </span>
               </button>
             </div>

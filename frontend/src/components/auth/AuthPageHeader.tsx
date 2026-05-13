@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+import type { ReactNode, Ref } from 'react';
+=======
 import type { ReactNode, Ref } from "react";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
 type AuthPageHeaderProps = {
   action?: ReactNode;
@@ -35,9 +39,13 @@ function AuthPageHeader({
             {title}
           </h1>
         </div>
+<<<<<<< HEAD
+        {action ? <div className="auth-page-header__action">{action}</div> : null}
+=======
         {action ? (
           <div className="auth-page-header__action">{action}</div>
         ) : null}
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       </div>
       <p id={introId} className="auth-page-header__intro">
         {intro}

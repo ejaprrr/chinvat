@@ -1,4 +1,4 @@
-import type { ChangeEvent } from "react";
+import type { ChangeEvent } from 'react';
 
 type PhoneCountryOption = {
   code: string;
@@ -23,9 +23,7 @@ function PhoneCountrySelect({
   selectedOption,
 }: PhoneCountrySelectProps) {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const nextOption = options.find(
-      (option) => option.code === event.target.value,
-    );
+    const nextOption = options.find((option) => option.code === event.target.value);
 
     if (nextOption) {
       onSelect(nextOption);
