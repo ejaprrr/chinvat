@@ -1,7 +1,16 @@
+<<<<<<< HEAD
 import type { ChangeEventHandler, Ref } from 'react';
 import { cx } from '../../lib/cx';
 import FormField from './FormField';
 import PhoneCountrySelect, { type PhoneCountryOption } from './PhoneCountrySelect';
+=======
+import type { ChangeEventHandler, Ref } from "react";
+import { cx } from "../../lib/cx";
+import FormField from "./FormField";
+import PhoneCountrySelect, {
+  type PhoneCountryOption,
+} from "./PhoneCountrySelect";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
 type PhoneNumberFieldProps = {
   countryControlId: string;
@@ -55,7 +64,11 @@ function PhoneNumberField({
           inputMode="tel"
           value={value}
           onChange={onNumberChange}
+<<<<<<< HEAD
           className={cx('field-control', 'phone-number-field__input')}
+=======
+          className={cx("field-control", "phone-number-field__input")}
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
           aria-describedby={`${hintId} ${countryHintId}`}
         />
       </div>

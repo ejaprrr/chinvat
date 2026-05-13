@@ -4,6 +4,7 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
   type SetStateAction,
+<<<<<<< HEAD
 } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import FormField from '../forms/FormField';
@@ -12,6 +13,16 @@ import { cx } from '../../lib/cx';
 type PasswordFieldProps = Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'onChange' | 'type' | 'value'
+=======
+} from "react";
+import { Eye, EyeOff } from "lucide-react";
+import FormField from "../forms/FormField";
+import { cx } from "../../lib/cx";
+
+type PasswordFieldProps = Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "onChange" | "type" | "value"
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 > & {
   id: string;
   label: string;
@@ -46,14 +57,26 @@ const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
       required = false,
       status,
       className,
+<<<<<<< HEAD
       ariaLabelShow = 'Show password',
       ariaLabelHide = 'Hide password',
       'aria-describedby': ariaDescribedBy,
+=======
+      ariaLabelShow = "Show password",
+      ariaLabelHide = "Hide password",
+      "aria-describedby": ariaDescribedBy,
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       ...inputProps
     },
     ref,
   ) => {
+<<<<<<< HEAD
     const describedBy = ariaDescribedBy || [hintId, error ? errorId : ''].filter(Boolean).join(' ');
+=======
+    const describedBy =
+      ariaDescribedBy ||
+      [hintId, error ? errorId : ""].filter(Boolean).join(" ");
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
     return (
       <FormField
@@ -72,17 +95,30 @@ const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
             {...inputProps}
             ref={ref}
             id={id}
+<<<<<<< HEAD
             type={show ? 'text' : 'password'}
             value={value}
             onChange={(event) => onChange(event.target.value)}
             className={cx(
               'field-control field-control--trailing',
               error && 'field-control--error',
+=======
+            type={show ? "text" : "password"}
+            value={value}
+            onChange={(event) => onChange(event.target.value)}
+            className={cx(
+              "field-control field-control--trailing",
+              error && "field-control--error",
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
               className,
             )}
             aria-describedby={describedBy || undefined}
             aria-errormessage={error ? errorId : undefined}
+<<<<<<< HEAD
             aria-invalid={error ? 'true' : 'false'}
+=======
+            aria-invalid={error ? "true" : "false"}
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
             required={required}
           />
           <button
@@ -93,7 +129,15 @@ const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
             aria-label={show ? ariaLabelHide : ariaLabelShow}
             aria-controls={id}
           >
+<<<<<<< HEAD
             {show ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+=======
+            {show ? (
+              <EyeOff size={16} aria-hidden="true" />
+            ) : (
+              <Eye size={16} aria-hidden="true" />
+            )}
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
           </button>
         </div>
       </FormField>
@@ -101,6 +145,10 @@ const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(
   },
 );
 
+<<<<<<< HEAD
 PasswordField.displayName = 'PasswordField';
+=======
+PasswordField.displayName = "PasswordField";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
 export default PasswordField;

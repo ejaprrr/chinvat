@@ -19,8 +19,13 @@ export interface UpdateUserRequest {
   username: string;
   fullName: string;
   phoneNumber?: string;
+<<<<<<< HEAD
   userType: 'INDIVIDUAL' | 'LIBRARY';
   accessLevel: 'SUPERADMIN' | 'ADMIN' | 'GOLD' | 'PREMIUM' | 'NORMAL';
+=======
+  userType: "INDIVIDUAL" | "LIBRARY";
+  accessLevel: "SUPERADMIN" | "ADMIN" | "GOLD" | "PREMIUM" | "NORMAL";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
   addressLine?: string;
   postalCode?: string;
   city?: string;

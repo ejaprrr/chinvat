@@ -1,9 +1,18 @@
+<<<<<<< HEAD
 import { useCallback, useEffect, useState } from 'react';
 import { getCurrentUser } from '../lib/api/auth';
 import { getUserById, updateUser } from '../lib/api/users';
 import { getErrorCode } from '../lib/http/errors';
 import type { AuthMeResponse } from '../types/auth';
 import type { UpdateUserRequest, UserResponse } from '../types/user';
+=======
+import { useCallback, useEffect, useState } from "react";
+import { getCurrentUser } from "../lib/api/auth";
+import { getUserById, updateUser } from "../lib/api/users";
+import { getErrorCode } from "../lib/http/errors";
+import type { AuthMeResponse } from "../types/auth";
+import type { UpdateUserRequest, UserResponse } from "../types/user";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
 export function useProfile(userId?: number) {
   const [me, setMe] = useState<AuthMeResponse | null>(null);
@@ -24,7 +33,11 @@ export function useProfile(userId?: number) {
         setProfile(userProfile);
       }
     } catch (profileError) {
+<<<<<<< HEAD
       setError(getErrorCode(profileError, 'PROFILE_LOAD_FAILED'));
+=======
+      setError(getErrorCode(profileError, "PROFILE_LOAD_FAILED"));
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       setMe(null);
       setProfile(null);
     } finally {
@@ -39,12 +52,20 @@ export function useProfile(userId?: number) {
   const saveProfile = useCallback(
     async (data: UpdateUserRequest) => {
       if (!profile?.id && !userId && !me?.id) {
+<<<<<<< HEAD
         throw new Error('User id is not available');
+=======
+        throw new Error("User id is not available");
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       }
 
       const resolvedId = profile?.id ?? userId ?? me?.id;
       if (!resolvedId) {
+<<<<<<< HEAD
         throw new Error('User id is not available');
+=======
+        throw new Error("User id is not available");
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
       }
 
       const updated = await updateUser(resolvedId, data);

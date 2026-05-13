@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import type { ChangeEvent } from 'react';
+=======
+import type { ChangeEvent } from "react";
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
 type PhoneCountryOption = {
   code: string;
@@ -23,7 +27,13 @@ function PhoneCountrySelect({
   selectedOption,
 }: PhoneCountrySelectProps) {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+<<<<<<< HEAD
     const nextOption = options.find((option) => option.code === event.target.value);
+=======
+    const nextOption = options.find(
+      (option) => option.code === event.target.value,
+    );
+>>>>>>> 573589ea5a4c169684a79711c7b60fc968c582e0
 
     if (nextOption) {
       onSelect(nextOption);
