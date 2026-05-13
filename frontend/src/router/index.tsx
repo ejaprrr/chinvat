@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import AuthLayout from '../layouts/AuthLayout';
 import LoginPage from '../pages/LoginPage';
 import ProfilePage from '../pages/ProfilePage';
+import AdminPage from '../pages/AdminPage';
 import RegisterPage from '../pages/RegisterPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
 import { ProtectedRoute, PublicRoute } from './guards.tsx';
@@ -13,6 +14,14 @@ export const router = createBrowserRouter(
       element: (
         <ProtectedRoute>
           <ProfilePage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: appRoutes.admin,
+      element: (
+        <ProtectedRoute>
+          <AdminPage />
         </ProtectedRoute>
       ),
     },

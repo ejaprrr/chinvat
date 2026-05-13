@@ -3,7 +3,8 @@
     "pageTitle": "Accedeix a chinvat",
     "registerPageTitle": "Crea un compte | chinvat",
     "resetPasswordPageTitle": "Restableix la contrasenya | chinvat",
-    "profilePageTitle": "Perfil | chinvat"
+    "profilePageTitle": "Perfil | chinvat",
+    "adminPageTitle": "Administració | chinvat"
   },
   "accessibility": {
     "skipToContent": "Salta al contingut principal",
@@ -189,6 +190,105 @@
         "required": "Confirma la teva nova contrasenya.",
         "mismatch": "Les contrasenyes no coincideixen."
       }
+    }
+  },
+  "admin": {
+    "title": "Administració",
+    "subtitle": "Gestiona usuaris, certificats i rols",
+    "accessDenied": "Accés Denegat",
+    "accessDeniedMessage": "No tens permís per accedir al panell d'administració. Només els administradors poden accedir a aquesta secció.",
+    "backToProfile": "Tornar al Perfil",
+    "users": "Usuaris",
+    "certificates": "Certificats",
+    "rbac": "Rols i Permisos",
+    "userManagement": "Gestió d'Usuaris",
+    "certificateManagement": "Gestió de Certificats",
+    "roleManagement": "Gestió de Rols",
+    "loading": "Carregant...",
+    "email": "Correu electrònic",
+    "fullName": "Nom Complet",
+    "username": "Nom d'usuari",
+    "userType": "Tipus d'Usuari",
+    "accessLevel": "Nivell d'Accés",
+    "actions": "Accions",
+    "subjectDn": "Assumpte DN",
+    "userId": "ID d'Usuari",
+    "status": "Estat",
+    "notAfter": "Expira",
+    "roles": "Rols",
+    "manage": "Gestionar",
+    "noUsers": "No s'han trobat usuaris",
+    "noCertificates": "No s'han trobat certificats",
+    "editUser": "Editar Usuari",
+    "save": "Guardar",
+    "cancel": "Cancel·lar",
+    "close": "Tancar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "revoke": "Revocar",
+    "assign": "Assignar",
+    "remove": "Eliminar",
+    "deleteUser": "Eliminar Usuari",
+    "restoreUser": "Restaurar Usuari",
+    "permanentDelete": "Eliminar Permanentment",
+    "confirmDeleteUser": "Estàs segur que vols eliminar aquest usuari? Aquesta acció és reversible (eliminació suau).",
+    "confirmPermanentDelete": "Estàs segur que vols eliminar permanentment aquest usuari? Aquesta acció és IRREVERSIBLE i eliminarà totes les dades de l'usuari!",
+    "confirmRemoveRole": "Estàs segur que vols eliminar aquest rol de l'usuari?",
+    "userUpdated": "Usuari actualitzat correctament",
+    "userDeleted": "Usuari eliminat correctament",
+    "userRestored": "Usuari restaurat correctament",
+    "userPermanentlyDeleted": "Usuari eliminat permanentment",
+    "certificateRevoked": "Certificat revocat correctament",
+    "roleAssigned": "Rol assignat correctament",
+    "roleRemoved": "Rol eliminat correctament",
+    "provideRevokeReason": "Si us plau, proporciona un motiu per revocar el certificat",
+    "revokeReason": "Motiu de Revocació",
+    "provideReason": "Explica per què estàs revocant aquest certificat",
+    "revokeCertificate": "Revocar Certificat",
+    "filterByUserId": "Filtrar per ID d'Usuari",
+    "manageUserRoles": "Gestionar Rols d'Usuari",
+    "assignRole": "Assignar Rol a l'Usuari",
+    "page": "Pàgina"
+  },
+  "error": {
+    "auth": {
+      "invalid-authentication": "Credencials d'autenticació inválides.",
+      "resource-not-found": "El recurs d'autenticació sol·licitat no va ser trobat."
+    },
+    "users": {
+      "already-exists": "L'usuari ja existeix.",
+      "not-found": "L'usuari no va ser trobat."
+    },
+    "rbac": {
+      "role-not-found": "El rol no va ser trobat.",
+      "permission-not-found": "El permís no va ser trobat.",
+      "user-not-found": "L'usuari de RBAC no va ser trobat.",
+      "permission-already-exists": "El permís ja existeix."
+    },
+    "eidas": {
+      "provider-not-found": "El proveïdor eIDAS no va ser trobat.",
+      "invalid-state": "L'estat de la sessió eIDAS és invàlid o ha caducat.",
+      "broker-unavailable": "L'intermediari eIDAS no està disponible actualment.",
+      "external-identity-not-found": "La identitat eIDAS externa pendent no va ser trobada.",
+      "profile-completion-required": "Es requereix completar el perfil."
+    },
+    "trust": {
+      "validation-failed": "Ha fallat la validació del certificat.",
+      "provider-sync-failed": "Ha fallat la sincronització del proveïdor de confiança.",
+      "credential-not-found": "La credencial del certificat no va ser trobada."
+    },
+    "profile": {
+      "validation-failed": "Ha fallat la validació del perfil.",
+      "invalid-state": "La sol·licitud del perfil no és vàlida en l'estat actual.",
+      "credential-not-found": "La credencial del certificat del perfil no va ser trobada."
+    },
+    "common": {
+      "validation-failed": "Ha fallat la validació.",
+      "resource-not-found": "El recurs sol·licitat no va ser trobat.",
+      "unauthorized": "Es requereix autenticació.",
+      "forbidden": "L'accés està prohibit.",
+      "rate-limit-exceeded": "Límit de velocitat excedit.",
+      "internal-error": "Error intern inesperat."
     }
   }
 }
