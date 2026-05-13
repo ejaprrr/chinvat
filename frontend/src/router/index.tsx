@@ -5,6 +5,7 @@ import ProfilePage from '../pages/ProfilePage';
 import AdminPage from '../pages/AdminPage';
 import RegisterPage from '../pages/RegisterPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
+import EidasCallbackPage from '../pages/EidasCallbackPage';
 import { ProtectedRoute, PublicRoute } from './guards.tsx';
 import { appRoutes } from './routes.ts';
 export const router = createBrowserRouter(
@@ -47,6 +48,10 @@ export const router = createBrowserRouter(
         {
           path: 'reset-password',
           element: <ResetPasswordPage />,
+        },
+        {
+          path: 'auth/eidas/callback',
+          element: <EidasCallbackPage />,
         },
         {
           path: '*',

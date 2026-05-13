@@ -149,7 +149,9 @@ function RegisterPage() {
         : 'en',
   }));
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [statusMessage, setStatusMessage] = useState<StatusMessage | ErrorDisplay | string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | ErrorDisplay | string | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Location
