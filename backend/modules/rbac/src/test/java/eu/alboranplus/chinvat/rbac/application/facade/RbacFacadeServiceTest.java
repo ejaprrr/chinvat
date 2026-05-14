@@ -9,6 +9,7 @@ import static org.mockito.BDDMockito.then;
 import eu.alboranplus.chinvat.common.audit.AuditFacade;
 import eu.alboranplus.chinvat.common.cache.PermissionCacheFacade;
 import eu.alboranplus.chinvat.rbac.application.dto.PermissionView;
+import eu.alboranplus.chinvat.rbac.application.usecase.AssignPermissionToRoleUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.AssignRoleToUserUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.CreatePermissionUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.DeletePermissionUseCase;
@@ -16,6 +17,7 @@ import eu.alboranplus.chinvat.rbac.application.usecase.GetRoleUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.GetUserRolesUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ListPermissionsPagedUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ListPermissionsUseCase;
+import eu.alboranplus.chinvat.rbac.application.usecase.RemovePermissionFromRoleUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.RemoveRoleFromUserUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ResolvePermissionsUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.UpdatePermissionUseCase;
@@ -41,6 +43,8 @@ class RbacFacadeServiceTest {
   @Mock private GetUserRolesUseCase getUserRolesUseCase;
   @Mock private AssignRoleToUserUseCase assignRoleToUserUseCase;
   @Mock private RemoveRoleFromUserUseCase removeRoleFromUserUseCase;
+  @Mock private AssignPermissionToRoleUseCase assignPermissionToRoleUseCase;
+  @Mock private RemovePermissionFromRoleUseCase removePermissionFromRoleUseCase;
   @Mock private AuditFacade auditFacade;
   @Mock private PermissionCacheFacade permissionCacheFacade;
 
@@ -60,6 +64,8 @@ class RbacFacadeServiceTest {
             getUserRolesUseCase,
             assignRoleToUserUseCase,
             removeRoleFromUserUseCase,
+            assignPermissionToRoleUseCase,
+            removePermissionFromRoleUseCase,
             auditFacade,
             permissionCacheFacade);
   }

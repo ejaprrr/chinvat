@@ -31,7 +31,7 @@ import type { RegisterRequest } from '@/shared/types/auth';
 import type { UserResponse, UpdateUserRequest } from '@/shared/types/user';
 import '@/shared/ui/admin.css';
 
-type Tab = 'users' | 'certificates' | 'rbac' | 'permissions';
+type Tab = 'users' | 'certificates' | 'rbac' | 'roles' | 'permissions';
 
 type PermissionFormState = {
   code: string;
@@ -77,6 +77,8 @@ const initialPermissionForm: PermissionFormState = {
   code: '',
   description: '',
 };
+
+const KNOWN_ROLES = ['USER', 'ADMIN', 'EMPLOYEE', 'SUPERADMIN'];
 
 function AdminPage() {
   useDocumentTitle('meta.adminPageTitle');
@@ -134,6 +136,10 @@ function AdminPage() {
   const [userRolesCache, setUserRolesCache] = useState<Record<string, string[]>>({});
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [editingUserEmail, setEditingUserEmail] = useState('');
+  const [selectedRoleForMatrix, setSelectedRoleForMatrix] = useState<string | null>(null);
+  const [roleMatrixData, setRoleMatrixData] = useState<Record<string, string[]>>({});
+  const [roleMatrixLoading, setRoleMatrixLoading] = useState(false);
+  const [matrixPermissionToAdd, setMatrixPermissionToAdd] = useState('');
 
   const errorId = useId();
 
@@ -182,7 +188,7 @@ function AdminPage() {
       !createUserForm.fullName.trim() ||
       !createUserForm.email.trim()
     ) {
-      setStatusMessage('Username, full name, and email are required');
+      setStatusMessage(t('admin.usernameEmailRequired'));
       return;
     }
 
@@ -215,7 +221,7 @@ function AdminPage() {
           country: createdUser.country,
         });
       }
-      setStatusMessage(t('admin.userCreated', { defaultValue: 'User created' }));
+      setStatusMessage(t('admin.userCreated'));
       setCreateUserForm(initialCreateUserForm);
       setIsCreateUserOpen(false);
       await loadUsers(0);
@@ -324,7 +330,7 @@ function AdminPage() {
     try {
       setIsOperating(true);
       await restoreUser(restoreUserId.trim());
-      setStatusMessage(t('admin.userRestored', { defaultValue: 'User restored' }));
+      setStatusMessage(t('admin.userRestored'));
       setRestoreUserId('');
       await loadUsers(usersPage);
     } catch (err) {
@@ -340,14 +346,14 @@ function AdminPage() {
 
   const handlePermanentDeleteUser = async () => {
     if (!permanentDeleteUserId.trim()) return;
-    if (!confirm(t('admin.confirmDelete', { defaultValue: 'Delete this user permanently?' }))) {
+    if (!confirm(t('admin.confirmDelete'))) {
       return;
     }
 
     try {
       setIsOperating(true);
       await permanentlyDeleteUser(permanentDeleteUserId.trim());
-      setStatusMessage(t('admin.userDeleted', { defaultValue: 'User permanently deleted' }));
+      setStatusMessage(t('admin.userDeleted'));
       setPermanentDeleteUserId('');
       await loadUsers(usersPage);
     } catch (err) {
@@ -370,7 +376,7 @@ function AdminPage() {
       !bindCredentialForm.registrationSource.trim() ||
       !bindCredentialForm.certificatePem.trim()
     ) {
-      setStatusMessage('Fill in all required certificate fields');
+      setStatusMessage(t('admin.certificateFieldsRequired'));
       return;
     }
 
@@ -383,7 +389,7 @@ function AdminPage() {
         assuranceLevel: bindCredentialForm.assuranceLevel.trim() || undefined,
         certificatePem: bindCredentialForm.certificatePem.trim(),
       });
-      setStatusMessage('Certificate credential bound');
+      setStatusMessage(t('admin.certificateBound'));
       setBindCredentialForm(initialBindCredentialForm);
       setIsBindCredentialOpen(false);
       await loadCredentials(credentialsPage, selectedUserForCerts || undefined);
@@ -413,7 +419,7 @@ function AdminPage() {
     e.preventDefault();
 
     if (!permissionForm.code.trim()) {
-      setStatusMessage('Permission code is required');
+      setStatusMessage(t('admin.permissionCodeRequired'));
       return;
     }
 
@@ -423,13 +429,13 @@ function AdminPage() {
         await updatePermission(permissionForm.code.trim(), {
           description: permissionForm.description.trim() || undefined,
         });
-        setStatusMessage('Permission updated');
+        setStatusMessage(t('admin.permissionUpdated'));
       } else {
         await createPermission({
           code: permissionForm.code.trim(),
           description: permissionForm.description.trim() || undefined,
         });
-        setStatusMessage('Permission created');
+        setStatusMessage(t('admin.permissionCreated'));
       }
       setPermissionModalMode(null);
       setPermissionForm(initialPermissionForm);
@@ -449,12 +455,12 @@ function AdminPage() {
   };
 
   const handleDeletePermission = async (code: string) => {
-    if (!confirm(t('admin.confirmDelete', { defaultValue: 'Delete this permission?' }))) return;
+    if (!confirm(t('admin.confirmDelete'))) return;
 
     try {
       setIsOperating(true);
       await deletePermission(code);
-      setStatusMessage('Permission deleted');
+      setStatusMessage(t('admin.permissionDeleted'));
       await loadPermissions(permissionsPage);
     } catch (err) {
       const errorMsg = getErrorDisplay(err, {
@@ -469,7 +475,7 @@ function AdminPage() {
 
   const handleInspectRole = async () => {
     if (!roleInspectorValue.trim()) {
-      setStatusMessage('Role name is required');
+      setStatusMessage(t('admin.roleNameRequired'));
       return;
     }
 
@@ -525,6 +531,44 @@ function AdminPage() {
     }
   };
 
+  const handleMatrixAssignPermission = async (roleName: string, permCode: string) => {
+    if (!permCode) return;
+    try {
+      setIsOperating(true);
+      await assignPermissionToRole(roleName, permCode);
+      const updated = await getRole(roleName);
+      setRoleMatrixData((prev) => ({ ...prev, [roleName]: updated.permissions }));
+      setMatrixPermissionToAdd('');
+    } catch (err) {
+      setStatusMessage(
+        getErrorDisplay(err, {
+          fallbackCode: 'ADMIN_PERMISSION_ASSIGN_FAILED',
+          fallbackMessage: 'Failed to assign permission',
+        }).message,
+      );
+    } finally {
+      setIsOperating(false);
+    }
+  };
+
+  const handleMatrixRemovePermission = async (roleName: string, permCode: string) => {
+    try {
+      setIsOperating(true);
+      await removePermissionFromRole(roleName, permCode);
+      const updated = await getRole(roleName);
+      setRoleMatrixData((prev) => ({ ...prev, [roleName]: updated.permissions }));
+    } catch (err) {
+      setStatusMessage(
+        getErrorDisplay(err, {
+          fallbackCode: 'ADMIN_PERMISSION_REMOVE_FAILED',
+          fallbackMessage: 'Failed to remove permission',
+        }).message,
+      );
+    } finally {
+      setIsOperating(false);
+    }
+  };
+
   const handlePrimaryAction = () => {
     if (activeTab === 'users') {
       setIsCreateUserOpen(true);
@@ -541,20 +585,26 @@ function AdminPage() {
       return;
     }
 
+    if (activeTab === 'roles') {
+      return;
+    }
+
     openPermissionEditor('create');
   };
 
   const primaryActionLabel =
     activeTab === 'users'
-      ? 'Add user'
+      ? t('admin.addUser')
       : activeTab === 'certificates'
-        ? 'Bind certificate'
+        ? t('admin.bindCertificate')
         : activeTab === 'rbac'
-          ? 'Inspect role'
-          : 'Add permission';
+          ? t('admin.inspectRole')
+          : activeTab === 'roles'
+            ? t('admin.manageRoles')
+            : t('admin.addPermission');
 
   useEffect(() => {
-    if (!isPermissionCatalogOpen && !isRoleInspectorOpen) {
+    if (!isPermissionCatalogOpen && !isRoleInspectorOpen && activeTab !== 'roles') {
       return;
     }
 
@@ -585,7 +635,29 @@ function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [isPermissionCatalogOpen, isRoleInspectorOpen]);
+  }, [isPermissionCatalogOpen, isRoleInspectorOpen, activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'roles') return;
+
+    let cancelled = false;
+    setRoleMatrixLoading(true);
+
+    void (async () => {
+      const results = await Promise.allSettled(KNOWN_ROLES.map((r) => getRole(r)));
+      if (cancelled) return;
+      const data: Record<string, string[]> = {};
+      results.forEach((result, i) => {
+        data[KNOWN_ROLES[i]] = result.status === 'fulfilled' ? result.value.permissions : [];
+      });
+      setRoleMatrixData(data);
+      setRoleMatrixLoading(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
 
   // Load roles for all visible users when RBAC tab is active
   useEffect(() => {
@@ -714,6 +786,20 @@ function AdminPage() {
                   {t('admin.roleManagement')}
                 </button>
                 <button
+                  onClick={() => {
+                    setActiveTab('roles');
+                    setSelectedRoleForMatrix(null);
+                    setMatrixPermissionToAdd('');
+                  }}
+                  className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors -mb-px ${
+                    activeTab === 'roles'
+                      ? 'border-brand-500 text-ink'
+                      : 'border-transparent text-muted hover:text-ink'
+                  }`}
+                >
+                  {t('admin.rolesSection')}
+                </button>
+                <button
                   onClick={() => setActiveTab('permissions')}
                   className={`px-4 py-3 font-medium text-sm border-b-2 transition-colors -mb-px ${
                     activeTab === 'permissions'
@@ -721,7 +807,7 @@ function AdminPage() {
                       : 'border-transparent text-muted hover:text-ink'
                   }`}
                 >
-                  Permissions
+                  {t('admin.permissionsSection')}
                 </button>
               </div>
 
@@ -733,7 +819,7 @@ function AdminPage() {
                     <div className="flex items-center gap-2 justify-between">
                       <input
                         type="search"
-                        placeholder={t('admin.searchUsers', { defaultValue: 'Search by email, username or name…' })}
+                        placeholder={t('admin.searchUsers')}
                         value={userSearchQuery}
                         onChange={(e) => setUserSearchQuery(e.target.value)}
                         className="min-w-0 flex-1 rounded-md border border-border-subtle bg-panel px-3 py-2 text-sm outline-none focus:border-brand-500"
@@ -743,7 +829,7 @@ function AdminPage() {
                         onClick={() => setIsUserToolsOpen(true)}
                         className="rounded-md bg-surface-subtle px-3 py-2 text-xs font-medium text-ink hover:bg-surface-hover"
                       >
-                        User tools
+                        {t('admin.userTools')}
                       </button>
                     </div>
 
@@ -997,7 +1083,7 @@ function AdminPage() {
                 {activeTab === 'certificates' && (
                   <div className="flex h-full min-h-0 flex-col gap-4">
                     <div className="rounded-md border border-border-subtle bg-surface-subtle p-4">
-                      <p className="text-sm font-semibold text-ink">Filter credentials</p>
+                      <p className="text-sm font-semibold text-ink">{t('admin.filterCredentials')}</p>
                       <div className="mt-3 flex gap-2">
                         <input
                           type="text"
@@ -1145,13 +1231,13 @@ function AdminPage() {
                   <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto">
                     {/* Role permissions panel */}
                     <div className="rounded-md border border-border-subtle bg-surface-subtle p-3 shrink-0">
-                      <p className="text-xs font-semibold text-ink mb-2">Role permissions</p>
+                      <p className="text-xs font-semibold text-ink mb-2">{t('admin.rolePermissions')}</p>
                       <div className="flex gap-2 items-center">
                         <input
                           value={roleInspectorValue}
                           onChange={(e) => setRoleInspectorValue(e.target.value)}
                           onKeyDown={(e) => { if (e.key === 'Enter') void handleInspectRole(); }}
-                          placeholder="Role name, e.g. ADMIN"
+                          placeholder={t('admin.roleNamePlaceholder')}
                           className="min-w-0 flex-1 rounded-md border border-border-subtle bg-panel px-3 py-1.5 text-sm outline-none focus:border-brand-500"
                         />
                         <button
@@ -1160,7 +1246,7 @@ function AdminPage() {
                           disabled={isOperating || !roleInspectorValue.trim()}
                           className="rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Inspect
+                          {t('admin.inspect')}
                         </button>
                         {inspectedRole && (
                           <button
@@ -1177,7 +1263,7 @@ function AdminPage() {
                         <div className="mt-3 flex flex-col gap-2">
                           <div className="flex flex-wrap gap-1.5">
                             {inspectedRole.permissions.length === 0 ? (
-                              <span className="text-xs text-muted">No permissions assigned to this role</span>
+                              <span className="text-xs text-muted">{t('admin.noPermissionsAssigned')}</span>
                             ) : (
                               inspectedRole.permissions.map((perm) => (
                                 <span
@@ -1206,7 +1292,7 @@ function AdminPage() {
                               className="min-w-0 flex-1 rounded-md border border-border-subtle bg-panel px-2 py-1.5 text-xs outline-none focus:border-brand-500"
                             >
                               <option value="">
-                                {catalogPermissionsLoading ? 'Loading…' : 'Add permission…'}
+                                {catalogPermissionsLoading ? t('admin.loadingPermissions') : t('admin.addPermissionPlaceholder')}
                               </option>
                               {catalogPermissions
                                 .filter((p) => !inspectedRole.permissions.includes(p.code))
@@ -1222,7 +1308,7 @@ function AdminPage() {
                               onClick={() => void handleAssignPermissionToRole(inspectedRole.roleName, selectedPermissionToAdd)}
                               className="rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              Add
+                              {t('admin.addPermission')}
                             </button>
                           </div>
                         </div>
@@ -1321,6 +1407,151 @@ function AdminPage() {
                   </div>
                 )}
 
+                {/* Roles Tab */}
+                {activeTab === 'roles' && (
+                  <div className="flex h-full min-h-0 gap-3">
+                    {/* Left panel — role list */}
+                    <div className="flex w-44 shrink-0 flex-col gap-1 overflow-y-auto">
+                      <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+                        {t('admin.rolesSection')}
+                      </p>
+                      {KNOWN_ROLES.map((role) => {
+                        const count = roleMatrixData[role]?.length ?? null;
+                        const isSelected = selectedRoleForMatrix === role;
+                        return (
+                          <button
+                            key={role}
+                            type="button"
+                            onClick={() => {
+                              setSelectedRoleForMatrix(role);
+                              setMatrixPermissionToAdd('');
+                            }}
+                            className={`flex items-center justify-between rounded-md px-3 py-2.5 text-left text-sm font-medium transition-colors ${
+                              isSelected
+                                ? 'bg-brand-500 text-white'
+                                : 'bg-surface-subtle text-ink hover:bg-surface-hover'
+                            }`}
+                          >
+                            <span>{role}</span>
+                            {count !== null && (
+                              <span
+                                className={`ml-2 rounded-full px-1.5 py-0.5 text-xs font-semibold tabular-nums ${
+                                  isSelected
+                                    ? 'bg-white/20 text-white'
+                                    : 'bg-panel text-muted'
+                                }`}
+                              >
+                                {roleMatrixLoading ? '…' : count}
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Right panel — permissions for selected role */}
+                    <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto rounded-md border border-border-subtle bg-panel p-4">
+                      {roleMatrixLoading ? (
+                        <div className="flex h-full items-center justify-center text-sm text-muted-soft">
+                          {t('admin.loadingRoles')}
+                        </div>
+                      ) : !selectedRoleForMatrix ? (
+                        <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+                          <p className="text-sm font-medium text-ink">{t('admin.selectRole')}</p>
+                          <p className="text-xs text-muted">
+                            {t('admin.selectRoleHint')}
+                          </p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="flex items-center justify-between border-b border-border-subtle pb-3">
+                            <div>
+                              <h3 className="text-sm font-semibold text-ink">
+                                {selectedRoleForMatrix}
+                              </h3>
+                              <p className="text-xs text-muted">
+                                {t('admin.permissionsAssigned', { count: roleMatrixData[selectedRoleForMatrix]?.length ?? 0 })}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Assigned permissions */}
+                          <div className="flex flex-wrap gap-1.5 rounded-md border border-border-subtle bg-surface-subtle p-3 min-h-[4rem]">
+                            {(roleMatrixData[selectedRoleForMatrix]?.length ?? 0) === 0 ? (
+                              <span className="text-xs text-muted">
+                                {t('admin.noPermissionsAssigned')}
+                              </span>
+                            ) : (
+                              roleMatrixData[selectedRoleForMatrix].map((perm) => (
+                                <span
+                                  key={perm}
+                                  className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-700"
+                                >
+                                  {perm}
+                                  <button
+                                    type="button"
+                                    disabled={isOperating}
+                                    onClick={() =>
+                                      void handleMatrixRemovePermission(
+                                        selectedRoleForMatrix,
+                                        perm,
+                                      )
+                                    }
+                                    className="ml-0.5 rounded-full p-0.5 hover:bg-red-100 hover:text-red-600 disabled:opacity-50 transition-colors"
+                                    title={`Remove ${perm}`}
+                                  >
+                                    <X size={10} />
+                                  </button>
+                                </span>
+                              ))
+                            )}
+                          </div>
+
+                          {/* Add permission */}
+                          <div className="flex shrink-0 gap-2 pt-1">
+                            <select
+                              value={matrixPermissionToAdd}
+                              onChange={(e) => setMatrixPermissionToAdd(e.target.value)}
+                              disabled={isOperating || catalogPermissionsLoading}
+                              className="min-w-0 flex-1 rounded-md border border-border-subtle bg-panel px-3 py-2 text-sm outline-none focus:border-brand-500 disabled:opacity-50"
+                            >
+                              <option value="">
+                                {catalogPermissionsLoading ? t('admin.loadingPermissions') : t('admin.addPermissionPlaceholder')}
+                              </option>
+                              {catalogPermissions
+                                .filter(
+                                  (p) =>
+                                    !(
+                                      roleMatrixData[selectedRoleForMatrix] ?? []
+                                    ).includes(p.code),
+                                )
+                                .map((p) => (
+                                  <option key={p.code} value={p.code}>
+                                    {p.code}
+                                    {p.description ? ` — ${p.description}` : ''}
+                                  </option>
+                                ))}
+                            </select>
+                            <button
+                              type="button"
+                              disabled={isOperating || !matrixPermissionToAdd}
+                              onClick={() =>
+                                void handleMatrixAssignPermission(
+                                  selectedRoleForMatrix,
+                                  matrixPermissionToAdd,
+                                )
+                              }
+                              className="shrink-0 rounded-md bg-brand-500 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              {t('admin.addPermission')}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {activeTab === 'permissions' && (
                   <div className="flex h-full min-h-0 flex-col gap-4">
                     <div className="flex justify-end">
@@ -1329,7 +1560,7 @@ function AdminPage() {
                         onClick={() => setIsPermissionCatalogOpen(true)}
                         className="rounded-md bg-surface-subtle px-3 py-2 text-xs font-medium text-ink hover:bg-surface-hover"
                       >
-                        View catalog
+                        {t('admin.viewCatalog')}
                       </button>
                     </div>
 
@@ -1340,12 +1571,12 @@ function AdminPage() {
                         <table className="w-full text-sm">
                           <thead className="bg-surface-subtle border-b border-border-subtle">
                             <tr>
-                              <th className="px-4 py-3 text-left font-semibold text-ink">Code</th>
+                              <th className="px-4 py-3 text-left font-semibold text-ink">{t('admin.permissionCode')}</th>
                               <th className="px-4 py-3 text-left font-semibold text-ink">
-                                Description
+                                {t('admin.permissionDescription')}
                               </th>
                               <th className="px-4 py-3 text-left font-semibold text-ink">
-                                Actions
+                                {t('admin.actions')}
                               </th>
                             </tr>
                           </thead>
@@ -1353,7 +1584,7 @@ function AdminPage() {
                             {permissions.length === 0 ? (
                               <tr>
                                 <td colSpan={3} className="px-4 py-8 text-center text-muted-soft">
-                                  No permissions available
+                                  {t('admin.noPermissionsAvailable')}
                                 </td>
                               </tr>
                             ) : (
@@ -1375,14 +1606,14 @@ function AdminPage() {
                                         onClick={() => openPermissionEditor('edit', permission)}
                                         className="rounded-md bg-surface-subtle px-3 py-2 text-xs font-medium text-ink hover:bg-surface-hover"
                                       >
-                                        Edit
+                                        {t('admin.edit')}
                                       </button>
                                       <button
                                         type="button"
                                         onClick={() => handleDeletePermission(permission.code)}
                                         className="rounded-md bg-danger-50 px-3 py-2 text-xs font-medium text-danger-700 hover:bg-danger-200"
                                       >
-                                        Delete
+                                        {t('admin.delete')}
                                       </button>
                                     </div>
                                   </td>
@@ -1426,8 +1657,8 @@ function AdminPage() {
                           <div className="admin-modal-header">
                             <h3>
                               {permissionModalMode === 'edit'
-                                ? 'Edit permission'
-                                : 'Create permission'}
+                                ? t('admin.editPermission')
+                                : t('admin.createPermission')}
                             </h3>
                             <button
                               className="admin-modal-close"
@@ -1439,7 +1670,7 @@ function AdminPage() {
 
                           <form className="admin-form" onSubmit={handleSavePermission}>
                             <div className="admin-form-group">
-                              <label>Code</label>
+                              <label>{t('admin.permissionCode')}</label>
                               <input
                                 value={permissionForm.code}
                                 onChange={(event) =>
@@ -1453,7 +1684,7 @@ function AdminPage() {
                               />
                             </div>
                             <div className="admin-form-group">
-                              <label>Description</label>
+                              <label>{t('admin.permissionDescription')}</label>
                               <input
                                 value={permissionForm.description}
                                 onChange={(event) =>
@@ -1471,7 +1702,7 @@ function AdminPage() {
                                 className="admin-btn-primary"
                                 disabled={isOperating}
                               >
-                                Save
+                                {t('admin.save')}
                               </button>
                               <button
                                 type="button"
@@ -1479,7 +1710,7 @@ function AdminPage() {
                                 onClick={() => setPermissionModalMode(null)}
                                 disabled={isOperating}
                               >
-                                Cancel
+                                {t('admin.cancel')}
                               </button>
                             </div>
                           </form>
@@ -1493,7 +1724,7 @@ function AdminPage() {
                   <div className="admin-modal-overlay" onClick={() => setIsCreateUserOpen(false)}>
                     <div className="admin-modal" onClick={(event) => event.stopPropagation()}>
                       <div className="admin-modal-header">
-                        <h3>Create user</h3>
+                        <h3>{t('admin.createUser')}</h3>
                         <button
                           className="admin-modal-close"
                           onClick={() => setIsCreateUserOpen(false)}
@@ -1504,7 +1735,7 @@ function AdminPage() {
 
                       <form onSubmit={handleCreateUser} className="admin-form">
                         <div className="admin-form-group">
-                          <label>Username</label>
+                          <label>{t('admin.username')}</label>
                           <input
                             value={createUserForm.username}
                             onChange={(event) =>
@@ -1517,7 +1748,7 @@ function AdminPage() {
                           />
                         </div>
                         <div className="admin-form-group">
-                          <label>Full name</label>
+                          <label>{t('admin.fullName')}</label>
                           <input
                             value={createUserForm.fullName}
                             onChange={(event) =>
@@ -1530,7 +1761,7 @@ function AdminPage() {
                           />
                         </div>
                         <div className="admin-form-group">
-                          <label>Email</label>
+                          <label>{t('admin.email')}</label>
                           <input
                             type="email"
                             value={createUserForm.email}
@@ -1544,7 +1775,7 @@ function AdminPage() {
                           />
                         </div>
                         <div className="admin-form-group">
-                          <label>Password</label>
+                          <label>{t('admin.password')}</label>
                           <input
                             type="password"
                             value={createUserForm.password}
@@ -1558,7 +1789,7 @@ function AdminPage() {
                           />
                         </div>
                         <div className="admin-form-group">
-                          <label>User type</label>
+                          <label>{t('admin.userType')}</label>
                           <select
                             value={createUserForm.userType}
                             onChange={(event) =>
@@ -1574,7 +1805,7 @@ function AdminPage() {
                           </select>
                         </div>
                         <div className="admin-form-group">
-                          <label>Default language</label>
+                          <label>{t('admin.defaultLanguage')}</label>
                           <select
                             value={createUserForm.defaultLanguage}
                             onChange={(event) =>
@@ -1593,7 +1824,7 @@ function AdminPage() {
                           </select>
                         </div>
                         <div className="admin-form-group">
-                          <label>Phone number</label>
+                          <label>{t('admin.phoneNumber')}</label>
                           <input
                             value={createUserForm.phoneNumber || ''}
                             onChange={(event) =>
@@ -1635,7 +1866,7 @@ function AdminPage() {
                             className="admin-btn-primary"
                             disabled={isOperating}
                           >
-                            Create
+                            {t('admin.save')}
                           </button>
                           <button
                             type="button"
@@ -1643,7 +1874,7 @@ function AdminPage() {
                             onClick={() => setIsCreateUserOpen(false)}
                             disabled={isOperating}
                           >
-                            Cancel
+                            {t('admin.cancel')}
                           </button>
                         </div>
                       </form>
@@ -1655,7 +1886,7 @@ function AdminPage() {
                   <div className="admin-modal-overlay" onClick={() => setIsUserToolsOpen(false)}>
                     <div className="admin-modal" onClick={(event) => event.stopPropagation()}>
                       <div className="admin-modal-header">
-                        <h3>User tools</h3>
+                        <h3>{t('admin.userTools')}</h3>
                         <button
                           className="admin-modal-close"
                           onClick={() => setIsUserToolsOpen(false)}
@@ -1666,7 +1897,7 @@ function AdminPage() {
 
                       <div className="admin-form">
                         <div className="admin-form-group">
-                          <label>User ID to restore</label>
+                          <label>{t('admin.userIdToRestore')}</label>
                           <div className="admin-role-assign">
                             <input
                               value={restoreUserId}
@@ -1679,12 +1910,12 @@ function AdminPage() {
                               onClick={() => void handleRestoreUser()}
                               disabled={isOperating}
                             >
-                              Restore
+                              {t('admin.restore')}
                             </button>
                           </div>
                         </div>
                         <div className="admin-form-group">
-                          <label>User ID to delete permanently</label>
+                          <label>{t('admin.userIdToDelete')}</label>
                           <div className="admin-role-assign">
                             <input
                               value={permanentDeleteUserId}
@@ -1697,7 +1928,7 @@ function AdminPage() {
                               onClick={() => void handlePermanentDeleteUser()}
                               disabled={isOperating}
                             >
-                              Delete
+                              {t('admin.delete')}
                             </button>
                           </div>
                         </div>
@@ -1713,7 +1944,7 @@ function AdminPage() {
                   >
                     <div className="admin-modal" onClick={(event) => event.stopPropagation()}>
                       <div className="admin-modal-header">
-                        <h3>Bind credential</h3>
+                        <h3>{t('admin.bindCredential')}</h3>
                         <button
                           className="admin-modal-close"
                           onClick={() => setIsBindCredentialOpen(false)}
@@ -1724,7 +1955,7 @@ function AdminPage() {
 
                       <form onSubmit={handleBindCredential} className="admin-form">
                         <div className="admin-form-group">
-                          <label>User ID</label>
+                          <label>{t('admin.userId')}</label>
                           <input
                             value={bindCredentialForm.userId}
                             onChange={(event) =>
@@ -1737,7 +1968,7 @@ function AdminPage() {
                           />
                         </div>
                         <div className="admin-form-group">
-                          <label>Provider code</label>
+                          <label>{t('admin.providerCode')}</label>
                           <input
                             value={bindCredentialForm.providerCode}
                             onChange={(event) =>
@@ -1750,7 +1981,7 @@ function AdminPage() {
                           />
                         </div>
                         <div className="admin-form-group">
-                          <label>Registration source</label>
+                          <label>{t('admin.registrationSource')}</label>
                           <input
                             value={bindCredentialForm.registrationSource}
                             onChange={(event) =>
@@ -1763,7 +1994,7 @@ function AdminPage() {
                           />
                         </div>
                         <div className="admin-form-group">
-                          <label>Assurance level</label>
+                          <label>{t('admin.assuranceLevel')}</label>
                           <input
                             value={bindCredentialForm.assuranceLevel}
                             onChange={(event) =>
@@ -1776,7 +2007,7 @@ function AdminPage() {
                           />
                         </div>
                         <div className="admin-form-group">
-                          <label>Certificate PEM</label>
+                          <label>{t('admin.certificatePem')}</label>
                           <textarea
                             value={bindCredentialForm.certificatePem}
                             onChange={(event) =>
@@ -1795,7 +2026,7 @@ function AdminPage() {
                             className="admin-btn-primary"
                             disabled={isOperating}
                           >
-                            Bind
+                            {t('admin.bind')}
                           </button>
                           <button
                             type="button"
@@ -1803,7 +2034,7 @@ function AdminPage() {
                             onClick={() => setIsBindCredentialOpen(false)}
                             disabled={isOperating}
                           >
-                            Cancel
+                            {t('admin.cancel')}
                           </button>
                         </div>
                       </form>
@@ -1821,7 +2052,7 @@ function AdminPage() {
                   >
                     <div className="admin-modal" onClick={(event) => event.stopPropagation()}>
                       <div className="admin-modal-header">
-                        <h3>Role details</h3>
+                        <h3>{t('admin.roleDetails')}</h3>
                         <button
                           className="admin-modal-close"
                           onClick={() => {
@@ -1835,7 +2066,7 @@ function AdminPage() {
 
                       <div className="admin-form">
                         <div className="admin-form-group">
-                          <label>Role name</label>
+                          <label>{t('admin.roleName')}</label>
                           <div className="admin-role-assign">
                             <input
                               value={roleInspectorValue}
@@ -1849,7 +2080,7 @@ function AdminPage() {
                               onClick={() => void handleInspectRole()}
                               disabled={isOperating}
                             >
-                              Search
+                              {t('admin.search')}
                             </button>
                           </div>
                         </div>
@@ -1857,10 +2088,10 @@ function AdminPage() {
                         {inspectedRole && (
                           <>
                             <div className="admin-form-group">
-                              <label>Current permissions</label>
+                              <label>{t('admin.currentPermissions')}</label>
                               <div className="flex flex-wrap gap-2">
                                 {inspectedRole.permissions.length === 0 ? (
-                                  <span className="text-sm text-muted">No permissions assigned</span>
+                                  <span className="text-sm text-muted">{t('admin.noPermissionsAssigned')}</span>
                                 ) : (
                                   inspectedRole.permissions.map((permission) => (
                                     <span
@@ -1889,7 +2120,7 @@ function AdminPage() {
                             </div>
 
                             <div className="admin-form-group">
-                              <label>Assign permission</label>
+                              <label>{t('admin.selectPermission')}</label>
                               <div className="admin-role-assign">
                                 <select
                                   className="admin-input"
@@ -1899,8 +2130,8 @@ function AdminPage() {
                                 >
                                   <option value="">
                                     {catalogPermissionsLoading
-                                      ? 'Loading...'
-                                      : 'Select permission'}
+                                      ? t('admin.loadingPermissions')
+                                      : t('admin.selectPermission')}
                                   </option>
                                   {catalogPermissions
                                     .filter(
@@ -1924,7 +2155,7 @@ function AdminPage() {
                                     )
                                   }
                                 >
-                                  Add
+                                  {t('admin.addPermission')}
                                 </button>
                               </div>
                             </div>
@@ -1942,7 +2173,7 @@ function AdminPage() {
                   >
                     <div className="admin-modal" onClick={(event) => event.stopPropagation()}>
                       <div className="admin-modal-header">
-                        <h3>Permission catalog</h3>
+                        <h3>{t('admin.permissionCatalog')}</h3>
                         <button
                           className="admin-modal-close"
                           onClick={() => setIsPermissionCatalogOpen(false)}
@@ -1953,12 +2184,12 @@ function AdminPage() {
 
                       <div className="admin-form">
                         <div className="admin-form-group">
-                          <label>Available permissions</label>
+                          <label>{t('admin.availablePermissions')}</label>
                           <div className="flex max-h-64 flex-wrap gap-2 overflow-y-auto">
                             {catalogPermissionsLoading ? (
-                              <span className="text-sm text-muted">Loading permissions...</span>
+                              <span className="text-sm text-muted">{t('admin.loadingPermissions')}</span>
                             ) : catalogPermissions.length === 0 ? (
-                              <span className="text-sm text-muted">No permissions available</span>
+                              <span className="text-sm text-muted">{t('admin.noPermissionsAvailable')}</span>
                             ) : (
                               catalogPermissions.map((permission) => (
                                 <span
@@ -2002,7 +2233,6 @@ function RoleManagementModal({
   t,
 }: RoleManagementModalProps) {
   const [selectedRole, setSelectedRole] = useState('USER');
-  const availableRoles = ['USER', 'ADMIN', 'EMPLOYEE', 'SUPERADMIN'];
 
   const [currentRoles, setCurrentRoles] = useState<string[]>([]);
 
@@ -2053,7 +2283,7 @@ function RoleManagementModal({
             <label>{t('admin.roles')}</label>
             <div className="flex flex-wrap gap-2">
               {currentRoles.length === 0 ? (
-                <span className="text-sm text-muted">No roles loaded</span>
+                <span className="text-sm text-muted">{t('admin.noRolesLoaded')}</span>
               ) : (
                 currentRoles.map((role) => (
                   <button
@@ -2077,7 +2307,7 @@ function RoleManagementModal({
                 onChange={(e) => setSelectedRole(e.target.value)}
                 className="admin-input"
               >
-                {availableRoles.map((role) => (
+                {KNOWN_ROLES.map((role) => (
                   <option key={role} value={role}>
                     {role}
                   </option>
