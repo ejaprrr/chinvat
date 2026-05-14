@@ -13,6 +13,22 @@ import type {
   RegisterRequest,
 } from '@/shared/types/auth';
 
+type PaginationMetadata = {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+  isFirst: boolean;
+  isLast: boolean;
+  hasNext: boolean;
+  offset: number;
+};
+
+type PageResponse<T> = {
+  data: T[];
+  pagination: PaginationMetadata;
+};
+
 export async function login(payload: LoginRequest): Promise<AuthResponse> {
   const response = await api.post<AuthResponse>('/auth/login', payload);
   return response.data;
@@ -33,6 +49,11 @@ export async function eidasLogin(): Promise<AuthResponse> {
   return response.data;
 }
 
+export async function fnmtLogin(): Promise<AuthResponse> {
+  const response = await api.post<AuthResponse>('/auth/fnmt/login');
+  return response.data;
+}
+
 // Backward-compatible alias; prefer eidasLogin.
 export async function certificateLogin(): Promise<AuthResponse> {
   return eidasLogin();
@@ -49,6 +70,22 @@ export async function logout(payload: LogoutRequest): Promise<void> {
 
 export async function listSessions(): Promise<AuthSessionResponse[]> {
   const response = await api.get<AuthSessionResponse[]>('/auth/sessions');
+  return response.data;
+}
+
+export async function listSessionsPaged(
+  page: number = 0,
+  size: number = 10,
+  sort?: string,
+): Promise<PageResponse<AuthSessionResponse>> {
+  const params = new URLSearchParams();
+  params.append('page', page.toString());
+  params.append('size', size.toString());
+  if (sort) params.append('sort', sort);
+
+  const response = await api.get<PageResponse<AuthSessionResponse>>(
+    `/auth/sessions/paged?${params.toString()}`,
+  );
   return response.data;
 }
 

@@ -3,7 +3,8 @@
     "pageTitle": "Hasi saioa chinvat-en",
     "registerPageTitle": "Sortu kontu bat | chinvat",
     "resetPasswordPageTitle": "Berrezarri pasahitza | chinvat",
-    "profilePageTitle": "Profila | chinvat"
+    "profilePageTitle": "Profila | chinvat",
+    "adminPageTitle": "Administrazioa | chinvat"
   },
   "accessibility": {
     "skipToContent": "Joan eduki nagusira",
@@ -189,6 +190,105 @@
         "required": "Berretsi zure pasahitz berria.",
         "mismatch": "Pasahitzak ez datoz bat."
       }
+    }
+  },
+  "admin": {
+    "title": "Administrazioa",
+    "subtitle": "Erabiltzaileak, sertifikatuak eta rolak kudeatu",
+    "accessDenied": "Sarbidea Ukatua",
+    "accessDeniedMessage": "Ez duzu administrazio panelean sartzeko baimenik. Soilik administratzaileak dute sektio honetara sartzeko aukera.",
+    "backToProfile": "Profilera Itzuli",
+    "users": "Erabiltzaileak",
+    "certificates": "Sertifikatuak",
+    "rbac": "Rolak eta Baimenak",
+    "userManagement": "Erabiltzaileen Kudeaketa",
+    "certificateManagement": "Sertifikatuen Kudeaketa",
+    "roleManagement": "Rolen Kudeaketa",
+    "loading": "Kargatzen...",
+    "email": "Posta elektronikoa",
+    "fullName": "Osoa Izena",
+    "username": "Erabiltzailearen izena",
+    "userType": "Erabiltzaile Mota",
+    "accessLevel": "Sarbide Maila",
+    "actions": "Ekintzak",
+    "subjectDn": "Gaian DN",
+    "userId": "Erabiltzaile ID",
+    "status": "Egoera",
+    "notAfter": "Iraungi",
+    "roles": "Rolak",
+    "manage": "Kudeatu",
+    "noUsers": "Ez da erabiltzailerik aurkitu",
+    "noCertificates": "Ez da sertifikaturik aurkitu",
+    "editUser": "Erabiltzailea Editatu",
+    "save": "Gorde",
+    "cancel": "Utzi",
+    "close": "Itxi",
+    "edit": "Editatu",
+    "delete": "Ezabatu",
+    "revoke": "Baliogabetu",
+    "assign": "Esleitu",
+    "remove": "Kendu",
+    "deleteUser": "Erabiltzailea Ezabatu",
+    "restoreUser": "Erabiltzailea Leheneratu",
+    "permanentDelete": "Betiko Ezabatu",
+    "confirmDeleteUser": "Ziur al zaude erabiltzaile hau ezabatu nahi duzula? Ekintza hau itzulerako gai da (ezabatze malua).",
+    "confirmPermanentDelete": "Ziur al zaude erabiltzaile hau betiko ezabatu nahi duzula? Ekintza hau ITZULERAEZINA da eta erabiltzailearen datu guztiak ezabatuko ditu!",
+    "confirmRemoveRole": "Ziur al zaude erabiltzailearengandik rol hau kendu nahi duzula?",
+    "userUpdated": "Erabiltzailea arrakastaz eguneratu da",
+    "userDeleted": "Erabiltzailea arrakastaz ezabatu da",
+    "userRestored": "Erabiltzailea arrakastaz lehendu da",
+    "userPermanentlyDeleted": "Erabiltzailea betiko ezabatu da",
+    "certificateRevoked": "Sertifikatua arrakastaz baliogabetu da",
+    "roleAssigned": "Rola arrakastaz esleitu da",
+    "roleRemoved": "Rola arrakastaz kendu da",
+    "provideRevokeReason": "Mesedez, sertifikatua baliogabetzeko arrazoia eman",
+    "revokeReason": "Baliogabetzeko Arrazoia",
+    "provideReason": "Zergatik ari zara sertifikat hau baliogabetzen duzun azaldu",
+    "revokeCertificate": "Sertifikatua Baliogabetu",
+    "filterByUserId": "Erabiltzaile ID-ren arabera Filtratu",
+    "manageUserRoles": "Erabiltzailearen Rolak Kudeatu",
+    "assignRole": "Erabiltzaileari Rola Esleitu",
+    "page": "Orria"
+  },
+  "error": {
+    "auth": {
+      "invalid-authentication": "Autentifikazio kredentzial baliogabeak.",
+      "resource-not-found": "Eskatutako autentifikazio baliabidea ez da aurkitu."
+    },
+    "users": {
+      "already-exists": "Erabiltzailea dagoeneko existitzen da.",
+      "not-found": "Erabiltzailea ez da aurkitu."
+    },
+    "rbac": {
+      "role-not-found": "Zeharrola ez da aurkitu.",
+      "permission-not-found": "Baimena ez da aurkitu.",
+      "user-not-found": "RBAC erabiltzailea ez da aurkitu.",
+      "permission-already-exists": "Baimena dagoeneko existitzen da."
+    },
+    "eidas": {
+      "provider-not-found": "eIDAS hornitzailea ez da aurkitu.",
+      "invalid-state": "eIDAS saioen egoera baliogabea da edo iraungia.",
+      "broker-unavailable": "eIDAS bitartekariak ez daude erabilgarri orain.",
+      "external-identity-not-found": "Zintzo eIDAS identitate ez da aurkitu.",
+      "profile-completion-required": "Profila osatzea beharrezkoa da."
+    },
+    "trust": {
+      "validation-failed": "Ziurtagiria balioztatzeak huts egin du.",
+      "provider-sync-failed": "Konfiantza hornitzailearen sinkronizazioak huts egin du.",
+      "credential-not-found": "Ziurtagiriaren kredentziala ez da aurkitu."
+    },
+    "profile": {
+      "validation-failed": "Profilaren balioztatzeak huts egin du.",
+      "invalid-state": "Profilearen eskaera ez da baliozkoa uneko egoerean.",
+      "credential-not-found": "Profilaren ziurtagiriaren kredentziala ez da aurkitu."
+    },
+    "common": {
+      "validation-failed": "Balioztatzeak huts egin du.",
+      "resource-not-found": "Eskatutako baliabidea ez da aurkitu.",
+      "unauthorized": "Autentifikazioa beharrezkoa da.",
+      "forbidden": "Sarbidea debekatuta dago.",
+      "rate-limit-exceeded": "Abiadura mugak gainditu da.",
+      "internal-error": "Ustekabeko barne errorea."
     }
   }
 }

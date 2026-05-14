@@ -8,9 +8,8 @@ import {
 } from '@/shared/auth/tokenStorage';
 import { normalizeHttpError } from './errors';
 
-const baseURL = API_BASE_URL
-  ? `${API_BASE_URL.replace(/\/$/, '')}${API_PREFIX}`
-  : `http://localhost:8080${API_PREFIX}`;
+const normalizedBaseURL = API_BASE_URL.replace(/\/$/, '');
+const baseURL = normalizedBaseURL ? `${normalizedBaseURL}${API_PREFIX}` : API_PREFIX;
 
 const api = axios.create({
   baseURL,

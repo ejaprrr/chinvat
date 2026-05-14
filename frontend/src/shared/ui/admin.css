@@ -1,0 +1,202 @@
+/* Admin Page Styles - Using app design tokens */
+
+/* Modal overlay */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.admin-modal {
+  background: var(--color-panel);
+  border-radius: 0.5rem;
+  box-shadow: var(--shadow-panel);
+  max-width: 32rem;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.admin-modal-header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.admin-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted-soft);
+  transition: color 0.2s;
+}
+
+.admin-modal-close:hover {
+  color: var(--color-ink);
+}
+
+/* Form styles */
+.admin-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-form-group label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-ink);
+}
+
+.admin-input,
+.admin-form-group select,
+.admin-textarea {
+  padding: 0.75rem;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.375rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--color-ink);
+  background: var(--color-panel);
+  transition: border-color 0.2s;
+}
+
+.admin-input:focus,
+.admin-form-group select:focus,
+.admin-textarea:focus {
+  outline: none;
+  border-color: var(--color-muted);
+}
+
+.admin-input:disabled {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-muted-soft);
+  cursor: not-allowed;
+}
+
+.admin-textarea {
+  font-family: monospace;
+  resize: vertical;
+}
+
+.admin-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.admin-role-assign {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.admin-role-assign select {
+  flex: 1;
+}
+
+/* Buttons */
+.admin-btn-primary {
+  padding: 0.75rem 1rem;
+  background-color: var(--color-brand-500);
+  color: var(--color-panel);
+  border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-btn-primary:hover:not(:disabled) {
+  background-color: var(--color-brand-600);
+}
+
+.admin-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-btn-secondary {
+  padding: 0.75rem 1rem;
+  background-color: var(--color-surface-subtle);
+  color: var(--color-ink);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 0.375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.admin-btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-hover);
+}
+
+.admin-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Status indicators */
+.admin-status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.admin-status-badge.active {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-ink);
+}
+
+.admin-status-badge.revoked {
+  background-color: var(--color-danger-50);
+  color: var(--color-danger-700);
+}

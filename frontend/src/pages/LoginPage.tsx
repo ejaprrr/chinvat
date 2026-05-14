@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/shared/lib/documentTitle';
 import { useAuth } from '@/shared/auth';
-import { eidasLogin } from '@/features/auth/api';
-import { getErrorDisplay } from '@/shared/api/errors';
-import { setTokens } from '@/shared/auth/tokenStorage';
+import { listEidasProviders, initiateEidasLogin } from '@/features/eidas/api';
+import { getErrorDisplay, type ErrorDisplay } from '@/shared/api/errors';
+import { useErrorDisplay } from '@/shared/hooks/useErrorDisplay';
+
 import { isWellFormedEmail } from '@/shared/lib/validation/user';
 import { appRoutes } from '../router/routes.ts';
 import { ActionButton, ActionLink } from '@/shared/ui/Action';
@@ -22,15 +23,16 @@ type FieldErrors = {
 function LoginPage() {
   useDocumentTitle('meta.pageTitle');
   const { t } = useTranslation();
+  const { getDisplayMessage } = useErrorDisplay();
   const navigate = useNavigate();
-  const { login, refreshUser, error: authError, reportError } = useAuth();
+  const { login, error: authError, reportError } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<ErrorDisplay | string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpeningCert, setIsOpeningCert] = useState(false);
 
@@ -84,8 +86,8 @@ function LoginPage() {
         fallbackCode: 'AUTH_LOGIN_FAILED',
         fallbackMessage: t('auth.status.loginError'),
       });
-      setStatusMessage(detail.message);
-      reportError(detail.message);
+      setStatusMessage(detail);
+      reportError(detail);
     } finally {
       setIsSubmitting(false);
     }
@@ -95,19 +97,31 @@ function LoginPage() {
     setStatusMessage(t('auth.status.certificateOpening'));
     setIsOpeningCert(true);
     try {
-      const response = await eidasLogin();
-      // Persist tokens and refresh auth state
-      setTokens(response.tokens.accessToken, response.tokens.refreshToken);
-      await refreshUser();
-      navigate(appRoutes.profile, { replace: true });
+      // Get list of eIDAS providers
+      const providers = await listEidasProviders();
+      if (providers.length === 0) {
+        throw new Error('No eIDAS providers available');
+      }
+
+      // Use the first available provider
+      const provider = providers[0];
+      const redirectUri = `${window.location.origin}/auth/eidas/callback`;
+
+      // Initiate eIDAS login flow
+      const loginResponse = await initiateEidasLogin({
+        providerCode: provider.code,
+        redirectUri,
+      });
+
+      // Redirect to eIDAS provider authorization URL
+      window.location.href = loginResponse.authorizationUrl;
     } catch (error) {
       const detail = getErrorDisplay(error, {
         fallbackCode: 'AUTH_EIDAS_LOGIN_FAILED',
         fallbackMessage: t('auth.status.loginError'),
       });
-      setStatusMessage(detail.message);
-      reportError(detail.message);
-    } finally {
+      setStatusMessage(detail);
+      reportError(detail);
       setIsOpeningCert(false);
     }
   };
@@ -139,7 +153,7 @@ function LoginPage() {
       status={
         statusMessage || authError
           ? {
-              content: statusMessage || authError,
+              content: getDisplayMessage(statusMessage || authError || ''),
               tone: 'critical',
             }
           : null

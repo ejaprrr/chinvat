@@ -3,7 +3,8 @@
     "pageTitle": "Acceder a chinvat",
     "registerPageTitle": "Crear cuenta | chinvat",
     "resetPasswordPageTitle": "Restablecer contraseña | chinvat",
-    "profilePageTitle": "Perfil | chinvat"
+    "profilePageTitle": "Perfil | chinvat",
+    "adminPageTitle": "Administración | chinvat"
   },
   "accessibility": {
     "skipToContent": "Saltar al contenido principal",
@@ -290,6 +291,105 @@
         "required": "Confirma tu nueva contraseña.",
         "mismatch": "Las contraseñas no coinciden."
       }
+    }
+  },
+  "admin": {
+    "title": "Administración",
+    "subtitle": "Gestionar usuarios, certificados y roles",
+    "accessDenied": "Acceso Denegado",
+    "accessDeniedMessage": "No tienes permiso para acceder al panel de administración. Solo los administradores pueden acceder a esta sección.",
+    "backToProfile": "Volver al Perfil",
+    "users": "Usuarios",
+    "certificates": "Certificados",
+    "rbac": "Roles y Permisos",
+    "userManagement": "Gestión de Usuarios",
+    "certificateManagement": "Gestión de Certificados",
+    "roleManagement": "Gestión de Roles",
+    "loading": "Cargando...",
+    "email": "Correo electrónico",
+    "fullName": "Nombre Completo",
+    "username": "Nombre de usuario",
+    "userType": "Tipo de Usuario",
+    "accessLevel": "Nivel de Acceso",
+    "actions": "Acciones",
+    "subjectDn": "Asunto DN",
+    "userId": "ID de Usuario",
+    "status": "Estado",
+    "notAfter": "Expira",
+    "roles": "Roles",
+    "manage": "Gestionar",
+    "noUsers": "No se encontraron usuarios",
+    "noCertificates": "No se encontraron certificados",
+    "editUser": "Editar Usuario",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "edit": "Editar",
+    "delete": "Eliminar",
+    "revoke": "Revocar",
+    "assign": "Asignar",
+    "remove": "Eliminar",
+    "deleteUser": "Eliminar Usuario",
+    "restoreUser": "Restaurar Usuario",
+    "permanentDelete": "Eliminar Permanentemente",
+    "confirmDeleteUser": "¿Estás seguro de que deseas eliminar este usuario? Esta acción es reversible (eliminación blanda).",
+    "confirmPermanentDelete": "¿Estás seguro de que deseas eliminar permanentemente este usuario? ¡Esta acción es IRREVERSIBLE y eliminará todos los datos del usuario!",
+    "confirmRemoveRole": "¿Estás seguro de que deseas eliminar este rol del usuario?",
+    "userUpdated": "Usuario actualizado correctamente",
+    "userDeleted": "Usuario eliminado correctamente",
+    "userRestored": "Usuario restaurado correctamente",
+    "userPermanentlyDeleted": "Usuario eliminado permanentemente",
+    "certificateRevoked": "Certificado revocado correctamente",
+    "roleAssigned": "Rol asignado correctamente",
+    "roleRemoved": "Rol eliminado correctamente",
+    "provideRevokeReason": "Por favor, proporciona un motivo para revocar el certificado",
+    "revokeReason": "Motivo de Revocación",
+    "provideReason": "Explica por qué estás revocando este certificado",
+    "revokeCertificate": "Revocar Certificado",
+    "filterByUserId": "Filtrar por ID de Usuario",
+    "manageUserRoles": "Gestionar Roles del Usuario",
+    "assignRole": "Asignar Rol al Usuario",
+    "page": "Página"
+  },
+  "error": {
+    "auth": {
+      "invalid-authentication": "Credenciales de autenticación inválidas.",
+      "resource-not-found": "El recurso de autenticación solicitado no fue encontrado."
+    },
+    "users": {
+      "already-exists": "El usuario ya existe.",
+      "not-found": "El usuario no fue encontrado."
+    },
+    "rbac": {
+      "role-not-found": "El rol no fue encontrado.",
+      "permission-not-found": "El permiso no fue encontrado.",
+      "user-not-found": "El usuario de RBAC no fue encontrado.",
+      "permission-already-exists": "El permiso ya existe."
+    },
+    "eidas": {
+      "provider-not-found": "El proveedor eIDAS no fue encontrado.",
+      "invalid-state": "El estado de la sesión eIDAS es inválido o expiró.",
+      "broker-unavailable": "El intermediario eIDAS no está disponible actualmente.",
+      "external-identity-not-found": "La identidad eIDAS externa pendiente no fue encontrada.",
+      "profile-completion-required": "Se requiere completar el perfil."
+    },
+    "trust": {
+      "validation-failed": "Falló la validación del certificado.",
+      "provider-sync-failed": "Falló la sincronización del proveedor de confianza.",
+      "credential-not-found": "La credencial del certificado no fue encontrada."
+    },
+    "profile": {
+      "validation-failed": "Falló la validación del perfil.",
+      "invalid-state": "La solicitud del perfil no es válida en el estado actual.",
+      "credential-not-found": "La credencial del certificado del perfil no fue encontrada."
+    },
+    "common": {
+      "validation-failed": "Falló la validación.",
+      "resource-not-found": "El recurso solicitado no fue encontrado.",
+      "unauthorized": "Se requiere autenticación.",
+      "forbidden": "El acceso está prohibido.",
+      "rate-limit-exceeded": "Límite de velocidad excedido.",
+      "internal-error": "Error interno inesperado."
     }
   }
 }
