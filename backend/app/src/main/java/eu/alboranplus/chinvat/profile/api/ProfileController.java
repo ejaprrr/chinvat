@@ -10,6 +10,7 @@ import eu.alboranplus.chinvat.profile.application.command.CompleteProfileAfterEi
 import eu.alboranplus.chinvat.profile.application.ProfileService;
 import eu.alboranplus.chinvat.trust.application.dto.CertificateCredentialView;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -47,7 +48,8 @@ public class ProfileController {
   @Operation(
       summary = "Complete profile after eIDAS callback",
       description =
-          "Creates user profile, binds certificate credential, validates activation rules and links pending eIDAS identity.")
+          "Creates user profile, binds certificate credential, validates activation rules and links pending eIDAS identity. No authentication required.",
+      security = {})
   @ApiResponses({
     @ApiResponse(responseCode = "200", description = "Profile completed and activated"),
     @ApiResponse(
@@ -140,7 +142,8 @@ public class ProfileController {
   @SecurityRequirement(name = "bearerAuth")
   @DeleteMapping("/certificates/{credentialId}")
   public ResponseEntity<Void> removeCertificate(
-      @PathVariable UUID credentialId,
+      @Parameter(description = "Credential UUID", example = "550e8400-e29b-41d4-a716-446655440000")
+          @PathVariable UUID credentialId,
       @RequestParam(defaultValue = "USER_REQUEST") String reason,
       Authentication authentication) {
     profileService.removeCertificate(credentialId, reason, authentication);
@@ -160,7 +163,8 @@ public class ProfileController {
   @PreAuthorize("hasAuthority('PROFILE:WRITE')")
   @PostMapping("/certificates/{credentialId}/primary")
   public ResponseEntity<ProfileCertificateResponse> setPrimaryCertificate(
-      @PathVariable UUID credentialId,
+      @Parameter(description = "Credential UUID", example = "550e8400-e29b-41d4-a716-446655440000")
+          @PathVariable UUID credentialId,
       Authentication authentication) {
     CertificateCredentialView updated = profileService.setPrimaryCertificate(credentialId, authentication);
     return ResponseEntity.ok(toResponse(updated));

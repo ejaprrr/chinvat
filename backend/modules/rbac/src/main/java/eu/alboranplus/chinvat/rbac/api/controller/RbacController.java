@@ -328,6 +328,68 @@ public class RbacController {
     }
   }
 
+  @PostMapping("/roles/{roleName}/permissions/{permissionCode}")
+  @PreAuthorize("hasAuthority('RBAC:MANAGE')")
+  @Operation(
+      summary = "Assign permission to role",
+      description = "Assigns a permission to a role. Requires RBAC:MANAGE authority.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "Permission assigned"),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized — missing or invalid bearer token",
+        content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+        responseCode = "403",
+        description = "Forbidden — RBAC:MANAGE authority is required",
+        content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "Role or permission not found",
+        content =
+            @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  public ResponseEntity<Void> assignPermissionToRole(
+      @PathVariable String roleName,
+      @PathVariable String permissionCode,
+      Authentication authentication) {
+    rbacFacade.assignPermissionToRole(roleName, permissionCode, actor(authentication));
+    return ResponseEntity.noContent().build();
+  }
+
+  @DeleteMapping("/roles/{roleName}/permissions/{permissionCode}")
+  @PreAuthorize("hasAuthority('RBAC:MANAGE')")
+  @Operation(
+      summary = "Remove permission from role",
+      description = "Removes a permission from a role. Requires RBAC:MANAGE authority.")
+  @ApiResponses({
+    @ApiResponse(responseCode = "204", description = "Permission removed"),
+    @ApiResponse(
+        responseCode = "401",
+        description = "Unauthorized — missing or invalid bearer token",
+        content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+        responseCode = "403",
+        description = "Forbidden — RBAC:MANAGE authority is required",
+        content = @Content(schema = @Schema(hidden = true))),
+    @ApiResponse(
+        responseCode = "404",
+        description = "Role not found",
+        content =
+            @Content(
+                mediaType = "application/json",
+                schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  public ResponseEntity<Void> removePermissionFromRole(
+      @PathVariable String roleName,
+      @PathVariable String permissionCode,
+      Authentication authentication) {
+    rbacFacade.removePermissionFromRole(roleName, permissionCode, actor(authentication));
+    return ResponseEntity.noContent().build();
+  }
+
   private static String actor(Authentication authentication) {
     return authentication.getName();
   }

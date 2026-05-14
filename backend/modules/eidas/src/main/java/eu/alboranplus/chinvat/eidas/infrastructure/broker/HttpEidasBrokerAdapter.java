@@ -21,10 +21,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
-@Profile("!dev & !local")
+@Profile("!(dev | local)")
+@ConditionalOnProperty(
+    prefix = "chinvat.clave",
+    name = "enabled",
+    havingValue = "false",
+    matchIfMissing = true)
 @Repository
 public class HttpEidasBrokerAdapter implements EidasBrokerPort {
 

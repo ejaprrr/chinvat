@@ -6,7 +6,8 @@ import java.util.UUID;
 
 @Schema(description = "Authenticated user profile (/auth/me)")
 public record AuthMeResponse(
-    @Schema(description = "User id", example = "550e8400-e29b-41d4-a716-446655440000") UUID id,
+    @Schema(description = "User UUID", type = "string", format = "uuid",
+        example = "550e8400-e29b-41d4-a716-446655440000") UUID id,
     @Schema(description = "Email address", example = "alice@example.com") String email,
     @Schema(description = "Display name", example = "Alice Smith") String displayName,
     @Schema(description = "Assigned role names", example = "[\"USER\"]") Set<String> roles,

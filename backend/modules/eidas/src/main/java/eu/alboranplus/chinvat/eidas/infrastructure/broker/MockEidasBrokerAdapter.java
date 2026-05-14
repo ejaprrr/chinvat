@@ -38,10 +38,15 @@ public class MockEidasBrokerAdapter implements EidasBrokerPort {
   @Override
   public EidasLoginView initiateLogin(
       String providerCode, String redirectUri, String state, Instant expiresAt) {
+    String authorizationUrl = redirectUri
+        + "?state=" + state
+        + "&provider_code=" + providerCode
+        + "&code=mock-code-" + state
+        + "&subject_id=mock-subject-" + state;
     return new EidasLoginView(
         providerCode,
         state,
-        redirectUri + "?state=" + state + "&provider=" + providerCode,
+        authorizationUrl,
         expiresAt);
   }
 

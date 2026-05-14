@@ -193,3 +193,11 @@ export async function getRole(roleName: string): Promise<RoleResponse> {
   const response = await api.get<RoleResponse>(`/rbac/roles/${roleName}`);
   return response.data;
 }
+
+export async function assignPermissionToRole(roleName: string, permissionCode: string): Promise<void> {
+  await api.post(`/rbac/roles/${roleName}/permissions/${permissionCode}`, {});
+}
+
+export async function removePermissionFromRole(roleName: string, permissionCode: string): Promise<void> {
+  await api.delete(`/rbac/roles/${roleName}/permissions/${permissionCode}`);
+}

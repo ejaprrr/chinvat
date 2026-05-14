@@ -79,7 +79,7 @@ export interface CompleteEidasProfileRequest {
   city?: string;
   country?: string;
   defaultLanguage: string;
-  certificatePem: string;
+  certificatePem?: string;
   assuranceLevel?: string;
   certificateProviderCode?: string;
   identityReference?: string;

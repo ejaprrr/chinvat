@@ -6,6 +6,7 @@ import eu.alboranplus.chinvat.common.cache.PermissionCacheFacade;
 import eu.alboranplus.chinvat.rbac.application.dto.PermissionView;
 import eu.alboranplus.chinvat.rbac.application.dto.RoleView;
 import eu.alboranplus.chinvat.rbac.application.dto.UserRolesView;
+import eu.alboranplus.chinvat.rbac.application.usecase.AssignPermissionToRoleUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.AssignRoleToUserUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.CreatePermissionUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.DeletePermissionUseCase;
@@ -13,6 +14,7 @@ import eu.alboranplus.chinvat.rbac.application.usecase.GetUserRolesUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.GetRoleUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ListPermissionsUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ListPermissionsPagedUseCase;
+import eu.alboranplus.chinvat.rbac.application.usecase.RemovePermissionFromRoleUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.RemoveRoleFromUserUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.ResolvePermissionsUseCase;
 import eu.alboranplus.chinvat.rbac.application.usecase.UpdatePermissionUseCase;
@@ -36,6 +38,8 @@ public class RbacFacadeService implements RbacFacade {
   private final GetUserRolesUseCase getUserRolesUseCase;
   private final AssignRoleToUserUseCase assignRoleToUserUseCase;
   private final RemoveRoleFromUserUseCase removeRoleFromUserUseCase;
+  private final AssignPermissionToRoleUseCase assignPermissionToRoleUseCase;
+  private final RemovePermissionFromRoleUseCase removePermissionFromRoleUseCase;
   private final AuditFacade auditFacade;
   private final PermissionCacheFacade permissionCacheFacade;
 
@@ -50,6 +54,8 @@ public class RbacFacadeService implements RbacFacade {
       GetUserRolesUseCase getUserRolesUseCase,
       AssignRoleToUserUseCase assignRoleToUserUseCase,
       RemoveRoleFromUserUseCase removeRoleFromUserUseCase,
+      AssignPermissionToRoleUseCase assignPermissionToRoleUseCase,
+      RemovePermissionFromRoleUseCase removePermissionFromRoleUseCase,
       AuditFacade auditFacade,
       PermissionCacheFacade permissionCacheFacade) {
     this.getRoleUseCase = getRoleUseCase;
@@ -62,6 +68,8 @@ public class RbacFacadeService implements RbacFacade {
     this.getUserRolesUseCase = getUserRolesUseCase;
     this.assignRoleToUserUseCase = assignRoleToUserUseCase;
     this.removeRoleFromUserUseCase = removeRoleFromUserUseCase;
+    this.assignPermissionToRoleUseCase = assignPermissionToRoleUseCase;
+    this.removePermissionFromRoleUseCase = removePermissionFromRoleUseCase;
     this.auditFacade = auditFacade;
     this.permissionCacheFacade = permissionCacheFacade;
   }
@@ -156,5 +164,33 @@ public class RbacFacadeService implements RbacFacade {
   @Override
   public PageResponse<PermissionView> listPermissionsPaged(PaginationRequest paginationRequest) {
     return listPermissionsPagedUseCase.execute(paginationRequest);
+  }
+
+  @Override
+  public void assignPermissionToRole(String roleName, String permissionCode, String actor) {
+    assignPermissionToRoleUseCase.execute(roleName, permissionCode);
+    permissionCacheFacade.evictAllUserPermissions();
+    auditFacade.log(
+        "RBAC_PERMISSION_ASSIGNED_TO_ROLE",
+        actor,
+        null,
+        AuditDetails.builder()
+            .add("roleName", roleName)
+            .add("permissionCode", permissionCode)
+            .build());
+  }
+
+  @Override
+  public void removePermissionFromRole(String roleName, String permissionCode, String actor) {
+    removePermissionFromRoleUseCase.execute(roleName, permissionCode);
+    permissionCacheFacade.evictAllUserPermissions();
+    auditFacade.log(
+        "RBAC_PERMISSION_REMOVED_FROM_ROLE",
+        actor,
+        null,
+        AuditDetails.builder()
+            .add("roleName", roleName)
+            .add("permissionCode", permissionCode)
+            .build());
   }
 }

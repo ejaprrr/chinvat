@@ -7,6 +7,7 @@ import eu.alboranplus.chinvat.eidas.api.dto.EidasLoginResponse;
 import eu.alboranplus.chinvat.eidas.api.dto.EidasProviderResponse;
 import eu.alboranplus.chinvat.eidas.api.mapper.EidasApiMapper;
 import eu.alboranplus.chinvat.eidas.application.facade.EidasFacade;
+import eu.alboranplus.chinvat.common.api.error.ApiErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -20,12 +21,10 @@ import eu.alboranplus.chinvat.eidas.application.dto.EidasProviderView;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "eIDAS", description = "eIDAS login initiation, callback handling and provider registry")
@@ -41,7 +40,9 @@ public class EidasController {
     this.eidasApiMapper = eidasApiMapper;
   }
 
-  @Operation(summary = "Initiate eIDAS login", description = "Starts the eIDAS flow and returns authorization URL and state.")
+  @Operation(summary = "Initiate eIDAS login",
+      description = "Starts the eIDAS flow and returns the authorization URL and state token. No authentication required.",
+      security = {})
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
@@ -50,7 +51,12 @@ public class EidasController {
             @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = EidasLoginResponse.class))),
-    @ApiResponse(responseCode = "404", description = "Provider not found or disabled")
+    @ApiResponse(responseCode = "400", description = "Validation failed",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = ApiErrorResponse.class))),
+    @ApiResponse(responseCode = "404", description = "Provider not found or disabled",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/login")
   public ResponseEntity<EidasLoginResponse> initiateLogin(@Valid @RequestBody EidasLoginRequest request) {
@@ -58,7 +64,9 @@ public class EidasController {
     return ResponseEntity.ok(eidasApiMapper.toResponse(result));
   }
 
-  @Operation(summary = "Handle eIDAS callback", description = "Validates callback state and returns identity linking decision data.")
+  @Operation(summary = "Handle eIDAS callback",
+      description = "Validates the callback state token and returns identity linking decision. No authentication required.",
+      security = {})
   @ApiResponses({
     @ApiResponse(
         responseCode = "200",
@@ -67,7 +75,12 @@ public class EidasController {
             @Content(
                 mediaType = "application/json",
                 schema = @Schema(implementation = EidasCallbackResponse.class))),
-    @ApiResponse(responseCode = "401", description = "Invalid callback state")
+    @ApiResponse(responseCode = "400", description = "Validation failed",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = ApiErrorResponse.class))),
+    @ApiResponse(responseCode = "401", description = "Invalid or expired state token",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/callback")
   public ResponseEntity<EidasCallbackResponse> handleCallback(
@@ -76,15 +89,30 @@ public class EidasController {
     return ResponseEntity.ok(eidasApiMapper.toResponse(result));
   }
 
-  @Operation(summary = "List eIDAS providers", description = "Returns configured eIDAS providers with enabled/disabled status.")
+  @Operation(summary = "List eIDAS providers",
+      description = "Returns the full list of configured eIDAS providers. No authentication required.",
+      security = {})
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Provider list returned",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = EidasProviderResponse.class)))
+  })
   @GetMapping("/providers")
   public ResponseEntity<List<EidasProviderResponse>> listProviders() {
     var providers = eidasFacade.listProviders().stream().map(eidasApiMapper::toResponse).toList();
     return ResponseEntity.ok(providers);
   }
   
-    @Operation(summary = "List eIDAS providers with pagination", description = "Returns configured eIDAS providers with pagination support.")
-    @GetMapping("/providers/paged")
+    @Operation(summary = "List eIDAS providers with pagination",
+      description = "Returns configured eIDAS providers with pagination support. No authentication required.",
+      security = {})
+  @ApiResponses({
+    @ApiResponse(responseCode = "200", description = "Paginated provider list returned"),
+    @ApiResponse(responseCode = "400", description = "Invalid pagination parameters",
+        content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = ApiErrorResponse.class)))
+  })
+  @GetMapping("/providers/paged")
     public ResponseEntity<PageResponse<EidasProviderResponse>> listProviders(
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,

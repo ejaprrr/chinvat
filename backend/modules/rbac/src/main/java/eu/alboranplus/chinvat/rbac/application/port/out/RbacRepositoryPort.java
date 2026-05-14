@@ -35,4 +35,8 @@ public interface RbacRepositoryPort {
   void removeRoleFromUser(UUID userId, String roleName);
 
   Set<String> findRoleNamesByUserId(UUID userId);
+
+  void assignPermissionToRole(String roleName, String permissionCode);
+
+  void removePermissionFromRole(String roleName, String permissionCode);
 }

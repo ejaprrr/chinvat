@@ -1,7 +1,7 @@
+# --- Stage: Dev ---
 FROM node:20-slim
-
 WORKDIR /app
-
+RUN apt-get update && apt-get install -y --no-install-recommends bash git && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci --include=optional --no-audit --no-fund \
 	&& ARCH="$(dpkg --print-architecture)" \
@@ -14,11 +14,6 @@ RUN npm ci --include=optional --no-audit --no-fund \
 		NATIVE_PKGS="$(node -e "const lock=require('./package-lock.json'); const pkgs=lock.packages||{}; const versions=new Map(); for (const [path,meta] of Object.entries(pkgs)) { if (path.startsWith('node_modules/')) versions.set(path.slice(13), meta.version); } const wanted=new Map(); for (const meta of Object.values(pkgs)) { const opt=meta && meta.optionalDependencies; if (!opt) continue; for (const [name,ver] of Object.entries(opt)) { if (name.includes(process.argv[1])) wanted.set(name, versions.get(name) || ver); } } process.stdout.write([...wanted.entries()].map(([name,ver]) => (name+'@'+ver)).join(' '));" "$TARGET_SUFFIX")"; \
 		if [ -n "$NATIVE_PKGS" ]; then npm install --no-save --no-audit --no-fund $NATIVE_PKGS; fi; \
 	fi
-
 COPY . .
-
-RUN npm run build
-
-EXPOSE 80
-
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "80"]
+EXPOSE 3000
+CMD ["npm", "run", "dev"]

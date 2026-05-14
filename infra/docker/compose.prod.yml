@@ -147,6 +147,21 @@ services:
     networks:
       - chinvat
 
+  frontend:
+    build:
+      context: ../../frontend
+      dockerfile: Dockerfile
+    image: chinvat-frontend:${APP_VERSION:-latest}
+    environment:
+      BACKEND_UPSTREAM_URL: http://backend:8080
+      API_BASE_URL: ${FRONTEND_API_BASE_URL:-}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - chinvat
+
   nginx:
     build:
       context: ../..
@@ -154,6 +169,8 @@ services:
     environment:
       UPSTREAM_HOST: backend
       UPSTREAM_PORT: 8080
+      FRONTEND_UPSTREAM_HOST: frontend
+      FRONTEND_UPSTREAM_PORT: 80
       HTTPS_REDIRECT_PORT: ${NGINX_HTTPS_PORT:-443}
       MTLS_VERIFY_MODE: optional
       MTLS_PROXY_SHARED_SECRET: ${FNMT_PROXY_SHARED_SECRET:-change-me-fnmt-secret}
@@ -170,6 +187,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+      frontend:
+        condition: service_started
     networks:
       - chinvat
 

@@ -28,4 +28,8 @@ public interface RbacFacade {
   void assignRoleToUser(UUID userId, String roleName, String assignedBy);
 
   void removeRoleFromUser(UUID userId, String roleName, String actor);
+
+  void assignPermissionToRole(String roleName, String permissionCode, String actor);
+
+  void removePermissionFromRole(String roleName, String permissionCode, String actor);
 }

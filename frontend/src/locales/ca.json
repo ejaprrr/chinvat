@@ -53,6 +53,9 @@
       "hint": "Et portarem a l'accés eIDAS. Si el navegador troba un certificat eIDAS, selecciona'l quan t'ho demani.",
       "unavailable": "L'accés eIDAS només està disponible en navegadors d'escriptori."
     },
+    "eidas": {
+      "callbackVerified": "La teva identitat eIDAS ha estat verificada. Si us plau, inicia sessió per continuar."
+    },
     "resetPassword": {
       "title": "Restableix la contrasenya",
       "intro": "Fes servir el teu correu, verifica el codi i estableix una contrasenya nova.",

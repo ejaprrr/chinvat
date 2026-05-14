@@ -8,7 +8,7 @@ import {
   type FormEvent,
   type KeyboardEvent,
 } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import { MapPin, UserRound } from 'lucide-react';
 import { getCountries, getCountryCallingCode, type CountryCode } from 'libphonenumber-js/min';
 import { useTranslation } from 'react-i18next';
@@ -32,6 +32,7 @@ import { useAuth } from '@/shared/auth';
 import { useGeocoding } from '@/shared/hooks/useGeocoding';
 import { getErrorDisplay } from '@/shared/api/errors';
 import { isPasswordLongEnough, PASSWORD_MIN_LENGTH } from '@/shared/lib/validation/password';
+import { completeEidasProfile } from '@/features/profile/api';
 import {
   EMAIL_MAX_LENGTH,
   FULL_NAME_MAX_LENGTH,
@@ -107,8 +108,14 @@ function RegisterPage() {
   const { t, i18n } = useTranslation();
   const { getDisplayMessage } = useErrorDisplay();
   const navigate = useNavigate();
+  const location = useLocation();
   const { register, error: authError, reportError, clearError } = useAuth();
   const uid = useId();
+
+  // eIDAS registration mode: present when arriving from EidasCallbackPage
+  const eidasCallback = (
+    location.state as { eidasCallback?: { providerCode: string; externalSubjectId: string; levelOfAssurance: string } } | null
+  )?.eidasCallback ?? null;
 
   // ── IDs for accessibility ──────────────────────────────────────────────────
   const progressId = `${uid}-progress`;
@@ -332,25 +339,50 @@ function RegisterPage() {
         phone = `${dial}${phone.replace(/^0+/, '')}`;
       }
 
-      await register({
-        username: values.username.trim(),
-        fullName: values.fullName.trim(),
-        phoneNumber: phone,
-        email: values.email.trim(),
-        userType: 'INDIVIDUAL',
-        addressLine: resolvedLocation?.address || undefined,
-        postalCode: resolvedLocation?.postalCode || undefined,
-        city: resolvedLocation?.city || undefined,
-        country: resolvedLocation?.countryCode || resolvedLocation?.country,
-        defaultLanguage: values.defaultLanguage,
-        password: values.password,
-      });
+      if (eidasCallback) {
+        // eIDAS registration: create user and link the pending eIDAS identity
+        await completeEidasProfile({
+          providerCode: eidasCallback.providerCode,
+          externalSubjectId: eidasCallback.externalSubjectId,
+          username: values.username.trim(),
+          fullName: values.fullName.trim(),
+          phoneNumber: phone,
+          email: values.email.trim(),
+          password: values.password,
+          defaultLanguage: values.defaultLanguage,
+          addressLine: resolvedLocation?.address || undefined,
+          postalCode: resolvedLocation?.postalCode || undefined,
+          city: resolvedLocation?.city || undefined,
+          country: resolvedLocation?.countryCode || resolvedLocation?.country,
+          assuranceLevel: eidasCallback.levelOfAssurance,
+          certificateProviderCode: eidasCallback.providerCode,
+        });
 
-      setStatusMessage({
-        tone: 'default',
-        text: t('auth.register.status.success'),
-      });
-      navigate(appRoutes.profile, { replace: true });
+        navigate(appRoutes.login, {
+          replace: true,
+          state: { message: t('auth.register.status.eidasSuccess') },
+        });
+      } else {
+        await register({
+          username: values.username.trim(),
+          fullName: values.fullName.trim(),
+          phoneNumber: phone,
+          email: values.email.trim(),
+          userType: 'INDIVIDUAL',
+          addressLine: resolvedLocation?.address || undefined,
+          postalCode: resolvedLocation?.postalCode || undefined,
+          city: resolvedLocation?.city || undefined,
+          country: resolvedLocation?.countryCode || resolvedLocation?.country,
+          defaultLanguage: values.defaultLanguage,
+          password: values.password,
+        });
+
+        setStatusMessage({
+          tone: 'default',
+          text: t('auth.register.status.success'),
+        });
+        navigate(appRoutes.profile, { replace: true });
+      }
     } catch (error) {
       const detail = getErrorDisplay(error, {
         fallbackCode: 'AUTH_REGISTER_FAILED',
@@ -432,7 +464,9 @@ function RegisterPage() {
 
   const headerIntro =
     currentStep === 'identity'
-      ? t('auth.register.steps.identity.intro')
+      ? eidasCallback
+        ? t('auth.register.steps.identity.introEidas')
+        : t('auth.register.steps.identity.intro')
       : currentStep === 'contact'
         ? t('auth.register.steps.contact.intro')
         : currentStep === 'security'

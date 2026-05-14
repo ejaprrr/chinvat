@@ -7,6 +7,7 @@ import eu.alboranplus.chinvat.trust.api.dto.RevokeCertificateCredentialRequest;
 import eu.alboranplus.chinvat.trust.api.mapper.TrustApiMapper;
 import eu.alboranplus.chinvat.trust.application.facade.TrustFacade;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -72,7 +73,8 @@ public class AdminCredentialsController {
   @GetMapping
   @PreAuthorize("hasAuthority('USERS:MANAGE') or hasAuthority('RBAC:MANAGE')")
   public ResponseEntity<PageResponse<CertificateCredentialResponse>> listCertificateCredentials(
-      @RequestParam(required = false) UUID userId,
+      @Parameter(description = "Filter by user UUID", example = "550e8400-e29b-41d4-a716-446655440000")
+          @RequestParam(required = false) UUID userId,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(required = false) String sort) {
@@ -95,7 +97,8 @@ public class AdminCredentialsController {
   @PostMapping("/{credentialId}/revoke")
   @PreAuthorize("hasAuthority('USERS:MANAGE') or hasAuthority('RBAC:MANAGE')")
   public ResponseEntity<Void> revokeCertificateCredential(
-      @PathVariable UUID credentialId,
+      @Parameter(description = "Credential UUID", example = "550e8400-e29b-41d4-a716-446655440000")
+          @PathVariable UUID credentialId,
       @Valid @RequestBody RevokeCertificateCredentialRequest request,
       Authentication authentication) {
     trustFacade.revokeCertificateCredential(credentialId, actor(authentication), request.reason());

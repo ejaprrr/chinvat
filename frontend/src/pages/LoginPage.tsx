@@ -1,5 +1,5 @@
-import { useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/shared/lib/documentTitle';
 import { useAuth } from '@/shared/auth';
@@ -33,8 +33,22 @@ function LoginPage() {
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [statusMessage, setStatusMessage] = useState<ErrorDisplay | string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOpeningCert, setIsOpeningCert] = useState(false);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const state = location.state as { message?: string; error?: string } | null;
+    if (state?.message) {
+      setInfoMessage(state.message);
+    } else if (state?.error) {
+      setStatusMessage(state.error);
+    }
+    // Clear state from history so it doesn't persist on refresh
+    window.history.replaceState({}, document.title);
+  }, []);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
@@ -151,12 +165,14 @@ function LoginPage() {
         defaultValue: 'Use your email and password to sign in.',
       })}
       status={
-        statusMessage || authError
-          ? {
-              content: getDisplayMessage(statusMessage || authError || ''),
-              tone: 'critical',
-            }
-          : null
+        infoMessage
+          ? { content: infoMessage, tone: 'default' }
+          : statusMessage || authError
+            ? {
+                content: getDisplayMessage(statusMessage || authError || ''),
+                tone: 'critical',
+              }
+            : null
       }
     >
       <FlowStepForm

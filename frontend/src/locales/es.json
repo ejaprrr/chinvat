@@ -53,6 +53,9 @@
       "hint": "Te llevaremos al acceso eIDAS. Si el navegador encuentra un certificado eIDAS, selecciónalo cuando te lo pida.",
       "unavailable": "El acceso eIDAS solo está disponible en navegadores de escritorio."
     },
+    "eidas": {
+      "callbackVerified": "Tu identidad eIDAS ha sido verificada. Por favor, inicia sesión para continuar."
+    },
     "register": {
       "title": "Crear cuenta",
       "intro": "Registra un nuevo usuario con sus datos principales, contraseña y un fichero opcional de certificado eIDAS.",
@@ -72,7 +75,8 @@
       "steps": {
         "identity": {
           "title": "Identidad de la cuenta",
-          "intro": "Empieza con los campos principales que definen al nuevo usuario."
+          "intro": "Empieza con los campos principales que definen al nuevo usuario.",
+          "introEidas": "Completa tu registro para finalizar la vinculación de tu identidad eIDAS."
         },
         "contact": {
           "title": "Contacto y dirección",
@@ -93,6 +97,7 @@
       },
       "status": {
         "success": "La cuenta se ha creado correctamente. Ya puedes iniciar sesión.",
+        "eidasSuccess": "Tu cuenta se ha creado mediante eIDAS. Ya puedes iniciar sesión.",
         "error": "No hemos podido crear la cuenta. Revisa los datos e inténtalo de nuevo.",
         "networkError": "No se ha podido conectar con el servicio de registro. Revisa tu conexión e inténtalo de nuevo."
       },

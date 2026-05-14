@@ -53,6 +53,9 @@
       "hint": "We'll take you to eIDAS sign-in. If your browser finds an eIDAS certificate, choose it when prompted.",
       "unavailable": "eIDAS sign-in is only available in desktop browsers."
     },
+    "eidas": {
+      "callbackVerified": "Your eIDAS identity was verified. Please sign in to continue."
+    },
     "register": {
       "title": "Create your account",
       "intro": "Register a new user with the core identity data, password, and an optional eIDAS certificate file.",
@@ -72,7 +75,8 @@
       "steps": {
         "identity": {
           "title": "Account identity",
-          "intro": "Start with the core identity fields used to define the user account."
+          "intro": "Start with the core identity fields used to define the user account.",
+          "introEidas": "Complete your registration to finish linking your eIDAS identity."
         },
         "contact": {
           "title": "Contact and address",
@@ -93,6 +97,7 @@
       },
       "status": {
         "success": "The account was created successfully. You can sign in now.",
+        "eidasSuccess": "Your account was created via eIDAS. You can sign in now.",
         "error": "We couldn't create the account. Review the data and try again.",
         "networkError": "We couldn't reach the registration service. Check your connection and try again."
       },

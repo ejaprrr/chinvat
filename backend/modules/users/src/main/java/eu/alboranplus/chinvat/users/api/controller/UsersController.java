@@ -10,6 +10,7 @@ import eu.alboranplus.chinvat.users.api.mapper.UsersApiMapper;
 import eu.alboranplus.chinvat.users.application.dto.UserView;
 import eu.alboranplus.chinvat.users.application.facade.UsersFacade;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -110,7 +111,8 @@ public class UsersController {
         schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @GetMapping("/{id}")
-  public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
+  public ResponseEntity<UserResponse> getUserById(
+      @Parameter(description = "User UUID", example = "550e8400-e29b-41d4-a716-446655440000") @PathVariable UUID id) {
     return ResponseEntity.ok(usersApiMapper.toResponse(usersFacade.getUserById(id)));
   }
 
@@ -130,7 +132,7 @@ public class UsersController {
   })
   @PutMapping("/{id}")
   public ResponseEntity<UserResponse> updateUser(
-      @PathVariable UUID id,
+      @Parameter(description = "User UUID", example = "550e8400-e29b-41d4-a716-446655440000") @PathVariable UUID id,
       @Valid @RequestBody UpdateUserRequest request,
       Authentication authentication) {
     UserView userView = usersFacade.updateUser(id, usersApiMapper.toCommand(request), actor(authentication));
@@ -149,7 +151,9 @@ public class UsersController {
         schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteUser(@PathVariable UUID id, Authentication authentication) {
+  public ResponseEntity<Void> deleteUser(
+      @Parameter(description = "User UUID", example = "550e8400-e29b-41d4-a716-446655440000") @PathVariable UUID id,
+      Authentication authentication) {
     usersFacade.deleteUser(id, actor(authentication));
     return ResponseEntity.noContent().build();
   }
@@ -173,7 +177,9 @@ public class UsersController {
         schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @PostMapping("/{id}/restore")
-  public ResponseEntity<UserResponse> restoreUser(@PathVariable UUID id, Authentication authentication) {
+  public ResponseEntity<UserResponse> restoreUser(
+      @Parameter(description = "User UUID", example = "550e8400-e29b-41d4-a716-446655440000") @PathVariable UUID id,
+      Authentication authentication) {
     UserView userView = usersFacade.restoreUser(id, actor(authentication));
     return ResponseEntity.ok(usersApiMapper.toResponse(userView));
   }
@@ -195,7 +201,9 @@ public class UsersController {
         schema = @Schema(implementation = ApiErrorResponse.class)))
   })
   @DeleteMapping("/{id}/permanent")
-  public ResponseEntity<Void> permanentlyDeleteUser(@PathVariable UUID id, Authentication authentication) {
+  public ResponseEntity<Void> permanentlyDeleteUser(
+      @Parameter(description = "User UUID", example = "550e8400-e29b-41d4-a716-446655440000") @PathVariable UUID id,
+      Authentication authentication) {
     usersFacade.permanentlyDeleteUser(id, actor(authentication));
     return ResponseEntity.noContent().build();
   }

@@ -52,8 +52,9 @@
       "action": "Usar certificado eIDAS",
       "hint": "Levarémoste ao acceso eIDAS. Se o navegador atopa un certificado eIDAS, selecciónao cando cho pida.",
       "unavailable": "O acceso eIDAS só está dispoñible en navegadores de escritorio."
-    },
-    "resetPassword": {
+    },    "eidas": {
+      "callbackVerified": "A túa identidade eIDAS foi verificada. Por favor, inicia sesión para continuar."
+    },    "resetPassword": {
       "title": "Restablecer o contrasinal",
       "intro": "Usa o teu correo, verifica o código e establece un novo contrasinal.",
       "progress": {

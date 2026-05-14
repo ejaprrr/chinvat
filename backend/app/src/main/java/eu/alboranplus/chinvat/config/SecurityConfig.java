@@ -60,6 +60,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/api/v1/auth/fnmt/login")
                     .permitAll()
+                    .requestMatchers("/api/v1/auth/certificates/login")
+                    .permitAll()
                     .requestMatchers("/api/v1/auth/refresh")
                     .permitAll()
                     .requestMatchers("/api/v1/auth/logout")

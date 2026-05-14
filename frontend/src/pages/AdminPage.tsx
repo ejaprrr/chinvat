@@ -8,6 +8,7 @@ import { ActionButton } from '@/shared/ui/Action';
 import { useAdmin } from '@/features/admin';
 import LanguageSwitcher from '@/shared/ui/LanguageSwitcher';
 import {
+  assignPermissionToRole,
   bindCertificateCredential,
   createPermission,
   deletePermission,
@@ -15,6 +16,7 @@ import {
   getAllPermissions,
   getRole,
   getUserRoles,
+  removePermissionFromRole,
   removeRoleFromUser,
   updateUser,
   deleteUser,
@@ -44,7 +46,9 @@ type BindCredentialFormState = {
   certificatePem: string;
 };
 
-type CreateUserFormState = RegisterRequest;
+type CreateUserFormState = RegisterRequest & {
+  accessLevel: 'SUPERADMIN' | 'ADMIN' | 'GOLD' | 'PREMIUM' | 'NORMAL';
+};
 
 const initialBindCredentialForm: BindCredentialFormState = {
   userId: '',
@@ -66,6 +70,7 @@ const initialCreateUserForm: CreateUserFormState = {
   city: '',
   country: '',
   defaultLanguage: 'en',
+  accessLevel: 'NORMAL',
 };
 
 const initialPermissionForm: PermissionFormState = {
@@ -76,7 +81,7 @@ const initialPermissionForm: PermissionFormState = {
 function AdminPage() {
   useDocumentTitle('meta.adminPageTitle');
   const { t } = useTranslation();
-  const { user, hasRole } = useAuth();
+  const { hasRole } = useAuth();
   const {
     users,
     credentials,
@@ -117,6 +122,7 @@ function AdminPage() {
   >([]);
   const [catalogPermissionsLoading, setCatalogPermissionsLoading] = useState(false);
   const [isRoleInspectorOpen, setIsRoleInspectorOpen] = useState(false);
+  const [selectedPermissionToAdd, setSelectedPermissionToAdd] = useState('');
   const [isUserToolsOpen, setIsUserToolsOpen] = useState(false);
   const [isPermissionCatalogOpen, setIsPermissionCatalogOpen] = useState(false);
   const [permissionModalMode, setPermissionModalMode] = useState<'create' | 'edit' | null>(null);
@@ -125,6 +131,9 @@ function AdminPage() {
   const [restoreUserId, setRestoreUserId] = useState('');
   const [permanentDeleteUserId, setPermanentDeleteUserId] = useState('');
   const [isOperating, setIsOperating] = useState(false);
+  const [userRolesCache, setUserRolesCache] = useState<Record<string, string[]>>({});
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [editingUserEmail, setEditingUserEmail] = useState('');
 
   const errorId = useId();
 
@@ -150,6 +159,7 @@ function AdminPage() {
 
   const handleEditUser = (userData: UserResponse) => {
     setEditingUserId(userData.id.toString());
+    setEditingUserEmail(userData.email);
     setEditingUserData({
       username: userData.username,
       fullName: userData.fullName,
@@ -178,17 +188,33 @@ function AdminPage() {
 
     try {
       setIsOperating(true);
-      await createUser({
-        ...createUserForm,
+      const createdUser = await createUser({
         username: createUserForm.username.trim(),
         fullName: createUserForm.fullName.trim(),
         email: createUserForm.email.trim(),
+        password: createUserForm.password,
+        userType: createUserForm.userType,
         phoneNumber: createUserForm.phoneNumber?.trim() || undefined,
         addressLine: createUserForm.addressLine?.trim() || undefined,
         postalCode: createUserForm.postalCode?.trim() || undefined,
         city: createUserForm.city?.trim() || undefined,
         country: createUserForm.country?.trim() || undefined,
+        defaultLanguage: createUserForm.defaultLanguage,
       });
+      if (createUserForm.accessLevel !== 'NORMAL') {
+        await updateUser(createdUser.id.toString(), {
+          username: createdUser.username,
+          fullName: createdUser.fullName,
+          phoneNumber: createdUser.phoneNumber,
+          userType: createdUser.userType as 'INDIVIDUAL' | 'LIBRARY',
+          accessLevel: createUserForm.accessLevel,
+          defaultLanguage: createdUser.defaultLanguage,
+          addressLine: createdUser.addressLine,
+          postalCode: createdUser.postalCode,
+          city: createdUser.city,
+          country: createdUser.country,
+        });
+      }
       setStatusMessage(t('admin.userCreated', { defaultValue: 'User created' }));
       setCreateUserForm(initialCreateUserForm);
       setIsCreateUserOpen(false);
@@ -274,6 +300,12 @@ function AdminPage() {
       setIsOperating(true);
       await assignRoleToUser(userId, roleName);
       setStatusMessage(t('admin.roleAssigned'));
+      try {
+        const updatedRoles = await getUserRoles(userId);
+        setUserRolesCache((prev) => ({ ...prev, [userId]: updatedRoles.roles }));
+      } catch {
+        // ignore cache refresh failure
+      }
       await loadUsers(usersPage);
     } catch (err) {
       const errorMsg = getErrorDisplay(err, {
@@ -445,10 +477,47 @@ function AdminPage() {
       setIsOperating(true);
       const result = await getRole(roleInspectorValue.trim());
       setInspectedRole(result);
+      setSelectedPermissionToAdd('');
     } catch (err) {
       const errorMsg = getErrorDisplay(err, {
         fallbackCode: 'ADMIN_ROLE_LOOKUP_FAILED',
         fallbackMessage: 'Failed to load role',
+      }).message;
+      setStatusMessage(errorMsg);
+    } finally {
+      setIsOperating(false);
+    }
+  };
+
+  const handleAssignPermissionToRole = async (roleName: string, permissionCode: string) => {
+    if (!permissionCode) return;
+    try {
+      setIsOperating(true);
+      await assignPermissionToRole(roleName, permissionCode);
+      const updated = await getRole(roleName);
+      setInspectedRole(updated);
+      setSelectedPermissionToAdd('');
+    } catch (err) {
+      const errorMsg = getErrorDisplay(err, {
+        fallbackCode: 'ADMIN_PERMISSION_ASSIGN_FAILED',
+        fallbackMessage: 'Failed to assign permission',
+      }).message;
+      setStatusMessage(errorMsg);
+    } finally {
+      setIsOperating(false);
+    }
+  };
+
+  const handleRemovePermissionFromRole = async (roleName: string, permissionCode: string) => {
+    try {
+      setIsOperating(true);
+      await removePermissionFromRole(roleName, permissionCode);
+      const updated = await getRole(roleName);
+      setInspectedRole(updated);
+    } catch (err) {
+      const errorMsg = getErrorDisplay(err, {
+        fallbackCode: 'ADMIN_PERMISSION_REMOVE_FAILED',
+        fallbackMessage: 'Failed to remove permission',
       }).message;
       setStatusMessage(errorMsg);
     } finally {
@@ -485,7 +554,11 @@ function AdminPage() {
           : 'Add permission';
 
   useEffect(() => {
-    if (!isPermissionCatalogOpen) {
+    if (!isPermissionCatalogOpen && !isRoleInspectorOpen) {
+      return;
+    }
+
+    if (catalogPermissions.length > 0) {
       return;
     }
 
@@ -512,7 +585,41 @@ function AdminPage() {
     return () => {
       cancelled = true;
     };
-  }, [isPermissionCatalogOpen]);
+  }, [isPermissionCatalogOpen, isRoleInspectorOpen]);
+
+  // Load roles for all visible users when RBAC tab is active
+  useEffect(() => {
+    if (activeTab !== 'rbac' || users.length === 0) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      const results = await Promise.allSettled(
+        users.map((u) => getUserRoles(u.id.toString())),
+      );
+      if (cancelled) return;
+      const newCache: Record<string, string[]> = {};
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          newCache[users[index].id.toString()] = result.value.roles;
+        }
+      });
+      setUserRolesCache((prev) => ({ ...prev, ...newCache }));
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, users]);
+
+  const filteredUsers = userSearchQuery
+    ? users.filter(
+        (u) =>
+          u.email.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+          u.fullName.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+          u.username.toLowerCase().includes(userSearchQuery.toLowerCase()),
+      )
+    : users;
 
   return (
     <main className="auth-popup-shell items-center bg-canvas py-6 lg:py-8">
@@ -623,7 +730,14 @@ function AdminPage() {
                 {/* Users Tab */}
                 {activeTab === 'users' && (
                   <div className="flex h-full min-h-0 flex-col gap-4">
-                    <div className="flex justify-end">
+                    <div className="flex items-center gap-2 justify-between">
+                      <input
+                        type="search"
+                        placeholder={t('admin.searchUsers', { defaultValue: 'Search by email, username or name…' })}
+                        value={userSearchQuery}
+                        onChange={(e) => setUserSearchQuery(e.target.value)}
+                        className="min-w-0 flex-1 rounded-md border border-border-subtle bg-panel px-3 py-2 text-sm outline-none focus:border-brand-500"
+                      />
                       <button
                         type="button"
                         onClick={() => setIsUserToolsOpen(true)}
@@ -644,6 +758,9 @@ function AdminPage() {
                                 {t('admin.email')}
                               </th>
                               <th className="px-4 py-3 text-left font-semibold text-ink">
+                                {t('admin.username')}
+                              </th>
+                              <th className="px-4 py-3 text-left font-semibold text-ink">
                                 {t('admin.fullName')}
                               </th>
                               <th className="px-4 py-3 text-left font-semibold text-ink">
@@ -658,19 +775,20 @@ function AdminPage() {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-border-subtle">
-                            {users.length === 0 ? (
+                            {filteredUsers.length === 0 ? (
                               <tr>
-                                <td colSpan={5} className="px-4 py-8 text-center text-muted-soft">
+                                <td colSpan={6} className="px-4 py-8 text-center text-muted-soft">
                                   {t('admin.noUsers')}
                                 </td>
                               </tr>
                             ) : (
-                              users.map((userData) => (
+                              filteredUsers.map((userData) => (
                                 <tr
                                   key={userData.id}
                                   className="hover:bg-surface-subtle transition-colors"
                                 >
                                   <td className="px-4 py-3 text-ink">{userData.email}</td>
+                                  <td className="px-4 py-3 text-muted font-mono text-xs">{userData.username}</td>
                                   <td className="px-4 py-3 text-ink">{userData.fullName}</td>
                                   <td className="px-4 py-3 text-muted">{userData.userType}</td>
                                   <td className="px-4 py-3">
@@ -758,7 +876,7 @@ function AdminPage() {
                               <label>{t('admin.email')}</label>
                               <input
                                 type="email"
-                                value={editingUserData.username}
+                                value={editingUserEmail}
                                 disabled
                                 className="admin-input"
                               />
@@ -1024,7 +1142,94 @@ function AdminPage() {
 
                 {/* RBAC Tab */}
                 {activeTab === 'rbac' && (
-                  <div className="flex h-full min-h-0 flex-col gap-4">
+                  <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto">
+                    {/* Role permissions panel */}
+                    <div className="rounded-md border border-border-subtle bg-surface-subtle p-3 shrink-0">
+                      <p className="text-xs font-semibold text-ink mb-2">Role permissions</p>
+                      <div className="flex gap-2 items-center">
+                        <input
+                          value={roleInspectorValue}
+                          onChange={(e) => setRoleInspectorValue(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === 'Enter') void handleInspectRole(); }}
+                          placeholder="Role name, e.g. ADMIN"
+                          className="min-w-0 flex-1 rounded-md border border-border-subtle bg-panel px-3 py-1.5 text-sm outline-none focus:border-brand-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => void handleInspectRole()}
+                          disabled={isOperating || !roleInspectorValue.trim()}
+                          className="rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          Inspect
+                        </button>
+                        {inspectedRole && (
+                          <button
+                            type="button"
+                            onClick={() => setInspectedRole(null)}
+                            className="rounded-md bg-surface-subtle px-2 py-1.5 text-xs text-muted hover:text-ink"
+                          >
+                            <X size={14} />
+                          </button>
+                        )}
+                      </div>
+
+                      {inspectedRole && (
+                        <div className="mt-3 flex flex-col gap-2">
+                          <div className="flex flex-wrap gap-1.5">
+                            {inspectedRole.permissions.length === 0 ? (
+                              <span className="text-xs text-muted">No permissions assigned to this role</span>
+                            ) : (
+                              inspectedRole.permissions.map((perm) => (
+                                <span
+                                  key={perm}
+                                  className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700"
+                                >
+                                  {perm}
+                                  <button
+                                    type="button"
+                                    title={`Remove ${perm}`}
+                                    disabled={isOperating}
+                                    onClick={() => void handleRemovePermissionFromRole(inspectedRole.roleName, perm)}
+                                    className="ml-0.5 rounded-full hover:bg-red-100 hover:text-red-600 disabled:opacity-50"
+                                  >
+                                    <X size={10} />
+                                  </button>
+                                </span>
+                              ))
+                            )}
+                          </div>
+                          <div className="flex gap-2 items-center">
+                            <select
+                              value={selectedPermissionToAdd}
+                              onChange={(e) => setSelectedPermissionToAdd(e.target.value)}
+                              disabled={isOperating || catalogPermissionsLoading}
+                              className="min-w-0 flex-1 rounded-md border border-border-subtle bg-panel px-2 py-1.5 text-xs outline-none focus:border-brand-500"
+                            >
+                              <option value="">
+                                {catalogPermissionsLoading ? 'Loading…' : 'Add permission…'}
+                              </option>
+                              {catalogPermissions
+                                .filter((p) => !inspectedRole.permissions.includes(p.code))
+                                .map((p) => (
+                                  <option key={p.code} value={p.code}>
+                                    {p.code}{p.description ? ` — ${p.description}` : ''}
+                                  </option>
+                                ))}
+                            </select>
+                            <button
+                              type="button"
+                              disabled={isOperating || !selectedPermissionToAdd}
+                              onClick={() => void handleAssignPermissionToRole(inspectedRole.roleName, selectedPermissionToAdd)}
+                              className="rounded-md bg-brand-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Users / roles table */}
                     {usersLoading ? (
                       <div className="text-center py-8 text-muted-soft">{t('admin.loading')}</div>
                     ) : (
@@ -1062,24 +1267,35 @@ function AdminPage() {
                                   <td className="px-4 py-3 text-ink">{userData.email}</td>
                                   <td className="px-4 py-3 text-ink">{userData.fullName}</td>
                                   <td className="px-4 py-3">
-                                    <span className="text-sm text-muted">
-                                      {userData.id === user?.id
-                                        ? user?.roles?.join(', ')
-                                        : t('admin.clickToManage')}
-                                    </span>
+                                    <div className="flex flex-wrap gap-1">
+                                      {userRolesCache[userData.id.toString()] ? (
+                                        userRolesCache[userData.id.toString()].length === 0 ? (
+                                          <span className="text-xs text-muted">—</span>
+                                        ) : (
+                                          userRolesCache[userData.id.toString()].map((role) => (
+                                            <span
+                                              key={role}
+                                              className="inline-block rounded-full bg-surface-subtle px-2 py-0.5 text-xs font-medium text-ink"
+                                            >
+                                              {role}
+                                            </span>
+                                          ))
+                                        )
+                                      ) : (
+                                        <span className="text-xs text-muted">…</span>
+                                      )}
+                                    </div>
                                   </td>
                                   <td className="px-4 py-3">
-                                    {userData.id !== user?.id && (
-                                      <button
-                                        onClick={() =>
-                                          setUserRoleManagementId(userData.id.toString())
-                                        }
-                                        disabled={isOperating}
-                                        className="px-3 py-2 text-xs font-medium bg-surface-subtle hover:bg-surface-hover text-ink rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                      >
-                                        {t('admin.manage')}
-                                      </button>
-                                    )}
+                                    <button
+                                      onClick={() =>
+                                        setUserRoleManagementId(userData.id.toString())
+                                      }
+                                      disabled={isOperating}
+                                      className="px-3 py-2 text-xs font-medium bg-surface-subtle hover:bg-surface-hover text-ink rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                      {t('admin.manage')}
+                                    </button>
                                   </td>
                                 </tr>
                               ))
@@ -1095,6 +1311,9 @@ function AdminPage() {
                         userId={userRoleManagementId}
                         onClose={() => setUserRoleManagementId(null)}
                         onAssignRole={handleAssignRole}
+                        onRolesChanged={(uid, roles) =>
+                          setUserRolesCache((prev) => ({ ...prev, [uid]: roles }))
+                        }
                         isOperating={isOperating}
                         t={t}
                       />
@@ -1386,6 +1605,30 @@ function AdminPage() {
                             className="admin-input"
                           />
                         </div>
+                        <div className="admin-form-group">
+                          <label>{t('admin.accessLevel')}</label>
+                          <select
+                            value={createUserForm.accessLevel}
+                            onChange={(event) =>
+                              setCreateUserForm((current) => ({
+                                ...current,
+                                accessLevel: event.target.value as
+                                  | 'SUPERADMIN'
+                                  | 'ADMIN'
+                                  | 'GOLD'
+                                  | 'PREMIUM'
+                                  | 'NORMAL',
+                              }))
+                            }
+                            className="admin-input"
+                          >
+                            <option value="NORMAL">NORMAL</option>
+                            <option value="PREMIUM">PREMIUM</option>
+                            <option value="GOLD">GOLD</option>
+                            <option value="ADMIN">ADMIN</option>
+                            <option value="SUPERADMIN">SUPERADMIN</option>
+                          </select>
+                        </div>
                         <div className="admin-form-actions">
                           <button
                             type="submit"
@@ -1612,23 +1855,80 @@ function AdminPage() {
                         </div>
 
                         {inspectedRole && (
-                          <div className="admin-form-group">
-                            <label>Permissions</label>
-                            <div className="flex flex-wrap gap-2">
-                              {inspectedRole.permissions.length === 0 ? (
-                                <span className="text-sm text-muted">No permissions</span>
-                              ) : (
-                                inspectedRole.permissions.map((permission) => (
-                                  <span
-                                    key={permission}
-                                    className="rounded-full bg-surface-subtle px-3 py-1 text-xs font-medium text-ink"
-                                  >
-                                    {permission}
-                                  </span>
-                                ))
-                              )}
+                          <>
+                            <div className="admin-form-group">
+                              <label>Current permissions</label>
+                              <div className="flex flex-wrap gap-2">
+                                {inspectedRole.permissions.length === 0 ? (
+                                  <span className="text-sm text-muted">No permissions assigned</span>
+                                ) : (
+                                  inspectedRole.permissions.map((permission) => (
+                                    <span
+                                      key={permission}
+                                      className="inline-flex items-center gap-1 rounded-full bg-surface-subtle px-3 py-1 text-xs font-medium text-ink"
+                                    >
+                                      {permission}
+                                      <button
+                                        type="button"
+                                        title={`Remove ${permission}`}
+                                        className="ml-1 rounded-full p-0.5 hover:bg-red-100 hover:text-red-600"
+                                        disabled={isOperating}
+                                        onClick={() =>
+                                          void handleRemovePermissionFromRole(
+                                            inspectedRole.roleName,
+                                            permission,
+                                          )
+                                        }
+                                      >
+                                        <X size={11} />
+                                      </button>
+                                    </span>
+                                  ))
+                                )}
+                              </div>
                             </div>
-                          </div>
+
+                            <div className="admin-form-group">
+                              <label>Assign permission</label>
+                              <div className="admin-role-assign">
+                                <select
+                                  className="admin-input"
+                                  value={selectedPermissionToAdd}
+                                  onChange={(e) => setSelectedPermissionToAdd(e.target.value)}
+                                  disabled={isOperating || catalogPermissionsLoading}
+                                >
+                                  <option value="">
+                                    {catalogPermissionsLoading
+                                      ? 'Loading...'
+                                      : 'Select permission'}
+                                  </option>
+                                  {catalogPermissions
+                                    .filter(
+                                      (p) => !inspectedRole.permissions.includes(p.code),
+                                    )
+                                    .map((p) => (
+                                      <option key={p.code} value={p.code}>
+                                        {p.code}
+                                        {p.description ? ` — ${p.description}` : ''}
+                                      </option>
+                                    ))}
+                                </select>
+                                <button
+                                  type="button"
+                                  className="admin-btn-primary"
+                                  disabled={isOperating || !selectedPermissionToAdd}
+                                  onClick={() =>
+                                    void handleAssignPermissionToRole(
+                                      inspectedRole.roleName,
+                                      selectedPermissionToAdd,
+                                    )
+                                  }
+                                >
+                                  Add
+                                </button>
+                              </div>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>
@@ -1688,6 +1988,7 @@ interface RoleManagementModalProps {
   userId: string;
   onClose: () => void;
   onAssignRole: (userId: string, roleName: string) => Promise<void>;
+  onRolesChanged?: (userId: string, roles: string[]) => void;
   isOperating: boolean;
   t: (key: string) => string;
 }
@@ -1696,11 +1997,12 @@ function RoleManagementModal({
   userId,
   onClose,
   onAssignRole,
+  onRolesChanged,
   isOperating,
   t,
 }: RoleManagementModalProps) {
-  const [selectedRole, setSelectedRole] = useState('ADMIN');
-  const availableRoles = ['ADMIN', 'USER', 'EMPLOYEE'];
+  const [selectedRole, setSelectedRole] = useState('USER');
+  const availableRoles = ['USER', 'ADMIN', 'EMPLOYEE', 'SUPERADMIN'];
 
   const [currentRoles, setCurrentRoles] = useState<string[]>([]);
 
@@ -1728,7 +2030,9 @@ function RoleManagementModal({
   const handleRemoveRole = async (roleName: string) => {
     try {
       await removeRoleFromUser(userId, roleName);
-      setCurrentRoles((roles) => roles.filter((role) => role !== roleName));
+      const newRoles = currentRoles.filter((role) => role !== roleName);
+      setCurrentRoles(newRoles);
+      onRolesChanged?.(userId, newRoles);
     } catch {
       // ignore local UI removal failure; server state is the source of truth
     }

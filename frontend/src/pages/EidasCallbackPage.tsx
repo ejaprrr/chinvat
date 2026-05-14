@@ -1,17 +1,22 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import { useTranslation } from 'react-i18next';
 import { useDocumentTitle } from '@/shared/lib/documentTitle';
-import { useAuth } from '@/shared/auth';
 import { handleEidasCallback } from '@/features/eidas/api';
 import { appRoutes } from '../router/routes';
 
 function EidasCallbackPage() {
   useDocumentTitle('meta.pageTitle');
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { refreshUser } = useAuth();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    // Guard against React StrictMode double-invocation in development
+    if (hasProcessed.current) return;
+    hasProcessed.current = true;
+
     const processCallback = async () => {
       try {
         // Extract parameters from query string
@@ -26,7 +31,7 @@ function EidasCallbackPage() {
         }
 
         // Process the eIDAS callback
-        await handleEidasCallback({
+        const result = await handleEidasCallback({
           providerCode,
           state,
           authorizationCode,
@@ -34,11 +39,25 @@ function EidasCallbackPage() {
           levelOfAssurance,
         });
 
-        // Refresh auth state
-        await refreshUser();
-
-        // Redirect to profile
-        navigate(appRoutes.profile, { replace: true });
+        if (result.profileCompletionRequired) {
+          // New user: navigate to registration with eIDAS context to complete profile
+          navigate(appRoutes.register, {
+            replace: true,
+            state: {
+              eidasCallback: {
+                providerCode: result.providerCode,
+                externalSubjectId: result.externalSubjectId,
+                levelOfAssurance: result.levelOfAssurance,
+              },
+            },
+          });
+        } else {
+          // Existing linked user: no session token is issued in this flow — redirect to sign in
+          navigate(appRoutes.login, {
+            replace: true,
+            state: { message: t('auth.eidas.callbackVerified') },
+          });
+        }
       } catch (error) {
         // On error, redirect to login with error state
         const message = error instanceof Error ? error.message : 'eIDAS callback failed';
@@ -50,7 +69,7 @@ function EidasCallbackPage() {
     };
 
     processCallback();
-  }, [searchParams, navigate, refreshUser]);
+  }, [searchParams, navigate, t]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-canvas">

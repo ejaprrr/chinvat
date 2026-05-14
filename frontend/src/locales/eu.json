@@ -53,6 +53,9 @@
       "hint": "eIDAS bidez sartzera eramango zaitugu. Nabigatzaileak eIDAS ziurtagiri bat aurkitzen badu, hautatu eskatzen dizunean.",
       "unavailable": "eIDAS ziurtagiriarekin sartzea mahaigaineko nabigatzaileetan bakarrik dago erabilgarri."
     },
+    "eidas": {
+      "callbackVerified": "Zure eIDAS nortasuna egiaztatu da. Mesedez, hasi saioa jarraitzeko."
+    },
     "resetPassword": {
       "title": "Berrezarri pasahitza",
       "intro": "Erabili zure posta elektronikoa, egiaztatu kodea eta ezarri pasahitz berri bat.",

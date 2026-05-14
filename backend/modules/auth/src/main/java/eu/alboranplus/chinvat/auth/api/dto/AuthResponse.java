@@ -12,7 +12,8 @@ public record AuthResponse(
 
   @Schema(description = "Authenticated user profile")
   public record UserInfo(
-      @Schema(description = "Internal user ID", example = "550e8400-e29b-41d4-a716-446655440000") UUID id,
+      @Schema(description = "Internal user ID", type = "string", format = "uuid",
+          example = "550e8400-e29b-41d4-a716-446655440000") UUID id,
       @Schema(description = "Email address", example = "alice@example.com") String email,
       @Schema(description = "Display name", example = "Alice Smith") String displayName,
       @Schema(description = "Set of assigned role names", example = "[\"USER\"]") Set<String> roles,

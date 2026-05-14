@@ -206,6 +206,33 @@ public class RbacRepositoryAdapter implements RbacRepositoryPort {
             userId));
   }
 
+  @Override
+  public void assignPermissionToRole(String roleName, String permissionCode) {
+    jdbcTemplate.update(
+        """
+        INSERT INTO rbac_role_permission (role_id, permission_id)
+        SELECT r.id, p.id
+        FROM rbac_role r, rbac_permission p
+        WHERE UPPER(r.role_name) = UPPER(?)
+          AND UPPER(p.permission_code) = UPPER(?)
+        ON CONFLICT (role_id, permission_id) DO NOTHING
+        """,
+        roleName,
+        permissionCode);
+  }
+
+  @Override
+  public void removePermissionFromRole(String roleName, String permissionCode) {
+    jdbcTemplate.update(
+        """
+        DELETE FROM rbac_role_permission
+        WHERE role_id = (SELECT id FROM rbac_role WHERE UPPER(role_name) = UPPER(?))
+          AND permission_id = (SELECT id FROM rbac_permission WHERE UPPER(permission_code) = UPPER(?))
+        """,
+        roleName,
+        permissionCode);
+  }
+
   private RoleDefinition mergeWithNormalizedPermissions(RoleDefinition csvRoleDefinition) {
     Set<String> normalizedPermissions =
         findNormalizedPermissionsByRoleNames(Set.of(csvRoleDefinition.roleName()))

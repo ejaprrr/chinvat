@@ -1,7 +1,7 @@
 .PHONY: help backend-build backend-test backend-fmt backend-fmt-check backend-run-local backend-run-dev \
         infra-config-dev infra-config-prod dev-up dev-down infra-dev-logs \
         infra-prod-up infra-prod-down infra-prod-logs infra-docker-build \
-        db-migrate db-seed db-reset
+        db-migrate db-seed db-reset redis-flush dev-restart-backend
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -62,3 +62,9 @@ db-seed: ## Seed the dev database
 
 db-reset: ## DEV ONLY – drop schema, re-migrate and re-seed
 	$(MAKE) -C infra db-reset
+
+redis-flush: ## DEV ONLY – flush all Redis data (both instances)
+	$(MAKE) -C infra redis-flush
+
+dev-restart-backend: ## Flush Redis and restart backend (use after config changes)
+	$(MAKE) -C infra dev-restart-backend

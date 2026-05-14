@@ -1,5 +1,5 @@
 .PHONY: help config-dev config-prod dev-up dev-down dev-logs prod-up prod-down prod-logs docker-build \
-        db-migrate db-seed db-reset
+        db-migrate db-seed db-reset redis-flush dev-restart-backend
 
 ENV_FILE     ?= ../.env
 COMPOSE_DEV  = docker compose --env-file $(ENV_FILE) -f docker/compose.dev.yml
@@ -49,3 +49,10 @@ db-reset: ## DEV ONLY – drop schema, re-migrate and re-seed
 	ALLOW_DB_RESET=true $(COMPOSE_DEV) run --rm db-reset
 	$(COMPOSE_DEV) run --rm db-migrate
 	$(COMPOSE_DEV) run --rm db-seed
+
+redis-flush: ## DEV ONLY – flush all Redis data (both redis-global and redis-auth)
+	$(COMPOSE_DEV) exec redis-global redis-cli FLUSHALL
+	$(COMPOSE_DEV) exec redis-auth redis-cli FLUSHALL
+
+dev-restart-backend: redis-flush ## Flush Redis and restart backend (use after config changes)
+	$(COMPOSE_DEV) up --build -d backend

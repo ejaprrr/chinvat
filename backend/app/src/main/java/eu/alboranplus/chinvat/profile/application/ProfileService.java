@@ -128,17 +128,23 @@ public class ProfileService {
                 command.country(),
                 command.defaultLanguage()));
 
-    CertificateCredentialView credential =
-        trustFacade.bindCertificateCredential(
-            new BindCertificateCredentialCommand(
-                user.id(),
-              command.certificateProviderCode(),
-                PROFILE_REGISTRATION_SOURCE,
-              command.assuranceLevel(),
-              command.certificatePem()),
-            command.email());
+    boolean hasCertificate =
+        command.certificatePem() != null && !command.certificatePem().isBlank();
 
-    validateActivationReadiness(user, credential);
+    CertificateCredentialView credential = null;
+    if (hasCertificate) {
+      credential =
+          trustFacade.bindCertificateCredential(
+              new BindCertificateCredentialCommand(
+                  user.id(),
+                command.certificateProviderCode(),
+                  PROFILE_REGISTRATION_SOURCE,
+                command.assuranceLevel(),
+                command.certificatePem()),
+              command.email());
+
+      validateActivationReadiness(user, credential);
+    }
 
     EidasProfileCompletionView completion =
         eidasFacade.completeProfile(
@@ -150,20 +156,24 @@ public class ProfileService {
               command.nationality()),
             command.email());
 
-    if (!credential.primary()) {
+    if (credential != null && !credential.primary()) {
       trustFacade.setPrimaryCertificateCredential(user.id(), credential.id(), command.email());
+    }
+
+    AuditDetails.Builder auditBuilder =
+        AuditDetails.builder()
+            .add("providerCode", completion.providerCode())
+            .add("externalSubjectId", completion.externalSubjectId())
+            .add("currentStatus", completion.currentStatus());
+    if (credential != null) {
+      auditBuilder.add("credentialId", credential.id());
     }
 
     auditFacade.log(
         "PROFILE_COMPLETION_ACTIVATED",
         command.email(),
         user.id(),
-        AuditDetails.builder()
-            .add("providerCode", completion.providerCode())
-            .add("externalSubjectId", completion.externalSubjectId())
-            .add("currentStatus", completion.currentStatus())
-            .add("credentialId", credential.id())
-            .build());
+        auditBuilder.build());
 
     return completion;
   }
