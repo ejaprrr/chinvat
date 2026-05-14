@@ -48,7 +48,7 @@ function LoginPage() {
     }
     // Clear state from history so it doesn't persist on refresh
     window.history.replaceState({}, document.title);
-  }, []);
+  }, [location.state]);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);

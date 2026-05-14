@@ -74,7 +74,7 @@ function EidasCallbackPage() {
   return (
     <div className="flex items-center justify-center min-h-screen bg-canvas">
       <div className="text-center">
-        <p className="text-muted">Processing eIDAS authentication...</p>
+        <p className="text-muted">{t('eidas.processing')}</p>
       </div>
     </div>
   );

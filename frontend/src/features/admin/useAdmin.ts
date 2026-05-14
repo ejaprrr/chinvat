@@ -90,7 +90,9 @@ export function useAdmin() {
 
   // Load all data on mount
   useEffect(() => {
-    Promise.all([loadUsers(0), loadCredentials(0), loadPermissions(0)]);
+    void loadUsers(0);
+    void loadCredentials(0);
+    void loadPermissions(0);
   }, [loadUsers, loadCredentials, loadPermissions]);
 
   return {
